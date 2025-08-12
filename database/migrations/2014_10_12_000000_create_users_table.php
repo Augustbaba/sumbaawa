@@ -8,13 +8,15 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->foreignId('pays_id')->nullable()->constrained('pays')->nullOnDelete();
             $table->string('address')->nullable();
             $table->decimal('solde', 12, 2)->default(0);
             $table->string('password');
+            $table->string('avatar');
+            $table->boolean('status')->default(true);
             $table->rememberToken();
             $table->timestamps();
         });
