@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\FrontHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
@@ -40,7 +42,10 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'avatar' => FrontHelper::getEnvFolder() .'images/avatars/user-avatar-placeholder.png'
         ]);
+        $role = Role::where('name', 'customer')->first();
+        $user->roles()->attach($role->id);
 
         event(new Registered($user));
 

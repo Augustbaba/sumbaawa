@@ -12,17 +12,17 @@
         <div class="dropdown">
             <a href="#" class="d-flex align-items-center" data-bs-toggle="dropdown">
                 <div class="avatar me-3">
-                    <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/back/assets/images/user/man_avatar3.jpg') }}"
+                    <img src="{{ Str::startsWith(auth()->user()->avatar, 'http') ? auth()->user()->avatar : asset(auth()->user()->avatar) }}"
                          class="rounded-circle" alt="image">
                 </div>
                 <div>
-                    <div class="fw-bold">Timotheus Bendan</div>
-                    <small class="text-muted">Sales Manager</small>
+                    <div class="fw-bold">{{ auth()->user()->name?? auth()->user()->email }}</div>
+                    <small class="text-muted">{{ auth()->user()->roles->first()->role }}</small>
                 </div>
             </a>
             <div class="dropdown-menu dropdown-menu-end">
-                <a href="#" class="dropdown-item d-flex align-items-center">
-                    <i class="bi bi-person dropdown-item-icon"></i> Profile
+                <a href="{{ route('profile.edit') }}" class="dropdown-item d-flex align-items-center">
+                    <i class="bi bi-person dropdown-item-icon"></i> Profil
                 </a>
                 <a href="#" class="dropdown-item d-flex align-items-center">
                     <i class="bi bi-envelope dropdown-item-icon"></i> Inbox
@@ -30,9 +30,9 @@
                 <a href="#" class="dropdown-item d-flex align-items-center" data-sidebar-target="#settings">
                     <i class="bi bi-gear dropdown-item-icon"></i> Settings
                 </a>
-                <a href="login.html" class="dropdown-item d-flex align-items-center text-danger"
+                <a href="{{ route('logout') }}" class="dropdown-item d-flex align-items-center text-danger"
                    target="_blank">
-                    <i class="bi bi-box-arrow-right dropdown-item-icon"></i> Logout
+                    <i class="bi bi-box-arrow-right dropdown-item-icon"></i> Se Déconnecter
                 </a>
             </div>
         </div>

@@ -35,7 +35,7 @@
 
 <!-- preloader -->
 <div class="preloader">
-    <img src="https://vetra.laborasyon.com/assets/images/logo.svg" alt="logo">
+    <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" alt="logo">
     <div class="preloader-icon"></div>
 </div>
 <!-- ./ preloader -->

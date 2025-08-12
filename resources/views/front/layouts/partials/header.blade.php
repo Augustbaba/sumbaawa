@@ -7,8 +7,8 @@
                     <div class="col-lg-6">
                         <div class="header-contact">
                             <ul>
-                                <li>Welcome to Our store Multikart</li>
-                                <li><i class="ri-phone-fill"></i>Call Us: 123 - 456 - 7890</li>
+                                <li>Bienvenue sur {{ FrontHelper::getAppName() }}</li>
+                                <li><i class="ri-phone-fill"></i>Nous Contacter: 123 - 456 - 7890</li>
                             </ul>
                         </div>
                     </div>
@@ -17,10 +17,16 @@
                             <li class="mobile-wishlist"><a href="#!"><i class="ri-heart-fill"></i></a>
                             </li>
                             <li class="onhover-dropdown mobile-account"> <i class="ri-user-fill"></i>
-                                My Account
+                                Mon Compte
                                 <ul class="onhover-show-div">
-                                    <li><a href="login.html">Login</a></li>
-                                    <li><a href="register.html">register</a></li>
+                                    @auth()
+                                        <li><a href="{{ route('dashboard') }}" target="_blank">Tableau de bord</a></li>
+                                        <li><a href="{{ route('logout') }}">Se Déconnecter</a></li>
+                                    @endauth
+                                    @guest()
+                                        <li><a href="{{ route('login') }}" target="_blank">Se Connecter</a></li>
+                                        <li><a href="{{ route('register') }}" target="_blank">S'inscrire</a></li>
+                                    @endguest
                                 </ul>
                             </li>
                         </ul>
@@ -208,7 +214,7 @@
                                 </div>
                             </div>
                             <div class="brand-logo">
-                                <a href="index.html">
+                                <a href="{{ route('index') }}">
                                     <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" class="img-fluid blur-up lazyload" alt="">
                                 </a>
                             </div>
@@ -222,7 +228,7 @@
                                         <li class="mobile-box">
                                             <div class="mobile-back text-end">Menu<i class="ri-close-line"></i></div>
                                         </li>
-                                        <li><a href="index.html">Home</a></li>
+                                        <li><a href="{{ route('index') }}">Home</a></li>
                                         <li class="mega hover-cls">
                                             <a href="#!">feature <div class="lable-nav">new</div></a>
                                             <ul class="mega-menu full-mega-menu">
@@ -336,7 +342,7 @@
                                                                     </div>
                                                                     <div class="menu-content">
                                                                         <ul>
-                                                                            <li><a href="index.html">bottom<i
+                                                                            <li><a href="{{ route('index') }}">bottom<i
                                                                                         class="ms-2 ri-flashlight-fill icon-trend"></i></a>
                                                                             </li>
                                                                             <li><a href="fashion-4.html">bottom left</a>
@@ -366,8 +372,8 @@
                                                                     </div>
                                                                     <div class="menu-content">
                                                                         <ul>
-                                                                            <li><a href="index.html">Newsletter</a></li>
-                                                                            <li><a href="index.html">exit<i
+                                                                            <li><a href="{{ route('index') }}">Newsletter</a></li>
+                                                                            <li><a href="{{ route('index') }}">exit<i
                                                                                         class="ms-2 ri-flashlight-fill icon-trend"></i></a>
                                                                             </li>
                                                                             <li><a href="christmas.html">christmas</a>

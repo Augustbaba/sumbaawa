@@ -42,51 +42,56 @@
                                 </div>
                                 <div class="my-5 text-center text-lg-start">
                                     <h1 class="display-8">Se Connecter</h1>
-                                    <p class="text-muted">Se Connecter to Vetra to continue</p>
+                                    @include('back.layouts.partials.alert')
                                 </div>
-                                <form class="mb-5">
+                                <form class="mb-5" method="POST" action="{{ route('login') }}">
+                                    @csrf
                                     <div class="mb-3">
-                                        <input type="email" class="form-control" placeholder="Enter email" autofocus
-                                               required>
+                                        <input type="email" name="email" class="form-control" value="{{ old('email') }}" placeholder="Entrer votre email" autofocus required>
+                                        @error('email')
+                                            <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                     <div class="mb-3">
-                                        <input type="password" class="form-control" placeholder="Enter password"
-                                               required>
+                                        <input type="password" name="password" class="form-control" placeholder="Entrer votre mot de passe" required>
+                                        @error('password')
+                                            <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                     <div class="text-center text-lg-start">
-                                        <p class="small">Can't access your account? <a href="#">Reset your password now</a>.</p>
+                                        <p class="small"><a href="#">Mot de passe oublié?</a></p>
                                         <button class="btn btn-primary">Se Connecter</button>
                                     </div>
                                 </form>
                                 <div class="social-links justify-content-center">
                                     <a href="#">
-                                        <i class="ti-google bg-google"></i> Se Connecter with Google
+                                        <i class="ti-google bg-google"></i> Se Connecter avec Google
                                     </a>
                                     <a href="#">
-                                        <i class="ti-facebook bg-facebook"></i> Se Connecter with Facebook
+                                        <i class="ti-facebook bg-facebook"></i> Se Connecter avec Facebook
                                     </a>
                                 </div>
                                 <p class="text-center d-block d-lg-none mt-5 mt-lg-0">
-                                    Don't have an account? <a href="#">Sign up</a>.
+                                    Nouveau sur {{ FrontHelper::getAppName() }}? <a href="{{ route('register') }}">S'inscrire</a>.
                                 </p>
                             </div>
                         </div>
                     </div>
                     <div class="col d-none d-lg-flex border-start align-items-center justify-content-between flex-column text-center">
                         <div class="logo">
-                            <img width="120" src="https://vetra.laborasyon.com/assets/images/logo.svg" alt="logo">
+                            <img width="220" src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" alt="logo">
                         </div>
                         <div>
-                            <h3 class="fw-bold">Welcome to Vetra!</h3>
-                            <p class="lead my-5">If you don't have an account, would you like to register right now?</p>
-                            <a href="#" class="btn btn-primary">Sign Up</a>
+                            <h3 class="fw-bold">Bienvenu sur {{ FrontHelper::getAppName() }}!</h3>
+                            <p class="lead my-5">Si vous n'avez pas de compte, souhaitez-vous vous inscrire dès maintenant ?</p>
+                            <a href="{{ route('register') }}" class="btn btn-primary">S'inscrire</a>
                         </div>
                         <ul class="list-inline">
                             <li class="list-inline-item">
-                                <a href="#">Privacy Policy</a>
+                                <a href="#">Politique de Confidentialité</a>
                             </li>
                             <li class="list-inline-item">
-                                <a href="#">Terms & Conditions</a>
+                                <a href="#">Conditions Générales d'Utilisation</a>
                             </li>
                         </ul>
                     </div>

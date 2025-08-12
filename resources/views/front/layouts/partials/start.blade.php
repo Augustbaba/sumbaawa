@@ -20,8 +20,9 @@
 
     <!-- Icons -->
     <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/font-awesome.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/remixicon.css') }}">
-
+    {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"> --}}
+    {{-- <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/remixicon.css') }}"> --}}
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
     <!-- Slick slider css -->
     <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/slick.css') }}">
 
@@ -85,8 +86,8 @@
                                     </a>
                                 </div>
                                 <div class="brand-logo">
-                                    <a href="index.html">
-                                        <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/sumbaawologo1.png') }}" class="img-fluid blur-up lazyload" alt="">
+                                    <a href="{{ route('index') }}">
+                                        <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" class="img-fluid blur-up lazyload" alt="">
                                     </a>
                                 </div>
                             </div>
@@ -101,7 +102,7 @@
                                                         class="ri-arrow-left-s-line ps-2"></i></div>
                                             </li>
                                             <li>
-                                                <a href="index.html">Home</a>
+                                                <a href="{{ route('index') }}">Home</a>
                                             </li>
                                             <li>
                                                 <a href="#!">feature<div class="lable-nav">new</div></a>

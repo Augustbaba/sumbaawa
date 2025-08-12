@@ -13,7 +13,7 @@
         <img width="100" src="https://vetra.laborasyon.com/assets/images/logo.svg" alt="logo">
     </a>
     <!-- ./ Logo -->
-    <div class="page-title">Overview</div>
+    <div class="page-title">Tableau de bord</div>
     <form class="search-form">
         <div class="input-group">
             <button class="btn btn-outline-light" type="button" id="button-addon1">
@@ -106,9 +106,9 @@
                 </div>
             </li>
             <li class="nav-item ms-3">
-                    <button class="btn btn-primary btn-icon">
-        <i class="bi bi-plus-circle"></i> Add Product
-    </button>
+                <a class="btn btn-primary btn-icon" href="{{ route('logout') }}">
+                    <i class="bi bi-box-arrow-right"></i> Se Déconnecter
+                </a>
             </li>
         </ul>
     </div>

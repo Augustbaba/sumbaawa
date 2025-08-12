@@ -8,6 +8,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            $table->string('reference')->unique();
             $table->foreignId('moyen_paiment_id')->constrained('moyen_paiments')->onDelete('cascade');
             $table->decimal('amount', 12, 2);
             $table->timestamps();
