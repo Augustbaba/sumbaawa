@@ -8,6 +8,7 @@ use App\Models\Encashment;
 use App\Models\Customer;
 use App\Models\Enterprise;
 use App\Models\Actuality;
+use App\Models\Categorie;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Contribute;
@@ -53,14 +54,21 @@ class FrontHelper
     public static function allCategories()
     {
 
-        $categories = Category::orderBy('name', 'asc')->where('status', true)->get();
+        $categories = Categorie::orderBy('label', 'asc')->get();
         return $categories;
     }
 
-    public static function fourCategories()
+    public static function fiveCategories()
     {
 
-        $categories = Category::inRandomOrder()->take(4)->get();
+        $categories = Categorie::orderBy('label', 'asc')->take(5)->get();
+        return $categories;
+    }
+
+    public static function fiveCategoriesForFooter()
+    {
+
+        $categories = Categorie::orderBy('label', 'desc')->take(5)->get();
         return $categories;
     }
 
@@ -69,9 +77,10 @@ class FrontHelper
         return Produit::orderBy('created_at', 'desc')->take(4)->get();
     }
 
-    public static function projectsFinalized()
+    public static function fourProductsPopulars()
     {
-        return Project::orderBy('updated_at', 'desc')->where('finalized', true)->paginate(9);
+        // à revoir, ecriture de la requete de selection des produits populaires
+        return Produit::orderBy('id', 'desc')->take(4)->get();
     }
 
     public static function randomProjectsInProgress()

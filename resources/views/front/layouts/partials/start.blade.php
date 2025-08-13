@@ -19,8 +19,8 @@
         href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&amp;family=Montserrat:ital,wght@0,100..900;1,100..900&amp;display=swap">
 
     <!-- Icons -->
-    <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/font-awesome.css') }}">
-    {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"> --}}
+    {{-- <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/font-awesome.css') }}"> --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     {{-- <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/remixicon.css') }}"> --}}
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
     <!-- Slick slider css -->
@@ -37,6 +37,66 @@
 
     <!-- Theme css -->
     <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/style.css') }}">
+    <style>
+        /* Style pour la bannière Hero */
+        .furniture-hero-banner {
+            transition: all 0.5s ease;
+        }
+
+        .furniture-hero-banner:hover {
+            transform: scale(1.01);
+        }
+
+        /* Style pour le compteur */
+        .countdown-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .countdown-box {
+            text-align: center;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            min-width: 80px;
+        }
+
+        .countdown-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #b78d65;
+            display: block;
+            line-height: 1;
+        }
+
+        .countdown-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+        }
+
+        /* Animation hover pour les boutons */
+        .btn-dark {
+            background-color: #2a2a2a;
+            border-color: #2a2a2a;
+            transition: all 0.3s ease;
+        }
+
+        .btn-dark:hover {
+            background-color: #b78d65;
+            border-color: #b78d65;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Effet de lettrage */
+        .letter-spacing-3 {
+            letter-spacing: 3px;
+        }
+    </style>
     @yield('styles')
 </head>
 
@@ -78,16 +138,16 @@
                     <div class="col-sm-12">
                         <div class="main-menu">
                             <div class="menu-left">
-                                <div class="navbar">
+                                {{-- <div class="navbar">
                                     <a href="#!">
                                         <div class="bar-style">
                                             <i class="ri-bar-chart-horizontal-line sidebar-bar"></i>
                                         </div>
                                     </a>
-                                </div>
+                                </div> --}}
                                 <div class="brand-logo">
                                     <a href="{{ route('index') }}">
-                                        <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" class="img-fluid blur-up lazyload" alt="">
+                                        <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="">
                                     </a>
                                 </div>
                             </div>
@@ -105,18 +165,12 @@
                                                 <a href="{{ route('index') }}">Accueil</a>
                                             </li>
                                             <li>
-                                                <a href="#!">feature<div class="lable-nav">new</div></a>
+                                                <a href="#!">Catégories<div class="lable-nav">Nouveau</div></a>
                                             </li>
                                             <li>
-                                                <a href="#!">shop</a>
+                                                <a href="#!">Favoris</a>
                                             </li>
-                                            <li>
-                                                <a href="#!">product</a>
-                                            </li>
-                                            <li>
-                                                <a href="#!">pages</a>
-                                            </li>
-                                            <li><a href="#!">blog</a>
+                                            <li><a href="#!">Nous Contacter</a>
                                             </li>
                                         </ul>
                                     </nav>

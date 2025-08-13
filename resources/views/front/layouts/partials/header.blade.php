@@ -39,7 +39,7 @@
                 <div class="col-sm-12">
                     <div class="main-menu">
                         <div class="menu-left">
-                            <div class="navbar">
+                            {{-- <div class="navbar">
                                 <a href="#!" onclick="openNav()">
                                     <div class="bar-style"><i class="ri-bar-chart-horizontal-line sidebar-bar"></i>
                                     </div>
@@ -212,10 +212,10 @@
                                         </ul>
                                     </nav>
                                 </div>
-                            </div>
+                            </div> --}}
                             <div class="brand-logo">
                                 <a href="{{ route('index') }}">
-                                    <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" class="img-fluid blur-up lazyload" alt="">
+                                    <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="">
                                 </a>
                             </div>
                         </div>
@@ -230,196 +230,44 @@
                                         </li>
                                         <li><a href="{{ route('index') }}">Accueil</a></li>
                                         <li class="mega hover-cls">
-                                            <a href="#!">feature <div class="lable-nav">new</div></a>
+                                            <a href="#!">Catégories <div class="lable-nav">Nouveau</div></a>
                                             <ul class="mega-menu full-mega-menu">
                                                 <li>
                                                     <div class="container">
                                                         <div class="row g-xl-4 g-0">
-                                                            <div class="col mega-box">
-                                                                <div class="link-section">
-                                                                    <div class="menu-title">
-                                                                        <h5>invoice template</h5>
-                                                                    </div>
-                                                                    <div class="menu-content">
-                                                                        <ul>
-                                                                            <li><a target="_blank"
-                                                                                    href="invoice-1.html">invoice
-                                                                                    1</a></li>
-                                                                            <li><a target="_blank"
-                                                                                    href="invoice-2.html">invoice
-                                                                                    2</a></li>
-                                                                            <li><a target="_blank"
-                                                                                    href="invoice-3.html">invoice
-                                                                                    3</a></li>
-                                                                            <li><a target="_blank"
-                                                                                    href="invoice-4.html">invoice
-                                                                                    4</a></li>
-                                                                            <li><a target="_blank"
-                                                                                    href="invoice-5.html">invoice
-                                                                                    5</a></li>
-                                                                        </ul>
-                                                                    </div>
-                                                                    <div class="menu-title">
-                                                                        <h5>elements</h5>
-                                                                    </div>
-                                                                    <div class="menu-content">
-                                                                        <ul>
-                                                                            <li><a href="elements.html">
-                                                                                    elements page<i
-                                                                                        class="ms-2 ri-flashlight-fill icon-trend"></i>
-                                                                                </a></li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+                                                            @foreach (FrontHelper::fiveCategories() as $categorie)
+                                                                <div class="col mega-box">
+                                                                    <div class="link-section">
+                                                                        <div class="menu-title">
+                                                                            <h5>{{ $categorie->label }}</h5>
+                                                                        </div>
+                                                                        <div class="menu-content">
+                                                                            <ul>
+                                                                                @foreach ($categorie->sousCategories->take(5) as $sousCategorie)
+                                                                                    <li><a href="{{ route('sousCategories.single', $sousCategorie) }}">{{ $sousCategorie->label }}</a></li>
+                                                                                @endforeach
 
-                                                            <div class="col mega-box">
-                                                                <div class="link-section">
-                                                                    <div class="menu-title">
-                                                                        <h5>email template</h5>
-                                                                    </div>
-                                                                    <div class="menu-content">
-                                                                        <ul>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/welcome.html">welcome</a>
-                                                                            </li>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/new-product-announcement.html">announcement</a>
-                                                                            </li>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/abandonment-email.html">abandonment</a>
-                                                                            </li>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/offer.html">offer</a>
-                                                                            </li>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/offer-2.html">offer
-                                                                                    2</a></li>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/product-review.html">review</a>
-                                                                            </li>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/featured-products.html">featured
-                                                                                    product</a></li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col mega-box">
-                                                                <div class="link-section">
-                                                                    <div class="menu-title">
-                                                                        <h5>email template</h5>
-                                                                    </div>
-                                                                    <div class="menu-content">
-                                                                        <ul>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/black-friday.html">black
-                                                                                    friday</a></li>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/christmas.html">christmas</a>
-                                                                            </li>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/cyber-monday.html">cyber-monday</a>
-                                                                            </li>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/flash-sale.html">flash
-                                                                                    sale</a></li>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/email-order-success.html">order
-                                                                                    success</a></li>
-                                                                            <li><a target="_blank"
-                                                                                    href="https://themes.pixelstrap.com/multikart/email-template/email-order-success-two.html">order
-                                                                                    success 2</a></li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+                                                                            </ul>
+                                                                        </div>
 
-                                                            <div class="col mega-box">
-                                                                <div class="link-section">
-                                                                    <div class="menu-title">
-                                                                        <h5>cookie bar</h5>
-                                                                    </div>
-                                                                    <div class="menu-content">
-                                                                        <ul>
-                                                                            <li><a href="{{ route('index') }}">bottom<i
-                                                                                        class="ms-2 ri-flashlight-fill icon-trend"></i></a>
-                                                                            </li>
-                                                                            <li><a href="fashion-4.html">bottom left</a>
-                                                                            </li>
-                                                                            <li><a href="bicycle.html">bottom right</a>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </div>
-                                                                    <div class="menu-title">
-                                                                        <h5>search</h5>
-                                                                    </div>
-                                                                    <div class="menu-content">
-                                                                        <ul>
-                                                                            <li><a href="marketplace-demo-2.html">ajax
-                                                                                    search<i
-                                                                                        class="ms-2 ri-flashlight-fill icon-trend"></i></a>
-                                                                            </li>
-                                                                        </ul>
                                                                     </div>
                                                                 </div>
-                                                            </div>
+                                                            @endforeach
 
-                                                            <div class="col mega-box">
-                                                                <div class="link-section">
-                                                                    <div class="menu-title">
-                                                                        <h5>model</h5>
-                                                                    </div>
-                                                                    <div class="menu-content">
-                                                                        <ul>
-                                                                            <li><a href="{{ route('index') }}">Newsletter</a></li>
-                                                                            <li><a href="{{ route('index') }}">exit<i
-                                                                                        class="ms-2 ri-flashlight-fill icon-trend"></i></a>
-                                                                            </li>
-                                                                            <li><a href="christmas.html">christmas</a>
-                                                                            </li>
-                                                                            <li><a href="furniture-3.html">black
-                                                                                    friday</a></li>
-                                                                            <li><a href="fashion-4.html">cyber
-                                                                                    monday</a></li>
-                                                                            <li><a href="marketplace-demo-3.html">new
-                                                                                    year</a>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
 
-                                                            <div class="col mega-box">
-                                                                <div class="link-section">
-                                                                    <div class="menu-title">
-                                                                        <h5>add to cart</h5>
-                                                                    </div>
-                                                                    <div class="menu-content">
-                                                                        <ul>
-                                                                            <li><a href="nursery.html">cart modal
-                                                                                    popup</a></li>
-                                                                            <li><a href="bags.html">cart top</a></li>
-                                                                            <li><a href="shoes.html">cart bottom</a>
-                                                                            </li>
-                                                                            <li><a href="watch.html">cart left</a></li>
-                                                                            <li><a href="tools.html">cart right</a></li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
                                                         </div>
-                                                        <div class="row">
+                                                        <div class="row mt-2">
                                                             <div class="col-12">
-                                                                <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/menu-banner.jpg') }}" alt=""
-                                                                    class="img-fluid mega-img d-xl-block d-none">
+                                                                <div class="menu-title">
+                                                                    <h5><a href="{{ route('categories.page') }}">Voir toutes les catégories<i class="ms-2 ri-flashlight-fill icon-trend"></i></a></h5>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </li>
                                             </ul>
                                         </li>
-                                        <li>
+                                        {{-- <li>
                                             <a href="#!">shop</a>
                                             <ul>
                                                 <li>
@@ -469,8 +317,8 @@
                                                     <a href="category-page(list-view).html">list view</a>
                                                 </li>
                                             </ul>
-                                        </li>
-                                        <li class="mega hover-cls">
+                                        </li> --}}
+                                        {{-- <li class="mega hover-cls">
                                             <a href="#!">product</a>
                                             <ul class="mega-menu full-mega-menu">
                                                 <li>
@@ -698,88 +546,9 @@
                                                     </div>
                                                 </li>
                                             </ul>
-                                        </li>
-                                        <li><a href="#!">pages</a>
-                                            <ul>
-                                                <li>
-                                                    <a href="#!">vendor</a>
-                                                    <ul>
-                                                        <li><a href="vendor-dashboard.html">vendor dashboard</a>
-                                                        </li>
-                                                        <li><a href="vendor-profile.html">vendor profile</a></li>
-                                                        <li><a href="become-vendor.html">become vendor</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li>
-                                                    <a href="#!">account</a>
-                                                    <ul>
-                                                        <li><a href="wishlist.html">wishlist</a></li>
-                                                        <li><a href="cart.html">cart</a></li>
-                                                        <li><a href="dashboard.html">Dashboard</a></li>
-                                                        <li><a href="login.html">login</a></li>
-                                                        <li><a href="register.html">register</a></li>
-                                                        <li><a href="contact.html">contact</a></li>
-                                                        <li><a href="forget_pwd.html">forget password</a></li>
-                                                        <li><a href="profile.html">profile</a></li>
-                                                        <li><a href="checkout.html">checkout</a></li>
-                                                        <li><a href="order-success.html">order success</a></li>
-                                                        <li><a href="order-tracking.html">order tracking<span
-                                                                    class="new-tag">new</span></a></li>
-                                                    </ul>
-                                                </li>
-                                                <li>
-                                                    <a href="#!">portfolio</a>
-                                                    <ul>
-                                                        <li><a href="#">grid</a>
-                                                            <ul>
-                                                                <li><a href="grid-2-col.html">grid
-                                                                        2</a></li>
-                                                                <li><a href="grid-3-col.html">grid
-                                                                        3</a></li>
-                                                                <li><a href="grid-4-col.html">grid
-                                                                        4</a></li>
-                                                            </ul>
-                                                        </li>
-                                                        <li><a href="#">masonry</a>
-                                                            <ul>
-                                                                <li><a href="masonary-2-grid.html">grid 2</a></li>
-                                                                <li><a href="masonary-3-grid.html">grid 3</a></li>
-                                                                <li><a href="masonary-4-grid.html">grid 4</a></li>
-                                                                <li><a href="masonary-fullwidth.html">full width</a>
-                                                                </li>
-                                                            </ul>
-                                                        </li>
-                                                    </ul>
-                                                </li>
-                                                <li><a href="about-page.html">about us</a></li>
-                                                <li><a href="search.html">search</a></li>
-                                                <li><a href="review.html">review</a>
-                                                </li>
-                                                <li>
-                                                    <a href="#!">compare</a>
-                                                    <ul>
-                                                        <li><a href="compare.html">compare</a></li>
-                                                        <li><a href="compare-2.html">compare-2</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li><a href="collection.html">collection</a></li>
-                                                <li><a href="lookbook.html">lookbook</a></li>
-                                                <li><a href="sitemap.html">site map</a>
-                                                </li>
-                                                <li><a href="404.html">404</a></li>
-                                                <li><a href="coming-soon.html">coming soon</a></li>
-                                                <li><a href="faq.html">FAQ</a></li>
-                                            </ul>
-                                        </li>
-                                        <li>
-                                            <a href="#!">blog</a>
-                                            <ul>
-                                                <li><a href="blog-page.html">left sidebar</a></li>
-                                                <li><a href="blog(right-sidebar).html">right sidebar</a></li>
-                                                <li><a href="blog(no-sidebar).html">no sidebar</a></li>
-                                                <li><a href="blog-details.html">blog details</a></li>
-                                            </ul>
-                                        </li>
+                                        </li> --}}
+                                        <li><a href="">Favoris</a></li>
+                                        <li><a href="">Nous Contacter</a></li>
                                     </ul>
                                 </nav>
                             </div>

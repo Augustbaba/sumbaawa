@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             CategoryTableSeeder::class,
             SousCategoryTableSeeder::class,
             ProduitTableSeeder::class,
+            PartnerTableSeeder::class,
         ]);
     }
 }

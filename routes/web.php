@@ -20,8 +20,10 @@ Route::get('/', function () {
     return view('front.pages.index');
 })->name('index');
 
+Route::get('/categories/{categorie:slug}/details', [SumbaawaController::class, 'categoriesSingle'])->name('categories.single');
 Route::get('/categories-page', [SumbaawaController::class, 'categoriesPage'])->name('categories.page');
 Route::get('/produits/details/{produit:slug}', [SumbaawaController::class, 'produitDetail'])->name('produits.single');
+Route::get('/sous-categories/{sousCategorie:slug}/produits', [SumbaawaController::class, 'sousCategoriesDetail'])->name('sousCategories.single');
 
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
