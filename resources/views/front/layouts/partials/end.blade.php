@@ -483,10 +483,9 @@
 
     <!-- cookie bar start -->
     <div class="cookie-bar">
-        <p>We use cookies to improve our site and your shopping experience. By continuing to browse our site you accept
-            our cookie policy.</p>
-        <a href="#!" class="btn btn-solid btn-xs">accept</a>
-        <a href="#!" class="btn btn-solid btn-xs">decline</a>
+        <p>Nous utilisons des cookies pour améliorer notre site et votre expérience d'achat. En poursuivant votre navigation, vous acceptez notre politique en matière de cookies.</p>
+        <a href="#!" class="btn btn-solid btn-xs">Accepter</a>
+        <a href="#!" class="btn btn-solid btn-xs">Refuser</a>
     </div>
     <!-- cookie bar end -->
 
@@ -501,9 +500,10 @@
                                 <div class="modal-bg">
                                     <button type="button" class="btn-close"
                                         data-bs-dismiss="modal"><span>&times;</span></button>
-                                    <div class="offer-content"> <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/Offer-banner.png') }}"
-                                            class="img-fluid blur-up lazyload" alt="">
-                                        <h2>newsletter</h2>
+                                    <div class="offer-content">
+                                        <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/Offer-banner.png') }}"
+                                            class="img-fluid blur-up lazyload" alt="Bannière d'offre">
+                                        <h2>Newsletter</h2>
                                         <form
                                             action="https://pixelstrap.us19.list-manage.com/subscribe/post?u=5a128856334b598b395f1fc9b&amp;id=082f74cbda"
                                             class="auth-form needs-validation" method="post"
@@ -511,9 +511,9 @@
                                             target="_blank">
                                             <div class="form-group mx-sm-3">
                                                 <input type="email" class="form-control" name="EMAIL" id="mce-EMAIL"
-                                                    placeholder="Enter your email" required="required">
+                                                    placeholder="Entrez votre email" required="required">
                                                 <button type="submit" class="btn btn-solid"
-                                                    id="mc-submit">subscribe</button>
+                                                    id="mc-submit">S'abonner</button>
                                             </div>
                                         </form>
                                     </div>
@@ -528,138 +528,7 @@
     <!--modal popup end-->
 
 
-    <!-- Quick-view modal popup start-->
-    <div class="modal fade theme-modal-2 quick-view-modal" id="quickView">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <button type="button" class="btn-close" data-bs-dismiss="modal">
-                    <i class="ri-close-line"></i>
-                </button>
-                <div class="modal-body">
-                    <div class="wrap-modal-slider">
-                        <div class="row g-sm-4 g-3">
-                            <div class="col-lg-6">
-                                <div class="row g-3">
-                                    <div class="col-12">
-                                        <div class="view-main-slider">
-                                            <div>
-                                                <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/1.jpg') }}" class="img-fluid"
-                                                    alt="">
-                                            </div>
-                                            <div>
-                                                <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/1-1.jpg') }}" class="img-fluid"
-                                                    alt="">
-                                            </div>
-                                            <div>
-                                                <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/1-2.jpg') }}" class="img-fluid"
-                                                    alt="">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="view-thumbnail-slider no-arrow">
-                                            <div>
-                                                <div class="slider-image">
-                                                    <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/1.jpg') }}"
-                                                        class="img-fluid" alt="">
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div class="slider-image">
-                                                    <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/1-1.jpg') }}"
-                                                        class="img-fluid" alt="">
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div class="slider-image">
-                                                    <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/1-2.jpg') }}"
-                                                        class="img-fluid" alt="">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-6">
-                                <div class="right-sidebar-modal">
-                                    <a class="name" href="product-page(accordian).html">Boyfriend Shirts</a>
-                                    <div class="product-rating">
-                                        <ul class="rating-list">
-                                            <li>
-                                                <i class="ri-star-line"></i>
-                                            </li>
-                                            <li>
-                                                <i class="ri-star-line"></i>
-                                            </li>
-                                            <li>
-                                                <i class="ri-star-line"></i>
-                                            </li>
-                                            <li>
-                                                <i class="ri-star-line"></i>
-                                            </li>
-                                            <li>
-                                                <i class="ri-star-line"></i>
-                                            </li>
-                                        </ul>
-                                        <div class="divider">|</div>
-                                        <a href="#!">0 Review</a>
-                                    </div>
-                                    <div class="price-text">
-                                        <h3>
-                                            <span class="fw-normal">MRP:</span>
-                                            $10.56
-                                            <del>$12.00</del>
-                                            <span class="discounted-price">12% off</span>
-                                        </h3>
-                                        <span class="text">Inclusive all the text</span>
-                                    </div>
-                                    <p class="description-text">Boyfriend shirts are oversized, relaxed-fit shirts
-                                        originally inspired by men's fashion. They offer a comfortable and effortlessly
-                                        chic look, often characterized by a loose silhouette and rolled-up sleeves.
-                                        Perfect for a casual yet stylish vibe</p>
-                                    <div class="qty-box">
-                                        <div class="input-group qty-container">
-                                            <button class="btn qty-btn-minus">
-                                                <i class="ri-arrow-left-s-line"></i>
-                                            </button>
-                                            <input type="number" readonly="" name="qty" class="form-control input-qty"
-                                                value="1">
-                                            <button class="btn qty-btn-plus">
-                                                <i class="ri-arrow-right-s-line"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="product-buy-btn-group">
-                                        <button
-                                            class="btn btn-animation btn-solid buy-button hover-solid scroll-button">
-                                            <span class="d-inline-block ring-animation">
-                                                <i class="ri-shopping-cart-line me-1"></i>
-                                            </span>
-                                            Add To Cart
-                                        </button>
-                                        <button class="btn btn-solid buy-button">Buy Now</button>
-                                    </div>
-
-                                    <div class="buy-box compare-box">
-                                        <a href="#!">
-                                            <i class="ri-heart-line"></i>
-                                            <span>Add To Wishlist</span>
-                                        </a>
-                                        <a href="#!">
-                                            <i class="ri-refresh-line"></i>
-                                            <span>Add To Compare</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Quick-view modal popup end-->
+    
 
 
     <!-- theme setting start -->
@@ -1462,15 +1331,15 @@
                                     </button>
                                     <div class="media">
                                         <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/stop.png') }}"
-                                            class="stop img-fluid blur-up lazyload me-3" alt="">
+                                            class="stop img-fluid blur-up lazyload me-3" alt="Arrêt">
                                         <div class="media-body text-start align-self-center">
                                             <div>
-                                                <h2>wait!</h2>
-                                                <h4>We want to give you
-                                                    <b>10% discount</b>
-                                                    <span>for your first order</span>
+                                                <h2>Attendez !</h2>
+                                                <h4>Nous vous offrons
+                                                    <b>10% de réduction</b>
+                                                    <span>pour votre première commande</span>
                                                 </h4>
-                                                <h5>Use discount code at checkout</h5>
+                                                <h5>Utilisez le code de réduction à la caisse</h5>
                                             </div>
                                         </div>
                                     </div>

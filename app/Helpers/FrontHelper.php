@@ -23,6 +23,7 @@ use App\Models\Faq;
 use App\Models\FinancingMethod;
 use App\Models\Formation;
 use App\Models\Partner;
+use App\Models\Produit;
 use App\Models\Project;
 use App\Models\Realization;
 use App\Models\TypeContribution;
@@ -63,9 +64,9 @@ class FrontHelper
         return $categories;
     }
 
-    public static function allFinancingMethods()
+    public static function fourProducts()
     {
-        return FinancingMethod::orderBy('percentage', 'asc')->take(3)->get();
+        return Produit::orderBy('created_at', 'desc')->take(4)->get();
     }
 
     public static function projectsFinalized()

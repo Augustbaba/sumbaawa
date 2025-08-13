@@ -8,4 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class SousCategorie extends Model
 {
     use HasFactory;
+    protected $fillable = ['label', 'slug', 'categorie_id'];
+    public function categorie()
+    {
+        return $this->belongsTo(Categorie::class);
+    }
+    public function produits()
+    {
+        return $this->hasMany(Produit::class);
+    }
 }

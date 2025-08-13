@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->string('color')->nullable();
             $table->string('niveau_confort')->nullable();
             $table->decimal('poids', 8, 2)->nullable();
-            $table->foreignId('sous_categories_id')->constrained('sous_categories')->onDelete('cascade');
+            $table->foreignId('sous_categorie_id')->constrained('sous_categories')->onDelete('cascade');
             $table->timestamps();
         });
     }

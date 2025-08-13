@@ -51,8 +51,8 @@
                     <div class="col-lg-6">
                         <div class="header-contact">
                             <ul>
-                                <li>Welcome to Our store Multikart</li>
-                                <li><i class="ri-phone-fill"></i>Call Us: 123 - 456 - 7890</li>
+                                <li>Bienvenue sur {{ FrontHelper::getAppName() }}</li>
+                                <li><i class="ri-phone-fill"></i>Nous Contacter: 123 - 456 - 7890</li>
                             </ul>
                         </div>
                     </div>
@@ -65,7 +65,7 @@
                             </li>
                             <li class="onhover-dropdown mobile-account">
                                 <i class="ri-user-fill"></i>
-                                My Account
+                                Mon Compte
                             </li>
                         </ul>
                     </div>
@@ -98,11 +98,11 @@
                                         </div>
                                         <ul class="sm pixelstrap sm-horizontal">
                                             <li>
-                                                <div class="mobile-back text-end">Back<i
+                                                <div class="mobile-back text-end">Retour<i
                                                         class="ri-arrow-left-s-line ps-2"></i></div>
                                             </li>
                                             <li>
-                                                <a href="{{ route('index') }}">Home</a>
+                                                <a href="{{ route('index') }}">Accueil</a>
                                             </li>
                                             <li>
                                                 <a href="#!">feature<div class="lable-nav">new</div></a>

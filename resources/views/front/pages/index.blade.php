@@ -6,12 +6,12 @@
         <div class="container">
             <div class="row partition2">
                 <div class="col-md-6">
-                    <a href="category-page.html" class="collection-banner">
+                    <a href="{{ route('categories.page') }}" class="collection-banner">
                         <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/banner/1.png') }}" class="img-fluid blur-up lazyload" alt="">
                     </a>
                 </div>
                 <div class="col-md-6">
-                    <a href="category-page.html" class="collection-banner">
+                    <a href="{{ route('categories.page') }}" class="collection-banner">
                         <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/banner/2.png') }}" class="img-fluid blur-up lazyload" alt="">
                     </a>
                 </div>
@@ -23,15 +23,15 @@
 
     <!-- Paragraph-->
     <div class="title1 section-t-space">
-        <h4>special offer</h4>
-        <h2 class="title-inner1">Latest Drops</h2>
+        <h4>Offre Spéciale</h4>
+        <h2 class="title-inner1">Dernières nouveautés</h2>
     </div>
     <div class="container">
         <div class="row">
             <div class="col-lg-6 offset-lg-3">
                 <div class="product-para">
-                    <p class="text-center">Looking for the latest trends in clothing, shoes and accessories? Welcome to
-                        our 'Latest Drops' edit, bringing you all the latest styles from all your fave brands.</p>
+                    <p class="text-center">À la recherche des dernières tendances en matière de mobilier et d’accessoires d’intérieur ?
+                        Bienvenue dans notre sélection « Dernières Nouveautés », qui vous propose les créations les plus récentes de vos marques préférées pour sublimer chaque espace de votre maison ou bureau.</p>
                 </div>
             </div>
         </div>
@@ -42,215 +42,50 @@
     <section class="section-b-space pt-0 ratio_asos">
         <div class="container">
             <div class="g-3 g-md-4 row row-cols-2 row-cols-md-3 row-cols-xl-4">
-                <div>
-                    <div class="basic-product theme-product-1">
-                        <div class="overflow-hidden">
-                            <div class="img-wrapper">
-                                <div class="ribbon"><span>Exclusive</span></div>
-                                <a href="product-page(image-swatch).html">
-                                    <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/1.jpg') }}"
-                                        class="img-fluid blur-up lazyload" alt="">
-                                </a>
-                                <div class="rating-label"><i class="ri-star-fill"></i><span>4.5</span>
-                                </div>
-                                <div class="cart-info">
-                                    <a href="#!" title="Add to Wishlist" class="wishlist-icon">
-                                        <i class="ri-heart-line"></i>
-                                    </a>
-                                    <button data-bs-toggle="modal" data-bs-target="#addtocart" title="Add to cart">
-                                        <i class="ri-shopping-cart-line"></i>
-                                    </button>
-                                    <a href="#!" data-bs-toggle="modal" data-bs-target="#quickView" title="Quick View">
-                                        <i class="ri-eye-line"></i>
-                                    </a>
-                                    <a href="compare.html" title="Compare">
-                                        <i class="ri-loop-left-line"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="product-detail">
-                                <div>
-                                    <div class="brand-w-color">
-                                        <a class="product-title" href="product-page(accordian).html">
-                                            Glamour Gaze
+                @foreach (FrontHelper::fourProducts() as $produit)
+                    <div>
+                        <div class="basic-product theme-product-1">
+                            <div class="overflow-hidden">
+                                <div class="img-wrapper">
+                                    <a href="{{ route('produits.single', $produit) }}"><img
+                                            src="{{ asset($produit->image_main) }}"
+                                            class="img-fluid blur-up lazyload" alt="{{ $produit->name }}" style="height: 250px; object-fit: cover;"></a>
+                                    <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span></div>
+                                    <div class="cart-info">
+                                        <a href="#!" title="Ajouter aux favoris" class="wishlist-icon">
+                                            <i class="ri-heart-line"></i>
                                         </a>
-                                        <div class="color-panel">
-                                            <ul>
-                                                <li style="background-color: papayawhip;"></li>
-                                                <li style="background-color: burlywood;"></li>
-                                                <li style="background-color: gainsboro;"></li>
-                                            </ul>
-                                            <span>+2</span>
+                                        <button data-bs-toggle="modal" data-bs-target="#addtocart" title="Ajouter au panier">
+                                            <i class="ri-shopping-cart-line"></i>
+                                        </button>
+                                        <a href="#!" data-bs-toggle="modal" data-bs-target="#quickView" title="Aperçu rapide" class="quick-view-btn" data-produit="{{ json_encode($produit) }}">
+                                            <i class="ri-eye-line"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="product-detail">
+                                    <div>
+                                        <div class="brand-w-color">
+                                            <a class="product-title" href="{{ route('produits.single', $produit) }}">
+                                                {{ $produit->name }}
+                                            </a>
                                         </div>
+                                        <h6>{{ $produit->sousCategorie->label }}</h6>
+                                        <h4 class="price">$ {{ $produit->price }}</h4>
                                     </div>
-                                    <h6>Boyfriend Shirts</h6>
-                                    <h4 class="price">$ 2.79<del> $3.00 </del><span class="discounted-price"> 7% Off
-                                        </span>
-                                    </h4>
+                                    <ul class="offer-panel">
+                                        <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
+                                            Catégorie : {{ $produit->sousCategorie->categorie->label }}</li>
+                                        <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
+                                            Catégorie : {{ $produit->sousCategorie->categorie->label }}</li>
+                                        <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
+                                            Catégorie : {{ $produit->sousCategorie->categorie->label }}</li>
+                                    </ul>
                                 </div>
-                                <ul class="offer-panel">
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                </ul>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div>
-                    <div class="basic-product theme-product-1">
-                        <div class="overflow-hidden">
-                            <div class="img-wrapper">
-                                <a href="product-page(accordian).html"><img
-                                        src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/2.jpg') }}"
-                                        class="img-fluid blur-up lazyload" alt=""></a>
-                                <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span>
-                                </div>
-                                <div class="cart-info">
-                                    <a href="#!" title="Add to Wishlist" class="wishlist-icon">
-                                        <i class="ri-heart-line"></i>
-                                    </a>
-                                    <button data-bs-toggle="modal" data-bs-target="#addtocart" title="Add to cart">
-                                        <i class="ri-shopping-cart-line"></i>
-                                    </button>
-                                    <a href="#!" data-bs-toggle="modal" data-bs-target="#quickView" title="Quick View">
-                                        <i class="ri-eye-line"></i>
-                                    </a>
-                                    <a href="compare.html" title="Compare">
-                                        <i class="ri-loop-left-line"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="product-detail">
-                                <div>
-                                    <div class="brand-w-color">
-                                        <a class="product-title" href="product-page(accordian).html">
-                                            VogueVista
-                                        </a>
-
-                                    </div>
-                                    <h6>Classic Jacket</h6>
-                                    <h4 class="price">$ 3.45 </h4>
-                                </div>
-                                <ul class="offer-panel">
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="basic-product theme-product-1">
-                        <div class="overflow-hidden">
-                            <div class="img-wrapper">
-                                <a href="product-page(accordian).html"><img
-                                        src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/3.jpg') }}"
-                                        class="img-fluid blur-up lazyload" alt=""></a>
-                                <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span>
-                                </div>
-                                <div class="cart-info">
-                                    <a href="#!" title="Add to Wishlist" class="wishlist-icon">
-                                        <i class="ri-heart-line"></i>
-                                    </a>
-                                    <button data-bs-toggle="modal" data-bs-target="#addtocart" title="Add to cart">
-                                        <i class="ri-shopping-cart-line"></i>
-                                    </button>
-                                    <a href="#!" data-bs-toggle="modal" data-bs-target="#quickView" title="Quick View">
-                                        <i class="ri-eye-line"></i>
-                                    </a>
-                                    <a href="compare.html" title="Compare">
-                                        <i class="ri-loop-left-line"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="product-detail">
-                                <div>
-                                    <div class="brand-w-color">
-                                        <a class="product-title" href="product-page(accordian).html">
-                                            VogueVista
-                                        </a>
-                                        <div class="color-panel">
-                                            <ul>
-                                                <li style="background-color: papayawhip;"></li>
-                                                <li style="background-color: burlywood;"></li>
-                                                <li style="background-color: gainsboro;"></li>
-                                            </ul>
-                                            <span>+2</span>
-                                        </div>
-                                    </div>
-                                    <h6>Versatile Shacket</h6>
-                                    <h4 class="price">$ 3.12</h4>
-                                </div>
-                                <ul class="offer-panel">
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="basic-product theme-product-1">
-                        <div class="overflow-hidden">
-                            <div class="img-wrapper">
-                                <div class="ribbon"><span>Exclusive</span></div>
-                                <a href="product-page(accordian).html"><img
-                                        src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/4.jpg') }}"
-                                        class="img-fluid blur-up lazyload" alt=""></a>
-                                <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span>
-                                </div>
-                                <div class="cart-info">
-                                    <a href="#!" title="Add to Wishlist" class="wishlist-icon">
-                                        <i class="ri-heart-line"></i>
-                                    </a>
-                                    <button data-bs-toggle="modal" data-bs-target="#addtocart" title="Add to cart">
-                                        <i class="ri-shopping-cart-line"></i>
-                                    </button>
-                                    <a href="#!" data-bs-toggle="modal" data-bs-target="#quickView" title="Quick View">
-                                        <i class="ri-eye-line"></i>
-                                    </a>
-                                    <a href="compare.html" title="Compare">
-                                        <i class="ri-loop-left-line"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="product-detail">
-                                <div>
-                                    <div class="brand-w-color">
-                                        <a class="product-title" href="product-page(accordian).html">
-                                            Glamour Gaze
-                                        </a>
-
-                                    </div>
-                                    <h6>Chic Denim</h6>
-                                    <h4 class="price">$ 5.19<del> $6.00 </del><span class="discounted-price"> 8% Off
-                                        </span>
-                                    </h4>
-                                </div>
-                                <ul class="offer-panel">
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                    <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
-                                        Limited Time Offer: 5% off</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
     </section>
@@ -259,7 +94,7 @@
 
     <!-- full banner -->
     <section class="pt-0">
-        <a href="category-page.html">
+        <a href="{{ route('categories.page') }}">
             <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/full-banner/3.png') }}" alt="" class="img-fluid blur-up lazyload">
         </a>
     </section>
@@ -1473,4 +1308,146 @@
         </div>
     </section>
     <!--  logo section end-->
+
+    <!-- Quick-view modal popup start -->
+    <div class="modal fade theme-modal-2 quick-view-modal" id="quickView" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <button type="button" class="btn-close" data-bs-dismiss="modal">
+                    <i class="ri-close-line"></i>
+                </button>
+                <div class="modal-body">
+                    <div class="wrap-modal-slider">
+                        <div class="row g-sm-4 g-3">
+                            <div class="col-lg-6">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="view-main-slider">
+                                            <!-- Les images multiples seront injectées dynamiquement via JavaScript ou un backend -->
+                                            @foreach ($produit->images as $image)
+                                                <div>
+                                                    <img src="{{ asset($image->path) }}" class="img-fluid" alt="{{ $produit->name }}">
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="view-thumbnail-slider no-arrow">
+                                            @foreach ($produit->images as $image)
+                                                <div>
+                                                    <div class="slider-image">
+                                                        <img src="{{ asset($image->path) }}" class="img-fluid" alt="{{ $produit->name }}">
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="right-sidebar-modal">
+                                    <a class="name" href="{{ route('produits.single', $produit) }}">{{ $produit->name }}</a>
+                                    <div class="product-rating">
+                                        <ul class="rating-list">
+                                            <li><i class="ri-star-line"></i></li>
+                                            <li><i class="ri-star-line"></i></li>
+                                            <li><i class="ri-star-line"></i></li>
+                                            <li><i class="ri-star-line"></i></li>
+                                            <li><i class="ri-star-line"></i></li>
+                                        </ul>
+                                        <div class="divider">|</div>
+                                        <a href="#!">0 Avis</a>
+                                    </div>
+                                    <div class="price-text">
+                                        <h3>
+                                            <span class="fw-normal">Prix :</span>
+                                            $ {{ $produit->price }}
+                                            @if ($produit->original_price)
+                                                <del>$ {{ $produit->original_price }}</del>
+                                                <span class="discounted-price">{{ round((($produit->original_price - $produit->price) / $produit->original_price) * 100) }}% de réduction</span>
+                                            @endif
+                                        </h3>
+                                        <span class="text">Taxes incluses</span>
+                                    </div>
+                                    <p class="description-text">{{ Str::limit($produit->description, 100, '...') }}</p>
+                                    <div class="qty-box">
+                                        <div class="input-group qty-container">
+                                            <button class="btn qty-btn-minus">
+                                                <i class="ri-arrow-left-s-line"></i>
+                                            </button>
+                                            <input type="number" readonly="" name="qty" class="form-control input-qty" value="1">
+                                            <button class="btn qty-btn-plus">
+                                                <i class="ri-arrow-right-s-line"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="product-buy-btn-group">
+                                        <button class="btn btn-animation btn-solid buy-button hover-solid scroll-button">
+                                            <span class="d-inline-block ring-animation">
+                                                <i class="ri-shopping-cart-line me-1"></i>
+                                            </span>
+                                            Ajouter au panier
+                                        </button>
+                                        <a href="{{ route('produits.single', $produit) }}" class="btn btn-solid buy-button">Voir plus</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Quick-view modal popup end -->
+@endsection
+@section('scripts')
+    <script>
+        document.querySelectorAll('.quick-view-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const produit = JSON.parse(this.getAttribute('data-produit'));
+                const modal = document.querySelector('#quickView');
+
+                // Mettre à jour le nom du produit
+                modal.querySelector('.name').textContent = produit.name;
+                modal.querySelector('.name').href = `/produits/${produit.slug}`;
+
+                // Mettre à jour le prix
+                const priceText = modal.querySelector('.price-text h3');
+                priceText.innerHTML = `
+                    <span class="fw-normal">Prix :</span>
+                    $ ${produit.price}
+                    ${produit.original_price ? `<del>$ ${produit.original_price}</del> <span class="discounted-price">${Math.round(((produit.original_price - produit.price) / produit.original_price) * 100)}% de réduction</span>` : ''}
+                `;
+
+                // Mettre à jour la description (tronquée)
+                modal.querySelector('.description-text').textContent = produit.description ? produit.description.substring(0, 100) + '...' : '';
+
+                // Mettre à jour le lien "Voir plus"
+                modal.querySelector('.buy-button[href]').href = `/produits/${produit.slug}`;
+
+                // Simuler les images multiples (à adapter selon votre structure de données)
+                const images = produit.images || [{ path: produit.image_main }]; // Fallback sur image_main si pas d'images multiples
+                const mainSlider = modal.querySelector('.view-main-slider');
+                const thumbnailSlider = modal.querySelector('.view-thumbnail-slider');
+                mainSlider.innerHTML = '';
+                thumbnailSlider.innerHTML = '';
+                images.forEach(image => {
+                    mainSlider.innerHTML += `
+                        <div>
+                            <img src="${image.path}" class="img-fluid" alt="${produit.name}">
+                        </div>
+                    `;
+                    thumbnailSlider.innerHTML += `
+                        <div>
+                            <div class="slider-image">
+                                <img src="${image.path}" class="img-fluid" alt="${produit.name}">
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        });
+    </script>
+
 @endsection

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SumbaawaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,6 +19,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('front.pages.index');
 })->name('index');
+
+Route::get('/categories-page', [SumbaawaController::class, 'categoriesPage'])->name('categories.page');
+Route::get('/produits/details/{produit:slug}', [SumbaawaController::class, 'produitDetail'])->name('produits.single');
 
 // Route::get('/dashboard', function () {
 //     return view('dashboard');

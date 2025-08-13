@@ -50,7 +50,7 @@
                                         <div onclick="closeNav()">
                                             <div class="sidebar-back text-start"><i
                                                     class="ri-arrow-left-s-line pe-2"></i>
-                                                Back</div>
+                                                Retour</div>
                                         </div>
                                         <ul id="sub-menu" class="sm pixelstrap sm-vertical">
                                             <li> <a href="#!">clothing</a>
@@ -228,7 +228,7 @@
                                         <li class="mobile-box">
                                             <div class="mobile-back text-end">Menu<i class="ri-close-line"></i></div>
                                         </li>
-                                        <li><a href="{{ route('index') }}">Home</a></li>
+                                        <li><a href="{{ route('index') }}">Accueil</a></li>
                                         <li class="mega hover-cls">
                                             <a href="#!">feature <div class="lable-nav">new</div></a>
                                             <ul class="mega-menu full-mega-menu">
