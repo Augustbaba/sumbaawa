@@ -38,7 +38,80 @@
     <!-- Theme css -->
     <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/style.css') }}">
     <style>
-        /* Style pour la bannière Hero */
+    /* Styles pour le carrousel */
+        .hero-carousel {
+            position: relative;
+            width: 100%;
+            height: 80vh;
+            overflow: hidden;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+        }
+
+        /* Contrôles du carrousel */
+        .carousel-control {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.3);
+            color: white;
+            border: none;
+            font-size: 2rem;
+            padding: 10px 15px;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 5s ease;
+        }
+
+        .carousel-control:hover {
+            background: rgba(255,255,255,0.7);
+            color: #333;
+        }
+
+        .prev {
+            left: 20px;
+        }
+
+        .next {
+            right: 20px;
+        }
+
+        /* Indicateurs */
+        .carousel-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .indicator.active {
+            background: white;
+        }
+
+        /* Styles existants */
         .furniture-hero-banner {
             transition: all 0.5s ease;
         }
@@ -47,7 +120,6 @@
             transform: scale(1.01);
         }
 
-        /* Style pour le compteur */
         .countdown-container {
             display: flex;
             gap: 15px;
@@ -78,7 +150,6 @@
             color: #888;
         }
 
-        /* Animation hover pour les boutons */
         .btn-dark {
             background-color: #2a2a2a;
             border-color: #2a2a2a;
@@ -92,7 +163,6 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
-        /* Effet de lettrage */
         .letter-spacing-3 {
             letter-spacing: 3px;
         }

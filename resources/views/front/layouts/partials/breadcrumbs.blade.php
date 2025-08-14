@@ -1,13 +1,14 @@
 <!-- breadcrumb start -->
     <div class="breadcrumb-section">
         <div class="container">
-            <h2>Cart</h2>
+            <h2>@yield('title')</h2>
             <nav class="theme-breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="index.html">Home</a>
+                        <a href="{{ route('index') }}">Accueil</a>
                     </li>
-                    <li class="breadcrumb-item active">Cart</li>
+                    @yield('filAriane')
+
                 </ol>
             </nav>
         </div>

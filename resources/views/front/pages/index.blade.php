@@ -513,6 +513,70 @@
                 });
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+        const slides = document.querySelectorAll('.carousel-slide');
+        const indicators = document.querySelectorAll('.indicator');
+        const prevBtn = document.querySelector('.prev');
+        const nextBtn = document.querySelector('.next');
+        let currentSlide = 0;
+        const slideCount = slides.length;
+
+        // Afficher la slide active
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            indicators.forEach(indicator => indicator.classList.remove('active'));
+
+            slides[index].classList.add('active');
+            indicators[index].classList.add('active');
+            currentSlide = index;
+        }
+
+        // Slide suivante
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slideCount;
+            showSlide(currentSlide);
+        }
+
+        // Slide précédente
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slideCount) % slideCount;
+            showSlide(currentSlide);
+        }
+
+        // Événements
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+
+        // Navigation par indicateurs
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => showSlide(index));
+        });
+
+        // Défilement automatique (toutes les 5 secondes)
+        setInterval(nextSlide, 5000);
+
+        // Compteur pour la promotion (exemple: fin dans 3 jours)
+        function updateCountdown() {
+            const now = new Date();
+            const endDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // 3 jours à partir de maintenant
+
+            const total = endDate - now;
+            const days = Math.floor(total / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((total % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((total % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((total % (1000 * 60)) / 1000);
+
+            document.getElementById('days').textContent = days.toString().padStart(2, '0');
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+        }
+
+        // Mettre à jour le compteur toutes les secondes
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    });
     </script>
 
 @endsection
