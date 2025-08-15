@@ -391,7 +391,7 @@
                                             <!-- Les images multiples seront injectées dynamiquement via JavaScript ou un backend -->
                                             @foreach ($produit->images as $image)
                                                 <div>
-                                                    <img src="{{ asset($image->path) }}" class="img-fluid" alt="{{ $produit->name }}">
+                                                    <img src="{{ asset($image->url) }}" class="img-fluid" alt="{{ $produit->name }}">
                                                 </div>
                                             @endforeach
                                         </div>
@@ -401,7 +401,7 @@
                                             @foreach ($produit->images as $image)
                                                 <div>
                                                     <div class="slider-image">
-                                                        <img src="{{ asset($image->path) }}" class="img-fluid" alt="{{ $produit->name }}">
+                                                        <img src="{{ asset($image->url) }}" class="img-fluid" alt="{{ $produit->name }}">
                                                     </div>
                                                 </div>
                                             @endforeach
@@ -435,7 +435,7 @@
                                         </h3>
                                         <span class="text">Taxes incluses</span>
                                     </div>
-                                    <p class="description-text">{{ Str::limit($produit->description, 100, '...') }}</p>
+                                    <p class="description-text">{!! Str::limit($produit->description, 100, '...') !!}</p>
                                     <div class="qty-box">
                                         <div class="input-group qty-container">
                                             <button class="btn qty-btn-minus">
@@ -452,7 +452,7 @@
                                             <span class="d-inline-block ring-animation">
                                                 <i class="ri-shopping-cart-line me-1"></i>
                                             </span>
-                                            Ajouter au panier
+                                            panier
                                         </button>
                                         <a href="{{ route('produits.single', $produit) }}" class="btn btn-solid buy-button">Voir plus</a>
                                     </div>
@@ -475,7 +475,7 @@
 
                 // Mettre à jour le nom du produit
                 modal.querySelector('.name').textContent = produit.name;
-                modal.querySelector('.name').href = `/produits/${produit.slug}`;
+                modal.querySelector('.name').href = `/produits/details/${produit.slug}`;
 
                 // Mettre à jour le prix
                 const priceText = modal.querySelector('.price-text h3');
@@ -489,7 +489,7 @@
                 modal.querySelector('.description-text').textContent = produit.description ? produit.description.substring(0, 100) + '...' : '';
 
                 // Mettre à jour le lien "Voir plus"
-                modal.querySelector('.buy-button[href]').href = `/produits/${produit.slug}`;
+                modal.querySelector('.buy-button[href]').href = `/produits/details/${produit.slug}`;
 
                 // Simuler les images multiples (à adapter selon votre structure de données)
                 const images = produit.images || [{ path: produit.image_main }]; // Fallback sur image_main si pas d'images multiples

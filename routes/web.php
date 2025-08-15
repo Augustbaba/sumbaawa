@@ -20,6 +20,7 @@ Route::get('/', function () {
     return view('front.pages.index');
 })->name('index');
 
+Route::get('/categories/{categorie}/filter', [SumbaawaController::class, 'filter'])->name('categories.filter');
 Route::get('/categories/{categorie:slug}/details', [SumbaawaController::class, 'categoriesSingle'])->name('categories.single');
 Route::get('/categories-page', [SumbaawaController::class, 'categoriesPage'])->name('categories.page');
 Route::get('/produits/details/{produit:slug}', [SumbaawaController::class, 'produitDetail'])->name('produits.single');
