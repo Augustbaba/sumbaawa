@@ -6,6 +6,7 @@ use App\Models\Categorie;
 use App\Models\Produit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class SumbaawaController extends Controller
 {
@@ -32,10 +33,6 @@ class SumbaawaController extends Controller
         return view('front.pages.categories.index', compact('categories'));
     }
 
-    public function produitDetail($produit)
-    {
-        // Logic to handle product detail view
-    }
 
     public function sousCategoriesDetail($sousCategorie)
     {
@@ -74,5 +71,178 @@ class SumbaawaController extends Controller
             return response()->json(['error' => 'Erreur lors du filtrage des produits'], 500);
         }
     }
+
+    public function produitDetail(Produit $produit)
+    {
+        $produit->load('sousCategorie.categorie', 'images');
+        $relatedProduits = Produit::where('sous_categorie_id', $produit->sous_categorie_id)
+            ->where('id', '!=', $produit->id)
+            ->with(['sousCategorie', 'images'])
+            ->take(6)
+            ->get();
+
+        return view('front.pages.produits.single', compact('produit', 'relatedProduits'));
+    }
+
+    // public function single(Produit $produit)
+    // {
+    //     $produit->load('sousCategorie.categorie', 'images');
+    //     $relatedProduits = Produit::where('sous_categorie_id', $produit->sous_categorie_id)
+    //         ->where('id', '!=', $produit->id)
+    //         ->with(['sousCategorie', 'images'])
+    //         ->take(6)
+    //         ->get();
+
+    //     return view('front.pages.produits.single', compact('produit', 'relatedProduits'));
+    // }
+
+    public function addToCart(Request $request)
+    {
+        $productData = $request->input('product');
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$productData['id']])) {
+            $cart[$productData['id']]['quantity'] += $productData['quantity'];
+        } else {
+            $cart[$productData['id']] = [
+                'id' => $productData['id'],
+                'name' => $productData['name'],
+                'image_main' => $productData['image_main'],
+                'color' => $productData['color'],
+                'niveau_confort' => $productData['niveau_confort'],
+                'poids' => $productData['poids'],
+                'price' => $productData['price'],
+                'quantity' => $productData['quantity'],
+                'product_url' => route('produits.single', Str::slug($productData['name']))
+            ];
+        }
+
+        $total = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+        $freeShippingThreshold = 50;
+        $progressPercentage = min(($total / $freeShippingThreshold) * 100, 100);
+
+        session()->put('cart', $cart);
+
+        return response()->json([
+            'cart' => [
+                'items' => array_values($cart),
+                'total' => number_format($total, 2),
+                'free_shipping_threshold' => $freeShippingThreshold,
+                'progress_percentage' => $progressPercentage
+            ]
+        ]);
+    }
+
+    public function updateCart(Request $request)
+    {
+        $productId = $request->input('product_id');
+        $quantity = $request->input('quantity');
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$productId])) {
+            $cart[$productId]['quantity'] = $quantity;
+            if ($quantity <= 0) {
+                unset($cart[$productId]);
+            }
+        }
+
+        $total = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+        $freeShippingThreshold = 50;
+        $progressPercentage = min(($total / $freeShippingThreshold) * 100, 100);
+
+        session()->put('cart', $cart);
+
+        return response()->json([
+            'cart' => [
+                'items' => array_values($cart),
+                'total' => number_format($total, 2),
+                'free_shipping_threshold' => $freeShippingThreshold,
+                'progress_percentage' => $progressPercentage
+            ]
+        ]);
+    }
+
+    public function removeFromCart(Request $request)
+    {
+        $productId = $request->input('product_id');
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$productId])) {
+            unset($cart[$productId]);
+        }
+
+        $total = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+        $freeShippingThreshold = 50;
+        $progressPercentage = min(($total / $freeShippingThreshold) * 100, 100);
+
+        session()->put('cart', $cart);
+
+        return response()->json([
+            'cart' => [
+                'items' => array_values($cart),
+                'total' => number_format($total, 2),
+                'free_shipping_threshold' => $freeShippingThreshold,
+                'progress_percentage' => $progressPercentage
+            ]
+        ]);
+    }
+
+    public function clearCart()
+    {
+        session()->forget('cart');
+
+        return response()->json([
+            'cart' => [
+                'items' => [],
+                'total' => '0.00',
+                'free_shipping_threshold' => 50,
+                'progress_percentage' => 0
+            ]
+        ]);
+    }
+
+    public function viewCart()
+    {
+        $cart = session()->get('cart', []);
+        $cartItems = array_map(function ($item) {
+            $item['product_url'] = route('produits.single', Str::slug($item['name']));
+            return $item;
+        }, $cart);
+
+        // dd($cartItems);
+        return view('front.pages.cart', [
+            'cart' => [
+                'items' => array_values($cartItems),
+                'total' => number_format(array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart)), 2),
+                'free_shipping_threshold' => 50,
+                'progress_percentage' => min((array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart)) / 50) * 100, 100)
+            ]
+        ]);
+    }
+
+    public function getCart()
+    {
+        try {
+            $cart = session()->get('cart', []);
+            $total = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+            $freeShippingThreshold = 50;
+            $progressPercentage = min(($total / $freeShippingThreshold) * 100, 100);
+
+            return response()->json([
+                'cart' => [
+                    'items' => array_values($cart),
+                    'total' => number_format($total, 2),
+                    'free_shipping_threshold' => $freeShippingThreshold,
+                    'progress_percentage' => $progressPercentage
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getCart: ' . $e->getMessage());
+            return response()->json(['error' => 'Erreur serveur: ' . $e->getMessage()], 500);
+        }
+    }
+
+
+
 
 }
