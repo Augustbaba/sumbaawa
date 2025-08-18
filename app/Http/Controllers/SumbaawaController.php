@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Categorie;
 use App\Models\Produit;
+use App\Models\SousCategorie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -34,9 +35,16 @@ class SumbaawaController extends Controller
     }
 
 
-    public function sousCategoriesDetail($sousCategorie)
+    public function sousCategoriesDetail(SousCategorie $sousCategorie)
     {
-        // Logic to handle sub-category product view
+        $produits = Produit::where('sous_categorie_id', $sousCategorie->id)
+            ->with(['sousCategorie', 'images'])
+            ->paginate(12);
+
+        // Définir l'URL de base pour les liens de pagination
+        // $produits->setPath(route('sousCategories.single', $sousCategorie));
+
+        return view('front.pages.sousCategories.single', compact('sousCategorie', 'produits'));
     }
 
     public function filter(Request $request, Categorie $categorie)

@@ -175,7 +175,7 @@
             }
 
             let cartHtml = `
-                
+
                 <div class="sidebar-title">
                     <a href="/cart/clear" class="clear-cart">Vider le panier</a>
                 </div>
