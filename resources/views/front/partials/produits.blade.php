@@ -10,22 +10,22 @@
                                     class="img-fluid blur-up lazyload" alt="{{ $produit->name }}" style="height: 250px; object-fit: cover;"></a>
                             <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span></div>
                             <div class="cart-info">
-                                <a href="#!" title="Ajouter aux favoris" class="wishlist-icon">
+                                <a href="{{ route('wishlist.add', $produit->id) }}" title="Ajouter aux favoris" class="wishlist-icon">
                                     <i class="ri-heart-line"></i>
                                 </a>
-                                <button data-bs-toggle="modal" data-bs-target="#addtocart" title="Ajouter au panier">
+                                <button class="add-to-cart"
+                                        data-product-id="{{ $produit->id }}"
+                                        data-product-name="{{ $produit->name }}"
+                                        data-product-image="{{ asset($produit->image_main) }}"
+                                        data-product-price="{{ $produit->price }}"
+                                        data-product-original-price="{{ $produit->original_price ?? '' }}"
+                                        data-product-color="{{ $produit->color ?? '' }}"
+                                        data-product-confort="{{ $produit->niveau_confort ?? '' }}"
+                                        data-product-poids="{{ $produit->poids }}"
+                                        title="Ajouter au panier">
                                     <i class="ri-shopping-cart-line"></i>
                                 </button>
-                                <a href="#!" data-bs-toggle="modal" data-bs-target="#quickView" title="Aperçu rapide" class="quick-view-btn"
-                                   data-produit="{{ json_encode([
-                                       'name' => $produit->name,
-                                       'slug' => $produit->slug,
-                                       'price' => $produit->price,
-                                       'original_price' => $produit->original_price,
-                                       'description' => $produit->description,
-                                       'image_main' => $produit->image_main ? asset($produit->image_main) : asset('storage/front/assets/images/stop.png'),
-                                       'images' => $produit->images ? $produit->images->map(fn($image) => ['url' => asset($image->url)])->toArray() : null
-                                   ]) }}">
+                                <a href="{{ route('produits.single', $produit) }}" title="Voir le détail" class="quick-view-btn">
                                     <i class="ri-eye-line"></i>
                                 </a>
                             </div>
@@ -38,7 +38,14 @@
                                     </a>
                                 </div>
                                 <h6>{{ $produit->sousCategorie->label ?? 'Sous-catégorie non définie' }}</h6>
-                                <h4 class="price">$ {{ $produit->price }}</h4>
+                                <h4 class="price">$ {{ number_format($produit->price, 2, '.', ',') }}
+                                    @if ($produit->original_price)
+                                        <del>$ {{ number_format($produit->original_price, 2, '.', ',') }}</del>
+                                        <span class="discounted-price">
+                                            {{ round((($produit->original_price - $produit->price) / $produit->original_price) * 100) }}% Off
+                                        </span>
+                                    @endif
+                                </h4>
                             </div>
                         </div>
                     </div>
