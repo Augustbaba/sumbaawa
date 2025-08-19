@@ -277,77 +277,78 @@
 
 
     <div class="offcanvas offcanvas-end cart-offcanvas" tabindex="-1" id="cartOffcanvas">
-    <div class="offcanvas-header">
-        <h3 class="offcanvas-title">Mon panier (<span id="cart-item-count">{{ count(session('cart', [])) }}</span>)</h3>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas">
-            <i class="ri-close-line"></i>
-        </button>
-    </div>
-    <div class="offcanvas-body">
-        @php
-            $cart = session('cart', []);
-            $total = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
-            $freeShippingThreshold = 50;
-            $progressPercentage = min(($total / $freeShippingThreshold) * 100, 100);
-        @endphp
-        
-        <div class="sidebar-title">
-            <a href="{{ route('cart.clear') }}" class="clear-cart">Vider le panier</a>
+        <div class="offcanvas-header">
+            <h3 class="offcanvas-title">Mon panier (<span id="cart-item-count">{{ count(session('cart', [])) }}</span>)</h3>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas">
+                <i class="ri-close-line"></i>
+            </button>
         </div>
-        <div class="cart-media">
-            <ul class="cart-product">
-                @forelse ($cart as $item)
-                    <li>
-                        <div class="media">
-                            <a href="{{ route('produits.single', Str::slug($item['name'])) }}">
-                                <img src="{{ $item['image_main'] }}" class="img-fluid" alt="{{ $item['name'] }}">
-                            </a>
-                            <div class="media-body">
+        <div class="offcanvas-body">
+            @php
+                $cart = session('cart', []);
+                $total = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+                $freeShippingThreshold = 50;
+                $progressPercentage = min(($total / $freeShippingThreshold) * 100, 100);
+                $isCartEmpty = empty($cart);
+            @endphp
+
+            <div class="sidebar-title">
+                <a href="{{ route('cart.clear') }}" class="clear-cart {{ $isCartEmpty ? 'disabled' : '' }}">Vider le panier</a>
+            </div>
+            <div class="cart-media">
+                <ul class="cart-product">
+                    @forelse ($cart as $item)
+                        <li>
+                            <div class="media">
                                 <a href="{{ route('produits.single', Str::slug($item['name'])) }}">
-                                    <h4>{{ $item['name'] }}</h4>
+                                    <img src="{{ $item['image_main'] }}" class="img-fluid" alt="{{ $item['name'] }}">
                                 </a>
-                                <h4 class="quantity">
-                                    <span>{{ $item['quantity'] }} x ${{ number_format($item['price'], 2) }}</span>
-                                </h4>
-                                <div class="qty-box">
-                                    <div class="input-group qty-container">
-                                        <button class="btn qty-btn-minus" data-product-id="{{ $item['id'] }}">
-                                            <i class="ri-subtract-line"></i>
-                                        </button>
-                                        <input type="number" readonly name="qty" class="form-control input-qty" value="{{ $item['quantity'] }}">
-                                        <button class="btn qty-btn-plus" data-product-id="{{ $item['id'] }}">
-                                            <i class="ri-add-line"></i>
+                                <div class="media-body">
+                                    <a href="{{ route('produits.single', Str::slug($item['name'])) }}">
+                                        <h4>{{ $item['name'] }}</h4>
+                                    </a>
+                                    <h4 class="quantity">
+                                        <span>{{ $item['quantity'] }} x ${{ number_format($item['price'], 2) }}</span>
+                                    </h4>
+                                    <div class="qty-box">
+                                        <div class="input-group qty-container">
+                                            <button class="btn qty-btn-minus" data-product-id="{{ $item['id'] }}">
+                                                <i class="ri-subtract-line"></i>
+                                            </button>
+                                            <input type="number" readonly name="qty" class="form-control input-qty" value="{{ $item['quantity'] }}">
+                                            <button class="btn qty-btn-plus" data-product-id="{{ $item['id'] }}">
+                                                <i class="ri-add-line"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="close-circle">
+                                        <button class="close_button delete-button" data-product-id="{{ $item['id'] }}">
+                                            <i class="ri-delete-bin-line"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <div class="close-circle">
-                                    <button class="close_button delete-button" data-product-id="{{ $item['id'] }}">
-                                        <i class="ri-delete-bin-line"></i>
-                                    </button>
-                                </div>
                             </div>
+                        </li>
+                    @empty
+                        <li><p>Le panier est vide.</p></li>
+                    @endforelse
+                </ul>
+                <ul class="cart_total">
+                    <li>
+                        <div class="total">
+                            <h5>Sous-total : <span>${{ number_format($total, 2) }}</span></h5>
                         </div>
                     </li>
-                @empty
-                    <li><p>Le panier est vide.</p></li>
-                @endforelse
-            </ul>
-            <ul class="cart_total">
-                <li>
-                    <div class="total">
-                        <h5>Sous-total : <span>${{ number_format($total, 2) }}</span></h5>
-                    </div>
-                </li>
-                <li>
-                    <div class="buttons">
-                        <a href="{{ route('cart.view') }}" class="btn view-cart">Voir le panier</a>
-                        <a href="{{ route('checkout') }}" class="btn checkout">Passer la commande</a>
-                    </div>
-                </li>
-            </ul>
+                    <li>
+                        <div class="buttons">
+                            <a href="{{ route('cart.view') }}" class="btn view-cart {{ $isCartEmpty ? 'disabled' : '' }}">Voir le panier</a>
+                            <a href="{{ route('checkout') }}" class="btn checkout {{ $isCartEmpty ? 'disabled' : '' }}">Passer la commande</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
-</div>
 
 
     <div class="modal fade theme-modal-2 variation-modal" id="variationModal">

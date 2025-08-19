@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('types', function (Blueprint $table) {
             $table->id();
+            $table->string('label')->unique();
+            $table->string('slug')->unique();
             $table->timestamps();
         });
     }

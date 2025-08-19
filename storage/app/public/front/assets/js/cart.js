@@ -20,6 +20,7 @@
             }
         });
 
+
         // Fonction pour formater les prix avec virgule pour les milliers
         function formatPrice(number) {
             return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -33,12 +34,14 @@
             if ($('#cart-item-count').length) {
                 $('#cart-item-count').text(count);
             }
+            // Activer/Désactiver les boutons en fonction du compteur
+            $('.view-cart, .checkout, .clear-cart').toggleClass('disabled', count === 0);
         }
 
         // Initialiser le compteur du panier au chargement
         function initializeCartCount() {
             $.ajax({
-                url: '/cart', // Assurez-vous que cette route correspond à 'cart.get'
+                url: '/cart',
                 method: 'GET',
                 success: function (response) {
                     const itemCount = response.cart.items ? response.cart.items.length : 0;
@@ -64,19 +67,16 @@
                 tbody.append('<tr><td colspan="6"><p>Le panier est vide.</p></td></tr>');
             } else {
                 cart.items.forEach(item => {
-                    // Vérifier que toutes les propriétés nécessaires existent
                     if (!item.id || !item.name || !item.price || !item.quantity || !item.image_main || !item.product_url) {
                         console.error('Données incomplètes pour l\'élément du panier:', item);
-                        return; // Ignorer cet élément
+                        return;
                     }
 
-                    // Convertir les prix en nombres, en supprimant les virgules
                     const priceStr = item.price.toString().replace(/,/g, '');
                     const price = parseFloat(priceStr);
                     const originalPriceStr = item.original_price ? item.original_price.toString().replace(/,/g, '') : null;
                     const originalPrice = originalPriceStr ? parseFloat(originalPriceStr) : null;
 
-                    // Vérifier que le prix est un nombre valide
                     if (isNaN(price)) {
                         console.error('Prix non valide pour l\'élément:', item);
                         return;
@@ -146,7 +146,7 @@
                                     </a>
                                 </td>
                             </tr>
-                        `;
+                    `;
                     tbody.append(itemHtml);
                     total += price * item.quantity;
                 });
@@ -175,9 +175,8 @@
             }
 
             let cartHtml = `
-
                 <div class="sidebar-title">
-                    <a href="/cart/clear" class="clear-cart">Vider le panier</a>
+                    <a href="/cart/clear" class="clear-cart ${!cart.items || cart.items.length === 0 ? 'disabled' : ''}">Vider le panier</a>
                 </div>
                 <div class="cart-media">
                     <ul class="cart-product">
@@ -237,13 +236,13 @@
                     <ul class="cart_total">
                         <li>
                             <div class="total">
-                                <h5>Sous-total : <span>$${cart.total}</span></h5>
+                                <h5>Sous-total : <span>$${formatPrice(totalNum)}</span></h5>
                             </div>
                         </li>
                         <li>
                             <div class="buttons">
-                                <a href="/cart" class="btn view-cart">Voir le panier</a>
-                                <a href="/checkout" class="btn checkout">Passer la commande</a>
+                                <a href="/cart" class="btn view-cart ${!cart.items || cart.items.length === 0 ? 'disabled' : ''}">Voir le panier</a>
+                                <a href="/checkout" class="btn checkout ${!cart.items || cart.items.length === 0 ? 'disabled' : ''}">Passer la commande</a>
                             </div>
                         </li>
                     </ul>
@@ -354,6 +353,7 @@
 
             $('.clear-cart').off('click').on('click', function (e) {
                 e.preventDefault();
+                if ($(this).hasClass('disabled')) return;
                 Swal.fire({
                     title: "Êtes-vous sûr ?",
                     text: "Vous ne pourrez pas annuler cette action !",

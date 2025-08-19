@@ -24,9 +24,11 @@ use App\Models\Faq;
 use App\Models\FinancingMethod;
 use App\Models\Formation;
 use App\Models\Partner;
+use App\Models\Pays;
 use App\Models\Produit;
 use App\Models\Project;
 use App\Models\Realization;
+use App\Models\Type;
 use App\Models\TypeContribution;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -348,9 +350,14 @@ class FrontHelper
         return $partners;
     }
 
-    public static function allTypeContributions()
+    public static function allTypes()
     {
-        return TypeContribution::all();
+        return Type::all();
+    }
+
+    public static function allPays()
+    {
+        return Pays::orderBy('name', 'asc')->get();
     }
 
     public static function allRealisations()

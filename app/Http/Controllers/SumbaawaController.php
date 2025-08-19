@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Categorie;
+use App\Models\Commande;
+use App\Models\Commander;
+use App\Models\Pays;
 use App\Models\Produit;
 use App\Models\SousCategorie;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -248,6 +252,84 @@ class SumbaawaController extends Controller
             Log::error('Erreur dans getCart: ' . $e->getMessage());
             return response()->json(['error' => 'Erreur serveur: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function checkout()
+    {
+        // Récupérer le panier depuis la session
+        $cart = session('cart', []);
+
+        // Calculer le poids total (somme des poids unitaires * quantité)
+        $totalWeight = array_sum(array_map(fn($item) => $item['poids'] * $item['quantity'], $cart));
+
+        // Calculer le total du panier (somme des prix unitaires * quantité)
+        $totalCart = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+
+        // Définir le prix de livraison par kg (configurable)
+        $shippingRate = config('cart.shipping_rate', 5.00); // Par défaut 5.00 $, peut être défini dans config/cart.php
+
+        // Calculer le coût total de livraison
+        $totalShipping = $totalWeight * $shippingRate;
+
+        // Calculer le grand total
+        // $grandTotal = $totalCart + $totalShipping;
+
+        // Retourner la vue avec les données
+        return view('front.pages.checkout', compact('cart', 'totalWeight', 'totalCart', 'shippingRate', 'totalShipping', 'totalCart'));
+    }
+
+    public function checkoutProcess(Request $request)
+    {
+        $data = $request->all();
+        $cart = session('cart', []);
+
+        if (empty($cart)) {
+            return response()->json(['error' => 'Le panier est vide'], 400);
+        }
+
+        $userId = Auth::id(); // Assurez-vous que l'utilisateur est authentifié
+
+        if (!$userId) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        $code = 'CMD-' . strtoupper(Str::random(8));
+
+        $address = null;
+        $typeId = null;
+
+        if ($data['requiresDelivery'] && isset($data['deliveryInfo'])) {
+            $delivery = $data['deliveryInfo'];
+            $pays = Pays::findOrFail($delivery['country']);
+
+            $address = "Pays: {$pays->name}, Ville: {$delivery['city']}, Adresse: {$delivery['address']}, Code Postal: {$delivery['postalCode']}";
+            $typeId = $delivery['deliveryType'];
+        }
+
+        $commande = Commande::create([
+            'user_id' => $userId,
+            'code' => $code,
+            'address' => $address,
+            'type_id' => $typeId,
+        ]);
+
+        foreach ($cart as $item) {
+            $description = "Color: {$item['color']}, Niveau Confort: {$item['niveau_confort']}, Poids: {$item['poids']} kg";
+
+            Commander::create([
+                'commande_id' => $commande->id,
+                'produit_id' => $item['id'],
+                'quantity' => $item['quantity'],
+                'description_produit' => $description,
+            ]);
+        }
+
+        session()->forget('cart');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Commande enregistrée avec succès'
+        ]);
     }
 
 

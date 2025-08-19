@@ -180,6 +180,7 @@
             height: 100%;
             object-fit: cover; /* Assure que l'image s'adapte sans déformation */
         }
+
     </style>
     @yield('styles')
 </head>
