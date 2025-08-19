@@ -3,6 +3,7 @@
 @section('styles')
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
+        /* Styles inchangés */
         :root {
             --primary-dark: #1a1a1a;
             --primary-light: #f8f8f8;
@@ -234,7 +235,6 @@
             display: block;
         }
 
-        /* Styles pour le formulaire de livraison */
         .delivery-form {
             margin-top: 1.5rem;
             text-align: left;
@@ -415,12 +415,12 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     // Fonction pour afficher/masquer les détails du produit
     function toggleProductDetails(element) {
         const accordion = element.closest('.product-accordion');
         const details = accordion.querySelector('.product-details');
-
         accordion.classList.toggle('active');
         details.classList.toggle('show');
     }
@@ -431,7 +431,6 @@
 
     // Attendre que le DOM soit chargé
     document.addEventListener('DOMContentLoaded', function() {
-        // Vérifier si le bouton existe avant d'ajouter l'event listener
         const paymentButton = document.getElementById('openPaymentModal');
         if (paymentButton) {
             paymentButton.addEventListener('click', function() {
@@ -447,7 +446,6 @@
             html: `
                 <div style="text-align: center;">
                     <p style="margin-bottom: 1.5rem;">Souhaitez-vous une livraison à domicile ?</p>
-
                     <div class="delivery-options">
                         <div class="delivery-option" id="deliveryYes">
                             <i class="ri-truck-line"></i>
@@ -458,7 +456,6 @@
                             <div>Non, je viens chercher</div>
                         </div>
                     </div>
-
                     <div id="deliveryFormContainer" style="display: none;">
                         <div class="delivery-form">
                             <div class="form-group">
@@ -511,7 +508,6 @@
             width: '600px',
             allowOutsideClick: false,
             didOpen: () => {
-                // Gestion du choix de livraison
                 const deliveryYes = document.getElementById('deliveryYes');
                 const deliveryNo = document.getElementById('deliveryNo');
 
@@ -535,12 +531,10 @@
                     });
                 }
 
-                // Désactiver le bouton continuer tant qu'aucun choix n'est fait
                 Swal.getConfirmButton().disabled = true;
             },
             preConfirm: () => {
                 if (requiresDelivery) {
-                    // Valider le formulaire de livraison
                     const deliveryType = document.getElementById('deliveryType').value;
                     const country = document.getElementById('country').value;
                     const city = document.getElementById('city').value;
@@ -554,7 +548,26 @@
                         return false;
                     }
 
-                    // Stocker les données de livraison
+                    // Envoyer les données de livraison au serveur pour stockage dans la session
+                    fetch("{{ route('store_delivery_info') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            deliveryType,
+                            country,
+                            city,
+                            address,
+                            postalCode,
+                            email,
+                            phone
+                        })
+                    }).catch(error => {
+                        console.error('Erreur lors de l\'enregistrement des informations de livraison:', error);
+                    });
+
                     deliveryFormData = {
                         deliveryType,
                         country,
@@ -564,12 +577,22 @@
                         email,
                         phone
                     };
+                } else {
+                    // Supprimer les informations de livraison si pas de livraison
+                    fetch("{{ route('clear_delivery_info') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    }).catch(error => {
+                        console.error('Erreur lors de la suppression des informations de livraison:', error);
+                    });
                 }
                 return true;
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                // Afficher le modal WisaPay
                 showWisaPayModal();
             }
         });
@@ -580,7 +603,6 @@
         const totalAmount = {{ $totalCart }};
         const formattedAmount = '${{ number_format($totalCart, 2, '.', ',') }}';
 
-        // Afficher d'abord le logo WisaPay avec le message
         Swal.fire({
             title: 'Paiement via WisaPay',
             html: `
@@ -604,7 +626,6 @@
             width: '500px',
             allowOutsideClick: false,
             didOpen: () => {
-                // Simuler un paiement après 5 secondes
                 setTimeout(() => {
                     Swal.fire({
                         title: 'Paiement réussi!',
@@ -626,7 +647,6 @@
                         allowOutsideClick: false
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Envoyer les données au serveur et rediriger
                             submitOrderData();
                         }
                     });
@@ -637,7 +657,6 @@
 
     // Fonction pour envoyer les données de commande
     function submitOrderData() {
-        // Ici vous devriez envoyer les données au serveur via AJAX
         const orderData = {
             requiresDelivery,
             deliveryInfo: requiresDelivery ? deliveryFormData : null,
@@ -645,9 +664,6 @@
             cartItems: {!! json_encode(session('cart', [])) !!}
         };
 
-        console.log('Données de commande:', orderData);
-
-        // Simulation d'envoi - à remplacer par un appel AJAX réel
         fetch("{{ route('checkout.process') }}", {
             method: 'POST',
             headers: {
@@ -658,12 +674,32 @@
         })
         .then(response => response.json())
         .then(data => {
-            // Redirection vers la page de confirmation
-            window.location.href = "/";
+            if (data.success) {
+                Swal.fire({
+                    title: 'Succès',
+                    text: 'Commande enregistrée avec succès',
+                    icon: 'success',
+                    confirmButtonColor: '#b78d65'
+                }).then(() => {
+                    window.location.href = "{{ route('index') }}";
+                });
+            } else {
+                Swal.fire({
+                    title: 'Erreur',
+                    text: data.error || 'Une erreur est survenue lors de l\'enregistrement de la commande.',
+                    icon: 'error',
+                    confirmButtonColor: '#b78d65'
+                });
+            }
         })
         .catch(error => {
             console.error('Erreur:', error);
-            window.location.href = "/";
+            Swal.fire({
+                title: 'Erreur',
+                text: 'Une erreur est survenue lors de l\'enregistrement de la commande.',
+                icon: 'error',
+                confirmButtonColor: '#b78d65'
+            });
         });
     }
 </script>

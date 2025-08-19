@@ -32,8 +32,11 @@ Route::post('/cart/clear', [SumbaawaController::class, 'clearCart'])->name('cart
 Route::get('/cart', [SumbaawaController::class, 'viewCart'])->name('cart.view');
 Route::get('/cart/get', [SumbaawaController::class, 'getCart'])->name('cart.get');
 Route::get('/checkout', [SumbaawaController::class, 'checkout'])->name('checkout')->middleware(['auth']);
-Route::get('/checkout/process', [SumbaawaController::class, 'checkoutProcess'])->name('checkout.process');
+Route::post('/checkout/process', [SumbaawaController::class, 'checkoutProcess'])->name('checkout.process');
 Route::post('/wishlist/add/{produit}', [SumbaawaController::class, 'add'])->name('wishlist.add');
+Route::post('/store-delivery-info', [SumbaawaController::class, 'storeDeliveryInfo'])->name('store_delivery_info');
+Route::post('/clear-delivery-info', [SumbaawaController::class, 'clearDeliveryInfo'])->name('clear_delivery_info');
+
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');

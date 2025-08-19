@@ -287,21 +287,18 @@ class SumbaawaController extends Controller
             return response()->json(['error' => 'Le panier est vide'], 400);
         }
 
-        $userId = Auth::id(); // Assurez-vous que l'utilisateur est authentifié
-
+        $userId = Auth::id();
         if (!$userId) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
 
         $code = 'CMD-' . strtoupper(Str::random(8));
-
         $address = null;
         $typeId = null;
 
         if ($data['requiresDelivery'] && isset($data['deliveryInfo'])) {
             $delivery = $data['deliveryInfo'];
             $pays = Pays::findOrFail($delivery['country']);
-
             $address = "Pays: {$pays->name}, Ville: {$delivery['city']}, Adresse: {$delivery['address']}, Code Postal: {$delivery['postalCode']}";
             $typeId = $delivery['deliveryType'];
         }
@@ -314,7 +311,7 @@ class SumbaawaController extends Controller
         ]);
 
         foreach ($cart as $item) {
-            $description = "Color: {$item['color']}, Niveau Confort: {$item['niveau_confort']}, Poids: {$item['poids']} kg";
+            $description = "Couleur: {$item['color']}, Niveau de confort: {$item['niveau_confort']}, Poids: {$item['poids']} kg";
 
             Commander::create([
                 'commande_id' => $commande->id,
@@ -324,12 +321,37 @@ class SumbaawaController extends Controller
             ]);
         }
 
+        // Vider le panier
         session()->forget('cart');
 
         return response()->json([
             'success' => true,
             'message' => 'Commande enregistrée avec succès'
         ]);
+    }
+
+    public function storeDeliveryInfo(Request $request)
+    {
+        $data = $request->validate([
+            'deliveryType' => 'required',
+            'country' => 'required',
+            'city' => 'required',
+            'address' => 'required',
+            'postalCode' => 'required',
+            'email' => 'required|email',
+            'phone' => 'required',
+        ]);
+
+        session(['delivery_info' => $data]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function clearDeliveryInfo(Request $request)
+    {
+        session()->forget('delivery_info');
+
+        return response()->json(['success' => true]);
     }
 
 
