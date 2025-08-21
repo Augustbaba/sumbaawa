@@ -2,6 +2,26 @@
 @section('title', $categorie->label)
 @section('styles')
     <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/price-range.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+    <style>
+        .description-text {
+            max-height: 100px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .description-text.expanded {
+            max-height: none;
+        }
+        .see-more-btn {
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
 @endsection
 @section('filAriane')
     <li class="breadcrumb-item">
@@ -16,7 +36,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-xl-3 col-lg-4 collection-filter">
-                        <!-- side-bar collapse block stat -->
+                        <!-- side-bar collapse block start -->
                         <div class="collection-filter-block">
                             <!-- brand filter start -->
                             <button class="collection-mobile-back btn">
@@ -28,19 +48,27 @@
                                     <div class="accordion-item">
                                         <h2 class="accordion-header">
                                             <button class="accordion-button pt-0" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne"
-                                                aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
-                                                {{ $categorie->label }} </button>
+                                                    data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne"
+                                                    aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+                                                {{ $categorie->label }}
+                                            </button>
                                         </h2>
                                         <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
                                             <div class="accordion-body">
                                                 <ul class="collection-listing">
+                                                    <li>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input subcategory-checkbox" type="checkbox" value="all" id="checkbox-all" checked>
+                                                            <label class="form-check-label" for="checkbox-all">
+                                                                Voir tout
+                                                            </label>
+                                                        </div>
+                                                    </li>
                                                     @foreach ($categorie->sousCategories as $sousCategorie)
                                                         <li>
                                                             <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" value=""
-                                                                    id="checkbox1">
-                                                                <label class="form-check-label" for="checkbox1">
+                                                                <input class="form-check-input subcategory-checkbox" type="checkbox" value="{{ $sousCategorie->id }}" id="checkbox-{{ $sousCategorie->id }}">
+                                                                <label class="form-check-label" for="checkbox-{{ $sousCategorie->id }}">
                                                                     {{ $sousCategorie->label }}
                                                                 </label>
                                                             </div>
@@ -53,120 +81,38 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- side-bar collapse block end here -->
+                        <!-- side-bar collapse block end -->
                     </div>
                     <div class="collection-content col-xl-9 col-lg-8">
                         <div class="page-main-content">
                             <div class="row">
                                 <div class="col-sm-12">
-
-                                    <button class="filter-btn btn"><i class="ri-filter-fill"></i> Filter
-                                    </button>
+                                    <button class="filter-btn btn"><i class="ri-filter-fill"></i> Filtrer</button>
                                     <div class="collection-product-wrapper">
                                         <div class="product-top-filter mt-0">
                                             <div class="product-filter-content w-100">
-                                                <div class="d-flex align-items-center gap-sm-3 gap-2">
-                                                    
-                                                </div>
-
-
+                                                <div class="d-flex align-items-center gap-sm-3 gap-2"></div>
                                                 <div class="collection-grid-view">
                                                     <ul>
                                                         <li class="product-2-layout-view grid-icon">
-                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/inner-page/icon/2.png') }}" alt="sort"
-                                                                class=" ">
+                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/inner-page/icon/2.png') }}" alt="sort" class="">
                                                         </li>
                                                         <li class="product-3-layout-view grid-icon active">
-                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/inner-page/icon/3.png') }}" alt="sort"
-                                                                class=" ">
+                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/inner-page/icon/3.png') }}" alt="sort" class="">
                                                         </li>
                                                         <li class="product-4-layout-view grid-icon">
-                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/inner-page/icon/4.png') }}" alt="sort"
-                                                                class=" ">
+                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/inner-page/icon/4.png') }}" alt="sort" class="">
                                                         </li>
                                                         <li class="list-layout-view list-icon">
-                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/inner-page/icon/list.png') }}"
-                                                                alt="sort" class=" ">
+                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/inner-page/icon/list.png') }}" alt="sort" class="">
                                                         </li>
                                                     </ul>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="product-wrapper-grid">
-                                            <div class="row g-3 g-sm-4">
-                                                @foreach ($categorie->sousCategories as $sousCategorie)
-                                                    @foreach ($sousCategorie->produits as $produit)
-                                                        <div class="col-xl-4 col-6 col-grid-box">
-                                                            <div class="basic-product theme-product-1">
-                                                                <div class="overflow-hidden">
-                                                                    <div class="img-wrapper">
-                                                                        <a href="{{ route('produits.single', $produit) }}"><img
-                                                                                src="{{ asset($produit->image_main) }}"
-                                                                                class="img-fluid blur-up lazyload" alt="{{ $produit->name }}" style="height: 250px; object-fit: cover;"></a>
-                                                                        <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span></div>
-                                                                        <div class="cart-info">
-                                                                            <a href="#!" title="Ajouter aux favoris" class="wishlist-icon">
-                                                                                <i class="ri-heart-line"></i>
-                                                                            </a>
-                                                                            <button data-bs-toggle="modal" data-bs-target="#addtocart" title="Ajouter au panier">
-                                                                                <i class="ri-shopping-cart-line"></i>
-                                                                            </button>
-                                                                            <a href="#!" data-bs-toggle="modal" data-bs-target="#quickView" title="Aperçu rapide" class="quick-view-btn" data-produit="{{ json_encode($produit) }}">
-                                                                                <i class="ri-eye-line"></i>
-                                                                            </a>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="product-detail">
-                                                                        <div>
-                                                                            <div class="brand-w-color">
-                                                                                <a class="product-title" href="{{ route('produits.single', $produit) }}">
-                                                                                    {{ $produit->name }}
-                                                                                </a>
-                                                                            </div>
-                                                                            <h6>{{ $produit->sousCategorie->label }}</h6>
-                                                                            <h4 class="price">$ {{ $produit->price }}</h4>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                        <div class="product-pagination">
-                                            <div class="theme-paggination-block">
-                                                <nav>
-                                                    <ul class="pagination">
-                                                        <li class="page-item">
-                                                            <a class="page-link" href="#!" aria-label="Previous">
-                                                                <span>
-                                                                    <i class="ri-arrow-left-s-line"></i>
-                                                                </span>
-                                                                <span class="sr-only">Previous</span>
-                                                            </a>
-                                                        </li>
-                                                        <li class="page-item active">
-                                                            <a class="page-link" href="#!">1</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a class="page-link" href="#!">2</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a class="page-link" href="#!">3</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a class="page-link" href="#!" aria-label="Next">
-                                                                <span>
-                                                                    <i class="ri-arrow-right-s-line"></i>
-                                                                </span>
-                                                                <span class="sr-only">Next</span>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </nav>
-                                            </div>
+                                        <!-- Section pour les produits et pagination -->
+                                        <div id="produits-section">
+                                            @include('front.partials.produits', ['produits' => $produits])
                                         </div>
                                     </div>
                                 </div>
@@ -176,10 +122,135 @@
                 </div>
             </div>
         </div>
-
     </section>
-    <!-- section End -->
+    <!-- section end -->
 @endsection
 @section('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/price-range.js') }}"></script>
+    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/cart.js') }}"></script>
+    <script>
+        (function($) {
+            $(document).ready(function () {
+                // Initialiser le compteur du panier
+                cartUtils.initializeCartCount();
+
+                // Attacher les événements du panier pour delete-button et clear-cart dans l'offcanvas
+                cartUtils.attachCartEvents();
+
+                // Gestion du bouton "Ajouter au panier"
+                function attachCartEventsToProducts() {
+                    $('.add-to-cart').off('click').on('click', function (e) {
+                        e.preventDefault();
+                        const $this = $(this);
+                        const productData = {
+                            id: $this.data('product-id'),
+                            name: $this.data('product-name'),
+                            image_main: $this.data('product-image'),
+                            price: parseFloat($this.data('product-price').toString().replace(/,/g, '')),
+                            original_price: $this.data('product-original-price') ? parseFloat($this.data('product-original-price').toString().replace(/,/g, '')) : null,
+                            color: $this.data('product-color'),
+                            niveau_confort: $this.data('product-confort'),
+                            poids: $this.data('product-poids'),
+                            quantity: 1,
+                            product_url: '{{ route('produits.single', ':slug') }}'.replace(':slug', $this.data('product-name').toLowerCase().replace(/\s+/g, '-'))
+                        };
+
+                        $.ajax({
+                            url: '{{ route('cart.add') }}',
+                            method: 'POST',
+                            data: {
+                                product: productData
+                            },
+                            success: function (response) {
+                                Swal.fire({
+                                    toast: true,
+                                    position: "top-end",
+                                    showConfirmButton: false,
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                    icon: "success",
+                                    title: "Votre produit a été ajouté au panier"
+                                });
+                                cartUtils.updateCartOffcanvas(response.cart);
+                                if ($('#cartOffcanvas').length) {
+                                    $('#cartOffcanvas').offcanvas('show');
+                                } else {
+                                    console.error('L\'élément #cartOffcanvas n\'existe pas dans le DOM.');
+                                }
+                            },
+                            error: function (xhr) {
+                                console.error('Erreur lors de l\'ajout au panier:', xhr.responseText);
+                                Swal.fire({
+                                    toast: true,
+                                    position: "top-end",
+                                    showConfirmButton: false,
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                    icon: "error",
+                                    title: "Erreur lors de l\'ajout au panier"
+                                });
+                            }
+                        });
+                    });
+                }
+
+                // Filtrage des produits
+                const checkboxes = $('.subcategory-checkbox');
+                const produitsSection = $('#produits-section');
+                let currentSubcategories = [];
+
+                function filterProduits(url = '{{ route('categories.filter', $categorie) }}') {
+                    const selectedSubcategories = checkboxes.filter(':checked').map(function () {
+                        return this.value !== 'all' ? this.value : null;
+                    }).get().filter(Boolean);
+
+                    const isAllChecked = $('#checkbox-all').is(':checked');
+                    currentSubcategories = isAllChecked ? @json($categorie->sousCategories->pluck('id')) : selectedSubcategories;
+
+                    const fetchUrl = new URL(url);
+                    currentSubcategories.forEach(id => fetchUrl.searchParams.append('subcategories[]', id));
+
+                    $.ajax({
+                        url: fetchUrl,
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        },
+                        success: function (html) {
+                            produitsSection.html(html);
+                            attachPaginationEvents();
+                            attachCartEventsToProducts();
+                        },
+                        error: function (xhr) {
+                            console.error('Erreur lors du filtrage:', xhr.responseText);
+                        }
+                    });
+                }
+
+                function attachPaginationEvents() {
+                    $('.pagination a').off('click').on('click', function (e) {
+                        e.preventDefault();
+                        filterProduits(this.href);
+                    });
+                }
+
+                checkboxes.on('change', function () {
+                    if (this.value === 'all' && this.checked) {
+                        checkboxes.not(this).prop('checked', false);
+                    } else if (this.value !== 'all' && this.checked) {
+                        $('#checkbox-all').prop('checked', false);
+                    }
+                    filterProduits();
+                });
+
+                // Attacher les événements au chargement initial
+                attachPaginationEvents();
+                attachCartEventsToProducts();
+            });
+        })(jQuery);
+    </script>
 @endsection

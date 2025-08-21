@@ -276,154 +276,80 @@
     <!-- Search Modal End -->
 
 
-    <!-- Cart Offcanvas Start -->
     <div class="offcanvas offcanvas-end cart-offcanvas" tabindex="-1" id="cartOffcanvas">
         <div class="offcanvas-header">
-            <h3 class="offcanvas-title">My Cart (3)</h3>
+            <h3 class="offcanvas-title">Mon panier (<span id="cart-item-count">{{ count(session('cart', [])) }}</span>)</h3>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas">
                 <i class="ri-close-line"></i>
             </button>
         </div>
         <div class="offcanvas-body">
-            <div class="pre-text-box">
-                <p>spend $20.96 More And Enjoy Free Shipping!</p>
-                <div class="progress" role="progressbar">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 58.08%;">
-                        <i class="ri-truck-line"></i>
-                    </div>
-                </div>
-            </div>
+            @php
+                $cart = session('cart', []);
+                $total = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+                $freeShippingThreshold = 50;
+                $progressPercentage = min(($total / $freeShippingThreshold) * 100, 100);
+                $isCartEmpty = empty($cart);
+            @endphp
 
             <div class="sidebar-title">
-                <a href="#!">Clear Cart</a>
+                <a href="{{ route('cart.clear') }}" class="clear-cart {{ $isCartEmpty ? 'disabled' : '' }}">Vider le panier</a>
             </div>
-
             <div class="cart-media">
                 <ul class="cart-product">
-                    <li>
-                        <div class="media">
-                            <a href="#!">
-                                <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/5.jpg') }}" class="img-fluid"
-                                    alt="Classic Jacket">
-                            </a>
-                            <div class="media-body">
-                                <a href="#!">
-                                    <h4>Couture Edge</h4>
+                    @forelse ($cart as $item)
+                        <li>
+                            <div class="media">
+                                <a href="{{ route('produits.single', Str::slug($item['name'])) }}">
+                                    <img src="{{ $item['image_main'] }}" class="img-fluid" alt="{{ $item['name'] }}">
                                 </a>
-                                <h4 class="quantity">
-                                    <span>1 x $6.74</span>
-                                </h4>
-
-                                <div class="qty-box">
-                                    <div class="input-group qty-container">
-                                        <button class="btn qty-btn-minus">
-                                            <i class="ri-subtract-line"></i>
-                                        </button>
-                                        <input type="number" readonly name="qty" class="form-control input-qty"
-                                            value="1">
-                                        <button class="btn qty-btn-plus">
-                                            <i class="ri-add-line"></i>
+                                <div class="media-body">
+                                    <a href="{{ route('produits.single', Str::slug($item['name'])) }}">
+                                        <h4>{{ $item['name'] }}</h4>
+                                    </a>
+                                    <h4 class="quantity">
+                                        <span>{{ $item['quantity'] }} x ${{ number_format($item['price'], 2) }}</span>
+                                    </h4>
+                                    <div class="qty-box">
+                                        <div class="input-group qty-container">
+                                            <button class="btn qty-btn-minus" data-product-id="{{ $item['id'] }}">
+                                                <i class="ri-subtract-line"></i>
+                                            </button>
+                                            <input type="number" readonly name="qty" class="form-control input-qty" value="{{ $item['quantity'] }}">
+                                            <button class="btn qty-btn-plus" data-product-id="{{ $item['id'] }}">
+                                                <i class="ri-add-line"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="close-circle">
+                                        <button class="close_button delete-button" data-product-id="{{ $item['id'] }}">
+                                            <i class="ri-delete-bin-line"></i>
                                         </button>
                                     </div>
                                 </div>
-
-                                <div class="close-circle">
-                                    <button class="close_button edit-button" data-bs-toggle="modal"
-                                        data-bs-target="#variationModal">
-                                        <i class="ri-pencil-line"></i>
-                                    </button>
-                                    <button class="close_button delete-button" type="submit">
-                                        <i class="ri-delete-bin-line"></i>
-                                    </button>
-                                </div>
                             </div>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="media">
-                            <a href="#!">
-                                <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/13.jpg') }}" class="img-fluid"
-                                    alt="Classic Jacket">
-                            </a>
-                            <div class="media-body">
-                                <a href="#!">
-                                    <h4>Classic Jacket</h4>
-                                </a>
-                                <h4 class="quantity">
-                                    <span>1 x $7.84</span>
-                                </h4>
-                                <div class="qty-box">
-                                    <div class="input-group qty-container">
-                                        <button class="btn qty-btn-minus">
-                                            <i class="ri-subtract-line"></i>
-                                        </button>
-                                        <input type="number" readonly name="qty" class="form-control input-qty"
-                                            value="1">
-                                        <button class="btn qty-btn-plus">
-                                            <i class="ri-add-line"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="close-circle">
-                                    <button class="close_button delete-button" type="submit">
-                                        <i class="ri-delete-bin-line"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="media">
-                            <a href="#!">
-                                <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion-1/product/12.jpg') }}" class="img-fluid"
-                                    alt="Classic Jacket">
-                            </a>
-                            <div class="media-body">
-                                <a href="#!">
-                                    <h4>Urban Chic</h4>
-                                </a>
-                                <h4 class="quantity">
-                                    <span>2 x $3.84</span>
-                                </h4>
-                                <div class="qty-box">
-                                    <div class="input-group qty-container">
-                                        <button class="btn qty-btn-minus">
-                                            <i class="ri-subtract-line"></i>
-                                        </button>
-                                        <input type="number" readonly name="qty" class="form-control input-qty"
-                                            value="1">
-                                        <button class="btn qty-btn-plus">
-                                            <i class="ri-add-line"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="close-circle">
-                                    <button class="close_button delete-button" type="submit">
-                                        <i class="ri-delete-bin-line"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
+                        </li>
+                    @empty
+                        <li><p>Le panier est vide.</p></li>
+                    @endforelse
                 </ul>
-
                 <ul class="cart_total">
                     <li>
                         <div class="total">
-                            <h5>Sub Total : <span>$36.74</span>
-                            </h5>
+                            <h5>Sous-total : <span>${{ number_format($total, 2) }}</span></h5>
                         </div>
                     </li>
                     <li>
                         <div class="buttons">
-                            <a href="cart.html" class="btn view-cart">View Cart</a>
-                            <a href="checkout.html" class="btn checkout">Check Out</a>
+                            <a href="{{ route('cart.view') }}" class="btn view-cart {{ $isCartEmpty ? 'disabled' : '' }}">Voir le panier</a>
+                            <a href="{{ route('checkout') }}" class="btn checkout {{ $isCartEmpty ? 'disabled' : '' }}">Passer la commande</a>
                         </div>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
+
 
     <div class="modal fade theme-modal-2 variation-modal" id="variationModal">
         <div class="modal-dialog modal-dialog-centered">
@@ -534,121 +460,6 @@
 
 
 
-    <!-- Add to cart modal popup start-->
-    <div class="modal fade bd-example-modal-lg theme-modal cart-modal" id="addtocart" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-body modal1">
-                    <div class="container-fluid p-0">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="modal-bg addtocart">
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                                        <span>&times;</span>
-                                    </button>
-                                    <div class="media">
-                                        <a href="#!">
-                                            <img class="img-fluid blur-up lazyload pro-img"
-                                                src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion/product/55.jpg') }}" alt="">
-                                        </a>
-                                        <div class="media-body align-self-center text-center">
-                                            <a href="#!">
-                                                <h6>
-                                                    <i class="ri-checkbox-circle-fill"></i>Item
-                                                    <span>men full sleeves</span>
-                                                    <span> successfully added to your Cart</span>
-                                                </h6>
-                                            </a>
-                                            <div class="buttons">
-                                                <a href="#!" class="view-cart btn btn-solid">Your cart</a>
-                                                <a href="#!" class="checkout btn btn-solid">Check out</a>
-                                                <a href="#!" class="continue btn btn-solid">Continue shopping</a>
-                                            </div>
-
-                                            <div class="upsell_payment">
-                                                <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/payment_cart.png') }}"
-                                                    class="img-fluid blur-up lazyload" alt="">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="product-section">
-                                        <div class="col-12 product-upsell text-center">
-                                            <h4>Customers who bought this item also.</h4>
-                                        </div>
-                                        <div class="row" id="upsell_product">
-                                            <div class="product-box col-sm-3 col-6">
-                                                <div class="img-wrapper">
-                                                    <div class="front">
-                                                        <a href="#!">
-                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion/product/1.jpg') }}"
-                                                                class="img-fluid blur-up lazyload mb-1"
-                                                                alt="cotton top">
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-detail">
-                                                        <h6><a href="#!"><span>cotton top</span></a></h6>
-                                                        <h4><span>$25</span></h4>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-box col-sm-3 col-6">
-                                                <div class="img-wrapper">
-                                                    <div class="front">
-                                                        <a href="#!">
-                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion/product/34.jpg') }}"
-                                                                class="img-fluid blur-up lazyload mb-1"
-                                                                alt="cotton top">
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-detail">
-                                                        <h6><a href="#!"><span>cotton top</span></a></h6>
-                                                        <h4><span>$25</span></h4>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-box col-sm-3 col-6">
-                                                <div class="img-wrapper">
-                                                    <div class="front">
-                                                        <a href="#!">
-                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion/product/13.jpg') }}"
-                                                                class="img-fluid blur-up lazyload mb-1"
-                                                                alt="cotton top">
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-detail">
-                                                        <h6><a href="#!"><span>cotton top</span></a></h6>
-                                                        <h4><span>$25</span></h4>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-box col-sm-3 col-6">
-                                                <div class="img-wrapper">
-                                                    <div class="front">
-                                                        <a href="#!">
-                                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/fashion/product/19.jpg') }}"
-                                                                class="img-fluid blur-up lazyload mb-1"
-                                                                alt="cotton top">
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-detail">
-                                                        <h6><a href="#!"><span>cotton top</span></a></h6>
-                                                        <h4><span>$25</span></h4>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Add to cart modal popup end-->
-
-
     <!-- exit modal popup start-->
     {{-- <div class="modal fade bd-example-modal-lg theme-modal exit-modal" id="exit_popup" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -715,7 +526,6 @@
     </div>
     <!-- tap to top end -->
 
-    @yield('scripts')
     <!-- latest jquery-->
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/jquery-3.3.1.min.js') }}"></script>
 
@@ -742,11 +552,14 @@
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/bootstrap-notify.min.js') }}"></script>
 
     <!-- Fly cart js-->
-    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/fly-cart.js') }}"></script>
+    {{-- <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/fly-cart.js') }}"></script> --}}
 
     <!-- Theme js-->
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/theme-setting.js') }}"></script>
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/script.js') }}"></script>
+    {{-- <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/cart.js') }}"></script> --}}
+    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/jquery.elevatezoom.js') }}"></script>
+    {{-- <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/timer.js') }}"></script> --}}
 
     <script>
         $(window).on('load', function () {
@@ -754,7 +567,39 @@
                 $('#exampleModal').modal('show');
             }, 2500);
         });
+
+
     </script>
+    <script>
+        // Charger jQuery 3.6.0 si nécessaire
+        window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"><\/script>');
+    </script>
+    <script>
+        (function($) {
+            $(document).ready(function () {
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+
+                // Initialiser le compteur du panier
+                $.ajax({
+                    url: '{{ route('cart.get') }}',
+                    method: 'GET',
+                    success: function (response) {
+                        const itemCount = response.cart.items ? response.cart.items.length : 0;
+                        $('.cart_qty_cls').text(itemCount);
+                    },
+                    error: function (xhr) {
+                        console.error('Erreur lors de la récupération du panier:', xhr.responseText);
+                    }
+                });
+            });
+        })(jQuery);
+    </script>
+    @yield('scripts')
+
 
 </body>
 

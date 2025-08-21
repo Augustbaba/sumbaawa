@@ -5,8 +5,8 @@
             <div class="row footer-theme g-md-5 g-2">
                 <div class="col-xl-3 col-lg-4 col-md-6 sub-title">
                     <div>
-                        <div class="footer-logo"><a href="index.html"><img alt="logo" style="width: 150px; height: auto;" class="img-fluid"
-                                    src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}">
+                        <div class="footer-logo"><a href="{{ route('index') }}"><img alt="logo" style="width: 150px; height: auto;" class="img-fluid"
+                                    src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo-white.png') }}">
                             </a></div>
                         <p>Découvrez les dernières tendances meubles avec nos collections exclusives.</p>
                         <ul class="contact-list">

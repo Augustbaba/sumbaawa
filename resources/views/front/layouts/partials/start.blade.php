@@ -9,8 +9,11 @@
     <meta name="description" content="multikart">
     <meta name="keywords" content="multikart">
     <meta name="author" content="multikart">
-    <link rel="icon" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/favicon.png') }}" type="image/x-icon">
-    <link rel="shortcut icon" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/favicon.png') }}" type="image/x-icon">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/site.webmanifest') }}">
     <title>{{ FrontHelper::getAppName() }} - @yield('title')</title>
 
     <!--Google font-->
@@ -25,7 +28,8 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
     <!-- Slick slider css -->
     <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/slick.css') }}">
-
+{{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script> --}}
     <!-- Animate icon -->
     <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/animate.css') }}">
 
@@ -166,6 +170,19 @@
         .letter-spacing-3 {
             letter-spacing: 3px;
         }
+
+        .view-thumbnail-slider .slider-image {
+            max-width: 80px; /* Taille maximale pour les miniatures */
+            max-height: 80px; /* Ajustez selon vos besoins */
+            overflow: hidden;
+        }
+
+        .view-thumbnail-slider .slider-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Assure que l'image s'adapte sans déformation */
+        }
+
     </style>
     @yield('styles')
 </head>

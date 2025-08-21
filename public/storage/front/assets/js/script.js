@@ -57,7 +57,7 @@
     });
 
 
-    /*=====================  
+    /*=====================
      02.Tap on Top
      ==========================*/
     $(window).on('scroll', function () {
@@ -2004,7 +2004,7 @@
     /*=====================
      19.Add to cart
      ==========================*/
-    $('.basic-product .ri-shopping-cart-line').on('click', function () {
+    $('.basic-produc .ri-shopping-cart-line').on('click', function () {
         $.notify({
             icon: 'ri-check-line',
             title: false,
@@ -2253,8 +2253,8 @@ var incrementMinus = buttonMinus.click(function () {
     }
 });
 
-/*===================== 
- compare-btn Js 
+/*=====================
+ compare-btn Js
 ==========================*/
 // Select all elements with the class 'compare'
 const compareButtons = document.querySelectorAll(".add-compare");

@@ -577,12 +577,14 @@
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li class="onhover-div mobile-cart">
-                                            <div data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
-                                                <i class="ri-shopping-cart-line"></i>
-                                            </div>
-                                            <span class="cart_qty_cls">2</span>
-                                        </li>
+                                        @if (Route::currentRouteName() != 'checkout')
+                                            <li class="onhover-div mobile-cart">
+                                                <div data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+                                                    <i class="ri-shopping-cart-line"></i>
+                                                </div>
+                                                <span class="cart_qty_cls">2</span>
+                                            </li>
+                                        @endif
                                     </ul>
                                 </div>
                             </div>

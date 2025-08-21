@@ -24,10 +24,22 @@ Route::get('/', function () {
     return view('front.pages.index');
 })->name('index');
 
+Route::get('/categories/{categorie}/filter', [SumbaawaController::class, 'filter'])->name('categories.filter');
 Route::get('/categories/{categorie:slug}/details', [SumbaawaController::class, 'categoriesSingle'])->name('categories.single');
 Route::get('/categories-page', [SumbaawaController::class, 'categoriesPage'])->name('categories.page');
-Route::get('/produits/details/{produit:slug}', [SumbaawaController::class, 'produitDetail'])->name('produits.single');
 Route::get('/sous-categories/{sousCategorie:slug}/produits', [SumbaawaController::class, 'sousCategoriesDetail'])->name('sousCategories.single');
+Route::get('/produits/details/{produit:slug}', [SumbaawaController::class, 'produitDetail'])->name('produits.single');
+Route::post('/cart/add', [SumbaawaController::class, 'addToCart'])->name('cart.add');
+Route::post('/cart/update', [SumbaawaController::class, 'updateCart'])->name('cart.update');
+Route::post('/cart/remove', [SumbaawaController::class, 'removeFromCart'])->name('cart.remove');
+Route::post('/cart/clear', [SumbaawaController::class, 'clearCart'])->name('cart.clear');
+Route::get('/cart', [SumbaawaController::class, 'viewCart'])->name('cart.view');
+Route::get('/cart/get', [SumbaawaController::class, 'getCart'])->name('cart.get');
+Route::get('/checkout', [SumbaawaController::class, 'checkout'])->name('checkout')->middleware(['auth']);
+Route::post('/checkout/process', [SumbaawaController::class, 'checkoutProcess'])->name('checkout.process');
+Route::post('/wishlist/add/{produit}', [SumbaawaController::class, 'add'])->name('wishlist.add');
+Route::post('/store-delivery-info', [SumbaawaController::class, 'storeDeliveryInfo'])->name('store_delivery_info');
+Route::post('/clear-delivery-info', [SumbaawaController::class, 'clearDeliveryInfo'])->name('clear_delivery_info');
 
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
