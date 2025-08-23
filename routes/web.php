@@ -76,13 +76,30 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/categories/index', [CategorieController::class, 'index'])->name('categories.index');
     Route::post('/categories', [CategorieController::class, 'store'])->name('categories.store');
 });
+Route::resource('categories', \App\Http\Controllers\CategorieController::class);
 Route::middleware(['auth'])->group(function () {
     Route::get('/subcategories/create', [SousCategorieController::class, 'create'])->name('subcategories.create');
     Route::post('/subcategories', [SousCategorieController::class, 'store'])->name('subcategories.store');
 });
+
+
+
+
+
+
+Route::resource('sous-categories', \App\Http\Controllers\SousCategorieController::class);
+Route::resource('categories', \App\Http\Controllers\CategorieController::class);
 Route::middleware(['auth'])->group(function () {
     Route::get('/products/create', [ProduitController::class, 'create'])->name('products.create');
     Route::post('/products', [ProduitController::class, 'store'])->name('products.store');
+Route::resource('produits', \App\Http\Controllers\ProduitController::class);
+Route::resource('sous-categories', \App\Http\Controllers\SousCategorieController::class);
+Route::resource('categories', \App\Http\Controllers\CategorieController::class);
+Route::delete('images/{image}', [App\Http\Controllers\ImageController::class, 'destroy'])->name('images.destroy');
+
+
+
+
 });
 
 

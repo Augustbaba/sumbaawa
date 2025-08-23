@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Image;
@@ -8,8 +7,9 @@ use Illuminate\Support\Facades\Storage;
 
 class ImageController extends Controller
 {
-    public function destroy(Image $image)
+    public function destroy($id)
     {
+        $image = Image::findOrFail($id);
         Storage::disk('public')->delete($image->url);
         $image->delete();
 

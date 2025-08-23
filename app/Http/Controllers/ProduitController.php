@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Produit;
@@ -19,45 +18,48 @@ class ProduitController extends Controller
 
     public function create()
     {
-        $subcategories = SousCategorie::all();
-        return view('back.pages.produits.create', compact('subcategories'));
+        $sousCategories = SousCategorie::all();
+        $colors = ['Noir', 'Blanc', 'Bleu', 'Rouge', 'Vert', 'Jaune', 'Gris']; // Predefined colors
+        return view('back.pages.produits.create', compact('sousCategories', 'colors'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'sous_categorie_id' => 'required|exists:sous_categories,id',
-            'name' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:produits,slug',
+            'name' => 'required|string|max:255|unique:produits,name',
             'description' => 'nullable|string',
             'image_main' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'price' => 'required|numeric|min:0',
-            'color' => 'nullable|string|max:50',
+            'colors' => 'nullable|array',
+            'colors.*' => 'string|in:Noir,Blanc,Bleu,Rouge,Vert,Jaune,Gris',
             'niveau_confort' => 'nullable|integer|between:1,5',
             'poids' => 'nullable|numeric|min:0',
-            'secondary_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'secondary_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Génération du slug si vide
-        if (empty($validated['slug'])) {
-            $validated['slug'] = Str::slug($validated['name']);
-        }
+        // Auto-generate unique slug
+        $slug = Str::slug($validated['name']);
+        $count = Produit::where('slug', 'like', $slug . '%')->count();
+        $validated['slug'] = $count ? "{$slug}-{$count}" : $slug;
 
-        // Enregistrement de l'image principale
+        // Handle colors as comma-separated string
+        $validated['color'] = !empty($validated['colors']) ? implode(',', $validated['colors']) : null;
+
+        // Store main image
         $validated['image_main'] = $request->file('image_main')->store('produits/main', 'public');
 
-        // Création du produit
+        // Create product
         $produit = Produit::create($validated);
 
-        // Enregistrement des images secondaires
+        // Store secondary images
         if ($request->hasFile('secondary_images')) {
             foreach ($request->file('secondary_images') as $image) {
                 $path = $image->store('produits/secondary', 'public');
-                
                 Image::create([
                     'produit_id' => $produit->id,
                     'url' => $path,
-                    'reference' => 'image_'.time().'_'.rand(1000,9999)
+                    'reference' => 'image_' . time() . '_' . rand(1000, 9999),
                 ]);
             }
         }
@@ -66,50 +68,64 @@ class ProduitController extends Controller
                          ->with('success', 'Produit créé avec succès!');
     }
 
-    public function show(Produit $produit)
+    public function show($id)
     {
+        $produit = Produit::with('images')->findOrFail($id);
         return view('back.pages.produits.show', compact('produit'));
     }
 
-    public function edit(Produit $produit)
+    public function edit($id)
     {
-        $subcategories = SousCategorie::all();
-        return view('back.pages.produits.edit', compact('produit', 'subcategories'));
+        $produit = Produit::findOrFail($id);
+        $sousCategories = SousCategorie::all();
+        $colors = ['Noir', 'Blanc', 'Bleu', 'Rouge', 'Vert', 'Jaune', 'Gris'];
+        return view('back.pages.produits.edit', compact('produit', 'sousCategories', 'colors'));
     }
 
-    public function update(Request $request, Produit $produit)
+    public function update(Request $request, $id)
     {
+        $produit = Produit::findOrFail($id);
         $validated = $request->validate([
             'sous_categorie_id' => 'required|exists:sous_categories,id',
-            'name' => 'required|string|max:255|unique:produits,name,'.$produit->id,
-            'slug' => 'nullable|string|max:255|unique:produits,slug,'.$produit->id,
+            'name' => 'required|string|max:255|unique:produits,name,' . $produit->id,
             'description' => 'nullable|string',
             'image_main' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'price' => 'required|numeric|min:0',
-            'color' => 'nullable|string|max:50',
+            'colors' => 'nullable|array',
+            'colors.*' => 'string|in:Noir,Blanc,Bleu,Rouge,Vert,Jaune,Gris',
             'niveau_confort' => 'nullable|integer|between:1,5',
             'poids' => 'nullable|numeric|min:0',
-            'secondary_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'secondary_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Gestion de l'image principale
+        // Auto-generate unique slug
+        $slug = Str::slug($validated['name']);
+        $count = Produit::where('slug', 'like', $slug . '%')->where('id', '!=', $produit->id)->count();
+        $validated['slug'] = $count ? "{$slug}-{$count}" : $slug;
+
+        // Handle colors
+        $validated['color'] = !empty($validated['colors']) ? implode(',', $validated['colors']) : null;
+
+        // Handle main image
         if ($request->hasFile('image_main')) {
-            // Supprimer l'ancienne image
-            Storage::disk('public')->delete($produit->image_main);
+            if ($produit->image_main) {
+                Storage::disk('public')->delete($produit->image_main);
+            }
             $validated['image_main'] = $request->file('image_main')->store('produits/main', 'public');
+        } else {
+            $validated['image_main'] = $produit->image_main;
         }
 
         $produit->update($validated);
 
-        // Gestion des images secondaires
+        // Handle secondary images
         if ($request->hasFile('secondary_images')) {
             foreach ($request->file('secondary_images') as $image) {
                 $path = $image->store('produits/secondary', 'public');
-                
                 Image::create([
                     'produit_id' => $produit->id,
                     'url' => $path,
-                    'reference' => 'image_'.time().'_'.rand(1000,9999)
+                    'reference' => 'image_' . time() . '_' . rand(1000, 9999),
                 ]);
             }
         }
@@ -118,12 +134,16 @@ class ProduitController extends Controller
                          ->with('success', 'Produit mis à jour avec succès!');
     }
 
-    public function destroy(Produit $produit)
+    public function destroy($id)
     {
-        // Supprimer l'image principale
-        Storage::disk('public')->delete($produit->image_main);
+        $produit = Produit::findOrFail($id);
 
-        // Supprimer les images secondaires
+        // Delete main image
+        if ($produit->image_main) {
+            Storage::disk('public')->delete($produit->image_main);
+        }
+
+        // Delete secondary images
         foreach ($produit->images as $image) {
             Storage::disk('public')->delete($image->url);
             $image->delete();

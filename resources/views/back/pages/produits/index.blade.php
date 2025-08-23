@@ -17,93 +17,79 @@
         </nav>
     </div>
 
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-md-flex gap-4 align-items-center">
-                        <div class="d-none d-md-flex">Tous les produits</div>
-                        <div class="d-md-flex gap-4 align-items-center">
-                            <form class="mb-3 mb-md-0">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <select class="form-select">
-                                            <option>Trier par</option>
-                                            <option value="desc">Récent</option>
-                                            <option value="asc">Ancien</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <select class="form-select">
-                                            <option value="10">10</option>
-                                            <option value="20">20</option>
-                                            <option value="30">30</option>
-                                            <option value="40">40</option>
-                                            <option value="50">50</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="dropdown ms-auto">
-                            <a href="{{ route('produits.create') }}" class="btn btn-primary">
-                                <i class="bi bi-plus-circle me-2"></i> Ajouter
-                            </a>
-                        </div>
-                    </div>
-                </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="card-title"><i class="bi bi-list-ul me-2"></i>Liste des Produits</h5>
+                <a href="{{ route('produits.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Nouveau Produit
+                </a>
             </div>
-            
+
+            @if (session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <div class="table-responsive">
-                <table class="table table-custom table-lg mb-0" id="products">
+                <table class="table table-hover">
                     <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Image</th>
-                        <th>Nom</th>
-                        <th>Sous-catégorie</th>
-                        <th>Prix</th>
-                        <th>Date création</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
+                        <tr>
+                            <th>#</th>
+                            <th>Nom</th>
+                            <th>Sous-Catégorie</th>
+                            <th>Prix (XOF)</th>
+                            <th>Image</th>
+                            <th>Couleurs</th>
+                            <th>Actions</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    @foreach($produits as $produit)
-                    <tr>
-                        <td>{{ $produit->id }}</td>
-                        <td>
-                            @if($produit->image_main)
-                            <img src="{{ asset('storage/'.$produit->image_main) }}" class="rounded" width="40" alt="{{ $produit->name }}">
-                            @else
-                            <span class="text-muted">Aucune image</span>
-                            @endif
-                        </td>
-                        <td>{{ $produit->name }}</td>
-                        <td>{{ $produit->sousCategorie->label ?? 'Non classé' }}</td>
-                        <td>{{ number_format($produit->price, 2, ',', ' ') }} XOF</td>
-                        <td>{{ $produit->created_at->format('d/m/Y') }}</td>
-                        <td class="text-end">
-                            <div class="d-flex justify-content-end gap-2">
-                                <a href="{{ route('produits.edit', $produit->id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form action="{{ route('produits.destroy', $produit->id) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr ?')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
+                        @forelse ($produits as $key => $produit)
+                            <tr>
+                                <td>{{ $produits->firstItem() + $key }}</td>
+                                <td>{{ $produit->name }}</td>
+                                <td>{{ $produit->sousCategorie ? $produit->sousCategorie->label : 'N/A' }}</td>
+                                <td>{{ number_format($produit->price, 2) }}</td>
+                                <td>
+                                    @if ($produit->image_main)
+                                        <img src="{{ asset('storage/' . $produit->image_main) }}" 
+                                             alt="{{ $produit->name }}" 
+                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                    @else
+                                        Aucune image
+                                    @endif
+                                </td>
+                                <td>{{ $produit->color ?? 'N/A' }}</td>
+                                <td>
+                                    <a href="{{ route('produits.show', $produit->id) }}" 
+                                       class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ route('produits.edit', $produit->id) }}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form action="{{ route('produits.destroy', $produit->id) }}" 
+                                          method="POST" 
+                                          class="d-inline"
+                                          onsubmit="return confirm('Voulez-vous vraiment supprimer ce produit ?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="text-center">Aucun produit trouvé</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
-            </div>
-            
-            <!-- Pagination -->
-            <div class="d-flex justify-content-center mt-4">
                 {{ $produits->links() }}
             </div>
         </div>
