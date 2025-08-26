@@ -8,6 +8,7 @@ use App\Models\Commander;
 use App\Models\Pays;
 use App\Models\Produit;
 use App\Models\SousCategorie;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -352,6 +353,54 @@ class SumbaawaController extends Controller
         session()->forget('delivery_info');
 
         return response()->json(['success' => true]);
+    }
+
+    public function addWishlist(Request $request, Produit $produit)
+    {
+        $user = Auth::user();
+
+        // Vérifier si le produit est déjà dans la wishlist
+        $existingWishlistItem = $user->wishlists()->where('produit_id', $produit->id)->first();
+        if ($existingWishlistItem) {
+            return back()->with('wishlist_info', 'Produit déjà dans la liste des favoris.');
+        }
+
+        // Ajouter le produit à la wishlist
+        $user->wishlists()->create(['produit_id' => $produit->id]);
+
+        return back()->with('wishlist_success', 'Produit ajouté à la liste des favoris avec succès.');
+    }
+
+    public function myWishlist()
+    {
+        $user = Auth::user();
+        $wishlists = Wishlist::where('user_id', $user->id)->paginate(12);
+
+        return view('front.pages.wishlists', compact('wishlists'));
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->query('q', '');
+
+        $produits = Produit::query()
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                    ->orWhere('description', 'LIKE', "%{$query}%")
+                    ->orWhereHas('sousCategorie', function ($q) use ($query) {
+                        $q->where('label', 'LIKE', "%{$query}%")
+                            ->orWhereHas('categorie', function ($q) use ($query) {
+                                $q->where('label', 'LIKE', "%{$query}%");
+                            });
+                    });
+            })
+            ->with(['sousCategorie', 'sousCategorie.categorie'])
+            ->paginate(12);
+
+        return view('front.pages.search_results', [
+            'produits' => $produits,
+            'query' => $query,
+        ]);
     }
 
 

@@ -2048,7 +2048,7 @@
     /*=====================
      20.Add to wishlist
      ==========================*/
-    $('.basic-product .ri-heart-line').on('click', function () {
+    $('.basic-produc .ri-heart-line').on('click', function () {
 
         $.notify({
             icon: 'ri-check-line',

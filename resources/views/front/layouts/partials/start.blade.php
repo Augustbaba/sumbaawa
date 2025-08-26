@@ -206,7 +206,7 @@
                     <div class="col-lg-6 text-end">
                         <ul class="header-dropdown">
                             <li class="mobile-wishlist">
-                                <a href="#!">
+                                <a href="{{ route('wishlist.my') }}">
                                     <i class="ri-heart-fill"></i>
                                 </a>
                             </li>
@@ -255,7 +255,7 @@
                                                 <a href="#!">Catégories<div class="lable-nav">Nouveau</div></a>
                                             </li>
                                             <li>
-                                                <a href="#!">Favoris</a>
+                                                <a href="{{ route('wishlist.my') }}">Favoris</a>
                                             </li>
                                             <li><a href="#!">Nous Contacter</a>
                                             </li>
@@ -270,11 +270,11 @@
                                                     <i class="ri-search-line"></i>
                                                 </div>
                                             </li>
-                                            <li class="onhover-div mobile-setting">
+                                            {{-- <li class="onhover-div mobile-setting">
                                                 <div>
                                                     <i class="ri-equalizer-2-line"></i>
                                                 </div>
-                                            </li>
+                                            </li> --}}
                                             <li class="onhover-div mobile-cart">
                                                 <div>
                                                     <i class="ri-shopping-cart-line"></i>

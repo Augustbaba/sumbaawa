@@ -17,4 +17,8 @@ class Produit extends Model
     {
         return $this->hasMany(Image::class);
     }
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
 }

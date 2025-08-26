@@ -14,7 +14,7 @@
                     </div>
                     <div class="col-lg-6 text-end">
                         <ul class="header-dropdown">
-                            <li class="mobile-wishlist"><a href="#!"><i class="ri-heart-fill"></i></a>
+                            <li class="mobile-wishlist"><a href="{{ route('wishlist.my') }}"><i class="ri-heart-fill"></i></a>
                             </li>
                             <li class="onhover-dropdown mobile-account"> <i class="ri-user-fill"></i>
                                 Mon Compte
@@ -547,7 +547,7 @@
                                                 </li>
                                             </ul>
                                         </li> --}}
-                                        <li><a href="">Favoris</a></li>
+                                        <li><a href="{{ route('wishlist.my') }}">Favoris</a></li>
                                         <li><a href="">Nous Contacter</a></li>
                                     </ul>
                                 </nav>
@@ -560,7 +560,7 @@
                                                 <i class="ri-search-line"></i>
                                             </div>
                                         </li>
-                                        <li class="onhover-div mobile-setting">
+                                        {{-- <li class="onhover-div mobile-setting">
                                             <div><i class="ri-equalizer-2-line"></i></div>
                                             <div class="show-div setting">
                                                 <h6>language</h6>
@@ -576,7 +576,7 @@
                                                     <li><a href="#!">dollar</a></li>
                                                 </ul>
                                             </div>
-                                        </li>
+                                        </li> --}}
                                         @if (Route::currentRouteName() != 'checkout')
                                             <li class="onhover-div mobile-cart">
                                                 <div data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">

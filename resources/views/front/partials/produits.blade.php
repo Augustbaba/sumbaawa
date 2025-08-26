@@ -10,8 +10,8 @@
                                     class="img-fluid blur-up lazyload" alt="{{ $produit->name }}" style="height: 250px; object-fit: cover;"></a>
                             <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span></div>
                             <div class="cart-info">
-                                <a href="{{ route('wishlist.add', $produit->id) }}" title="Ajouter aux favoris" class="wishlist-icon">
-                                    <i class="ri-heart-line"></i>
+                                <a href="{{ route('wishlist.add', $produit) }}" title="Ajouter aux favoris" class="wishlist-icon">
+                                    <i class="ri-heart-{{ FrontHelper::isProductInFavorites($produit->id) ? 'fill' : 'line' }}"></i>
                                 </a>
                                 <button class="add-to-cart"
                                         data-product-id="{{ $produit->id }}"
