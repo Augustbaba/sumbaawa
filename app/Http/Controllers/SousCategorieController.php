@@ -1,65 +1,72 @@
 <?php
-
 namespace App\Http\Controllers;
 
+use App\Models\Categorie;
 use App\Models\SousCategorie;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class SousCategorieController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $sousCategories = SousCategorie::with('categorie')->latest()->paginate(10);
+        return view('back.pages.sous_categories.index', compact('sousCategories'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $categories = Categorie::all();
+        return view('back.pages.sous_categories.create', compact('categories'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'categorie_id' => 'required|exists:categories,id',
+            'label' => 'required|string|max:255|unique:sous_categories,label',
+        ]);
+
+        // Auto-generate slug
+        $validated['slug'] = Str::slug($validated['label']);
+
+        SousCategorie::create($validated);
+
+        return redirect()->route('sous-categories.index')
+                         ->with('success', 'Sous-catégorie créée avec succès!');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(SousCategorie $sousCategorie)
     {
-        //
+        return view('back.pages.sous_categories.show', compact('sousCategorie'));
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(SousCategorie $sousCategorie)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
+public function edit($id)
+{
+    $sousCategorie = SousCategorie::findOrFail($id);
+    $categories = Categorie::all();
+    return view('back.pages.sous_categories.edit', compact('sousCategorie', 'categories'));
+}
     public function update(Request $request, SousCategorie $sousCategorie)
     {
-        //
+        $validated = $request->validate([
+            'categorie_id' => 'required|exists:categories,id',
+            'label' => 'required|string|max:255|unique:sous_categories,label,'.$sousCategorie->id,
+        ]);
+
+        // Auto-generate slug
+        $validated['slug'] = Str::slug($validated['label']);
+
+        $sousCategorie->update($validated);
+
+        return redirect()->route('sous-categories.index')
+                         ->with('success', 'Sous-catégorie mise à jour avec succès!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(SousCategorie $sousCategorie)
     {
-        //
+        $sousCategorie->delete();
+
+        return redirect()->route('sous-categories.index')
+                         ->with('success', 'Sous-catégorie supprimée avec succès!');
     }
 }
