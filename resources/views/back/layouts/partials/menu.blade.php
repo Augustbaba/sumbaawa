@@ -80,8 +80,7 @@
                             View</a>
                     </li>
                     <li>
-
-                        <a  href="{{ route('subcategories.create') }}">Ajouter</a>
+                        <a  href="{{ route('sous-categories.create') }}">Ajouter</a>
                     </li>
                     <li>
                         <a  href="order-detail.html">Modifier</a>
@@ -101,7 +100,7 @@
                             View</a>
                     </li>
                     <li>
-                        <a  href="{{ route('products.create') }}">Ajouter</a>
+                        <a  href="{{ route('produits.create') }}">Ajouter</a>
                     </li>
                     <li>
                         <a  href="product-detail.html">Modifier</a>

@@ -9,7 +9,18 @@ class Produit extends Model
     use HasFactory;
 
     protected $table = 'produits';
-    protected $fillable = ['name', 'slug', 'description', 'image_main', 'price', 'color', 'sous_categorie_id', 'niveau_confort', 'poids'];
+    
+    protected $fillable = [
+        'name', 
+        'slug', 
+        'description', 
+        'image_main', 
+        'price', 
+        'color', 
+        'sous_categorie_id', 
+        'niveau_confort', 
+        'poids'
+    ];
 
     public function sousCategorie()
     {
@@ -20,6 +31,7 @@ class Produit extends Model
     {
         return $this->hasMany(Image::class);
     }
+
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class);
