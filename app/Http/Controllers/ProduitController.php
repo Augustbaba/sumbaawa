@@ -12,6 +12,7 @@ class ProduitController extends Controller
 {
     public function index()
     {
+        // dd('good');
         $produits = Produit::with('sousCategorie', 'images')->latest()->paginate(10);
         return view('back.pages.produits.index', compact('produits'));
     }
@@ -26,7 +27,7 @@ class ProduitController extends Controller
 public function store(Request $request)
 {
     \Log::info('Début de la méthode store');
-    
+
     try {
         $validated = $request->validate([
             'sous_categorie_id' => 'required|exists:sous_categories,id',
@@ -40,9 +41,9 @@ public function store(Request $request)
             'poids' => 'nullable|numeric|min:0',
             'secondary_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:100240',
         ]);
-        
+
         \Log::info('Validation passée');
-        
+
         $slug = Str::slug($validated['name']);
         $count = Produit::where('slug', 'like', $slug . '%')->count();
         $validated['slug'] = $count ? "{$slug}-{$count}" : $slug;
@@ -77,7 +78,7 @@ public function store(Request $request)
         return redirect()->back()
                         ->withErrors($e->errors())
                         ->withInput($request->all());
-        
+
     } catch (\Exception $e) {
         \Log::error('Erreur générale:', [
             'message' => $e->getMessage(),
