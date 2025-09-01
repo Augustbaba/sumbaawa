@@ -4,6 +4,33 @@
 
 @section('content')
 <div class="content">
+    {{-- Affichage des messages d'alerte généraux --}}
+    @if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Erreurs de validation</h5>
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
     <div class="mb-4">
         <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -74,7 +101,7 @@
                                 @foreach(['Noir', 'Blanc', 'Bleu', 'Rouge', 'Vert', 'Jaune', 'Gris'] as $color)
                                     <div class="col-6">
                                         <div class="form-check">
-                                            <input type="checkbox" class="form-check-input" 
+                                            <input type="checkbox" class="form-check-input @error('colors') is-invalid @enderror @error('colors.*') is-invalid @enderror" 
                                                    name="colors[]" value="{{ $color }}" 
                                                    id="color_{{ $color }}" {{ in_array($color, old('colors', [])) ? 'checked' : '' }}>
                                             <label class="form-check-label" for="color_{{ $color }}">{{ $color }}</label>
@@ -83,6 +110,9 @@
                                 @endforeach
                             </div>
                             @error('colors')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                            @error('colors.*')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
@@ -136,6 +166,9 @@
                     @error('image_main')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
+                    @error('image_main.*')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
                     <small class="text-muted">Cette image sera affichée comme image principale du produit</small>
                 </div>
                 
@@ -143,7 +176,8 @@
                     <label class="form-label">Images secondaires</label>
                     <div id="secondary-images-container">
                         <div class="input-group mb-2">
-                            <input type="file" class="form-control" name="secondary_images[]" accept="image/*">
+                            <input type="file" class="form-control @error('secondary_images') is-invalid @enderror @error('secondary_images.*') is-invalid @enderror" 
+                                   name="secondary_images[]" accept="image/*">
                             <button type="button" class="btn btn-outline-danger remove-image" style="display: none;">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -153,6 +187,9 @@
                         <i class="bi bi-plus"></i> Ajouter une image
                     </button>
                     @error('secondary_images')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                    @error('secondary_images.*')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                     <small class="text-muted">Vous pouvez ajouter plusieurs images supplémentaires</small>
@@ -207,6 +244,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Afficher les boutons de suppression au chargement initial
+    updateRemoveButtons();
 });
 </script>
 @endsection

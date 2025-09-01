@@ -252,5 +252,38 @@
                 attachCartEventsToProducts();
             });
         })(jQuery);
+
+        // Success message with SweetAlert2
+        document.addEventListener('DOMContentLoaded', function() {
+            const status_wishlist_success = '{{ session('wishlist_success') }}';
+            const status_wishlist_info = '{{ session('wishlist_info') }}';
+            if (status_wishlist_success) {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 5000,
+                    timerProgressBar: true,
+                    icon: "success",
+                    title: status_wishlist_success
+                }).then(() => {
+                    window.history.pushState({}, document.title, window.location.pathname);
+                });
+            }
+
+            if (status_wishlist_info) {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 5000,
+                    timerProgressBar: true,
+                    icon: "info",
+                    title: status_wishlist_info
+                }).then(() => {
+                    window.history.pushState({}, document.title, window.location.pathname);
+                });
+            }
+        });
     </script>
 @endsection

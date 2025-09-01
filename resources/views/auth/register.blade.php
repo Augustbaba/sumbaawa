@@ -8,7 +8,10 @@
     <title>{{ FrontHelper::getAppName() }} - Inscription</title>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/back/assets/images/favicon.png') }}"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/site.webmanifest') }}">
 
     <!-- Themify icons -->
     <link rel="stylesheet" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/back/dist/icons/themify-icons/themify-icons.css') }}" type="text/css">
@@ -38,7 +41,7 @@
                         <div class="row">
                             <div class="col-md-10 offset-md-1">
                                 <div class="d-block d-lg-none text-center text-lg-start">
-                                    <img width="120" src="https://vetra.laborasyon.com/assets/images/logo.svg" alt="logo">
+                                    <img width="120" src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" alt="logo">
                                 </div>
                                 <div class="my-5 text-center text-lg-start">
                                     <h1 class="display-8">S'inscrire</h1>

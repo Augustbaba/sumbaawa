@@ -30,6 +30,7 @@ use App\Models\Project;
 use App\Models\Realization;
 use App\Models\Type;
 use App\Models\TypeContribution;
+use App\Models\Wishlist;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -360,10 +361,17 @@ class FrontHelper
         return Pays::orderBy('name', 'asc')->get();
     }
 
-    public static function allRealisations()
+    public static function isProductInFavorites($productId)
     {
-        $realisations = Realisation::all();
-        return $realisations;
+        if (!Auth::check()) {
+            return false;
+        }
+
+        $userId = Auth::id();
+
+        return Wishlist::where('user_id', $userId)
+            ->where('produit_id', $productId)
+            ->exists();
     }
 
     public static function getCountMoneys()

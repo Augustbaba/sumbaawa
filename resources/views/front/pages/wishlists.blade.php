@@ -1,43 +1,72 @@
 @extends('front.layouts.master')
-@section('title', $sousCategorie->label)
+@section('title', 'Favoris')
 @section('styles')
-    <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/price-range.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
     <style>
-        .view-thumbnail-slider .slider-image {
-            max-width: 80px;
-            max-height: 80px;
-            overflow: hidden;
+        .banner-overlay {
+            background: linear-gradient(to right, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%);
         }
-        .view-thumbnail-slider .slider-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .description-text {
-            max-height: 100px;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        .description-text.expanded {
-            max-height: none;
-        }
-        .see-more-btn {
-            cursor: pointer;
-            color: blue;
-            text-decoration: underline;
+
+        .collection-banner {
             display: block;
-            margin-top: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .collection-banner:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .partition2 > div:first-child .banner-overlay {
+            background: linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        .partition2 > div:last-child .banner-overlay {
+            background: linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        .btn-outline-light {
+            border-width: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-light:hover {
+            background-color: #b78d65;
+            border-color: #b78d65;
+            color: #1a1a1a;
+            transform: translateY(-3px);
+        }
+
+        .section1 {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section1::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(183,141,101,0.2) 0%, rgba(183,141,101,0) 70%);
+            z-index: 0;
+        }
+
+        .section1::after {
+            content: "";
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(183,141,101,0.1) 0%, rgba(183,141,101,0) 70%);
+            z-index: 0;
         }
     </style>
 @endsection
 @section('filAriane')
-    <li class="breadcrumb-item">
-        <a href="{{ route('categories.single', $sousCategorie->categorie) }}">{{ $sousCategorie->categorie->label }}</a>
-    </li>
-    <li class="breadcrumb-item active">{{ $sousCategorie->label }}</li>
+    <li class="breadcrumb-item active" aria-current="page">Mes Favoris</li>
 @endsection
 @section('content')
     <!-- section start -->
@@ -45,45 +74,7 @@
         <div class="collection-wrapper">
             <div class="container">
                 <div class="row">
-                    <div class="col-xl-3 col-lg-4 collection-filter">
-                        <!-- side-bar collapse block start -->
-                        <div class="collection-filter-block">
-                            <!-- brand filter start -->
-                            <button class="collection-mobile-back btn">
-                                <span class="filter-back">Retour</span>
-                                <i class="ri-arrow-left-s-line"></i>
-                            </button>
-                            <div class="collection-collapse-block open">
-                                <div class="accordion collection-accordion" id="accordionPanelsStayOpenExample">
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button pt-0" type="button"
-                                                    data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne"
-                                                    aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
-                                                {{ $sousCategorie->categorie->label }}
-                                            </button>
-                                        </h2>
-                                        <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
-                                            <div class="accordion-body">
-                                                <ul class="collection-listing">
-                                                    <li>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input subcategory-checkbox" type="checkbox" checked value="{{ $sousCategorie->id }}">
-                                                            <label class="form-check-label" for="checkbox">
-                                                                {{ $sousCategorie->label }}
-                                                            </label>
-                                                        </div>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- side-bar collapse block end -->
-                    </div>
-                    <div class="collection-content col-xl-9 col-lg-8">
+                    <div class="collection-content col-xl-12 col-lg-12">
                         <div class="page-main-content">
                             <div class="row">
                                 <div class="col-sm-12">
@@ -114,32 +105,32 @@
                                         <div id="produits-section">
                                             <div class="product-wrapper-grid">
                                                 <div class="row g-3 g-sm-4">
-                                                    @forelse ($produits as $produit)
+                                                    @forelse ($wishlists as $wishlist)
                                                         <div class="col-xl-4 col-6 col-grid-box">
                                                             <div class="basic-product theme-product-1">
                                                                 <div class="overflow-hidden">
                                                                     <div class="img-wrapper">
-                                                                        <a href="{{ route('produits.single', $produit) }}"><img
-                                                                                src="{{ asset($produit->image_main) }}"
-                                                                                class="img-fluid blur-up lazyload" alt="{{ $produit->name }}" style="height: 250px; object-fit: cover;"></a>
+                                                                        <a href="{{ route('produits.single', $wishlist->produit) }}"><img
+                                                                                src="{{ asset($wishlist->produit->image_main) }}"
+                                                                                class="img-fluid blur-up lazyload" alt="{{ $wishlist->produit->name }}" style="height: 250px; object-fit: cover;"></a>
                                                                         <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span></div>
                                                                         <div class="cart-info">
-                                                                            <a href="{{ route('wishlist.add', $produit) }}" title="Ajouter aux favoris" class="wishlist-icon">
-                                                                                <i class="ri-heart-{{ FrontHelper::isProductInFavorites($produit->id) ? 'fill' : 'line' }}"></i>
+                                                                            <a href="{{ route('wishlist.add', $wishlist->produit) }}" title="Ajouter aux favoris" class="wishlist-icon">
+                                                                                <i class="ri-heart-{{ FrontHelper::isProductInFavorites($wishlist->produit->id) ? 'fill' : 'line' }}"></i>
                                                                             </a>
                                                                             <button class="add-to-cart"
-                                                                                    data-product-id="{{ $produit->id }}"
-                                                                                    data-product-name="{{ $produit->name }}"
-                                                                                    data-product-image="{{ asset($produit->image_main) }}"
-                                                                                    data-product-price="{{ $produit->price }}"
-                                                                                    data-product-original-price="{{ $produit->original_price ?? '' }}"
-                                                                                    data-product-color="{{ $produit->color ?? '' }}"
-                                                                                    data-product-confort="{{ $produit->niveau_confort ?? '' }}"
-                                                                                    data-product-poids="{{ $produit->poids }}"
+                                                                                    data-product-id="{{ $wishlist->produit->id }}"
+                                                                                    data-product-name="{{ $wishlist->produit->name }}"
+                                                                                    data-product-image="{{ asset($wishlist->produit->image_main) }}"
+                                                                                    data-product-price="{{ $wishlist->produit->price }}"
+                                                                                    data-product-original-price="{{ $wishlist->produit->original_price ?? '' }}"
+                                                                                    data-product-color="{{ $wishlist->produit->color ?? '' }}"
+                                                                                    data-product-confort="{{ $wishlist->produit->niveau_confort ?? '' }}"
+                                                                                    data-product-poids="{{ $wishlist->produit->poids }}"
                                                                                     title="Ajouter au panier">
                                                                                 <i class="ri-shopping-cart-line"></i>
                                                                             </button>
-                                                                            <a href="{{ route('produits.single', $produit) }}" title="Voir le détail" class="quick-view-btn">
+                                                                            <a href="{{ route('produits.single', $wishlist->produit) }}" title="Voir le détail" class="quick-view-btn">
                                                                                 <i class="ri-eye-line"></i>
                                                                             </a>
                                                                         </div>
@@ -147,16 +138,16 @@
                                                                     <div class="product-detail">
                                                                         <div>
                                                                             <div class="brand-w-color">
-                                                                                <a class="product-title" href="{{ route('produits.single', $produit) }}">
-                                                                                    {{ $produit->name }}
+                                                                                <a class="product-title" href="{{ route('produits.single', $wishlist->produit) }}">
+                                                                                    {{ $wishlist->produit->name }}
                                                                                 </a>
                                                                             </div>
-                                                                            <h6>{{ $produit->sousCategorie->label ?? 'Sous-catégorie non définie' }}</h6>
-                                                                            <h4 class="price">$ {{ number_format($produit->price, 2, '.', ',') }}
-                                                                                @if ($produit->original_price)
-                                                                                    <del>$ {{ number_format($produit->original_price, 2, '.', ',') }}</del>
+                                                                            <h6>{{ $wishlist->produit->sousCategorie->label ?? 'Sous-catégorie non définie' }}</h6>
+                                                                            <h4 class="price">$ {{ number_format($wishlist->produit->price, 2, '.', ',') }}
+                                                                                @if ($wishlist->produit->original_price)
+                                                                                    <del>$ {{ number_format($wishlist->produit->original_price, 2, '.', ',') }}</del>
                                                                                     <span class="discounted-price">
-                                                                                        {{ round((($produit->original_price - $produit->price) / $produit->original_price) * 100) }}% Off
+                                                                                        {{ round((($wishlist->produit->original_price - $wishlist->produit->price) / $wishlist->produit->original_price) * 100) }}% Off
                                                                                     </span>
                                                                                 @endif
                                                                             </h4>
@@ -172,7 +163,7 @@
                                             </div>
                                             <div class="product-pagination">
                                                 <div class="theme-paggination-block">
-                                                    {{ $produits->links('vendor.pagination.bootstrap-5') }}
+                                                    {{ $wishlists->links('vendor.pagination.bootstrap-5') }}
                                                 </div>
                                             </div>
                                         </div>

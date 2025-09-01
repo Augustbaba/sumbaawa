@@ -14,7 +14,7 @@
                     </div>
                     <div class="col-lg-6 text-end">
                         <ul class="header-dropdown">
-                            <li class="mobile-wishlist"><a href="#!"><i class="ri-heart-fill"></i></a>
+                            <li class="mobile-wishlist"><a href="{{ route('wishlist.my') }}"><i class="ri-heart-fill"></i></a>
                             </li>
                             <li class="onhover-dropdown mobile-account"> <i class="ri-user-fill"></i>
                                 Mon Compte
@@ -229,44 +229,50 @@
                                             <div class="mobile-back text-end">Menu<i class="ri-close-line"></i></div>
                                         </li>
                                         <li><a href="{{ route('index') }}">Accueil</a></li>
-                                        <li class="mega hover-cls">
-                                            <a href="#!">Catégories <div class="lable-nav">Nouveau</div></a>
-                                            <ul class="mega-menu full-mega-menu">
-                                                <li>
-                                                    <div class="container">
-                                                        <div class="row g-xl-4 g-0">
-                                                            @foreach (FrontHelper::fiveCategories() as $categorie)
-                                                                <div class="col mega-box">
-                                                                    <div class="link-section">
-                                                                        <div class="menu-title">
-                                                                            <h5>{{ $categorie->label }}</h5>
-                                                                        </div>
-                                                                        <div class="menu-content">
-                                                                            <ul>
-                                                                                @foreach ($categorie->sousCategories->take(5) as $sousCategorie)
-                                                                                    <li><a href="{{ route('sousCategories.single', $sousCategorie) }}">{{ $sousCategorie->label }}</a></li>
-                                                                                @endforeach
+                                        @if (Route::currentRouteName() == 'index')
+                                            <li class="mega hover-cls">
+                                                <a href="#!">Catégories <div class="lable-nav">Nouveau</div></a>
+                                                <ul class="mega-menu full-mega-menu">
+                                                    <li>
+                                                        <div class="container">
+                                                            <div class="row g-xl-4 g-0">
+                                                                @foreach (FrontHelper::fiveCategories() as $categorie)
+                                                                    <div class="col mega-box">
+                                                                        <div class="link-section">
+                                                                            <div class="menu-title">
+                                                                                <h5>{{ $categorie->label }}</h5>
+                                                                            </div>
+                                                                            <div class="menu-content">
+                                                                                <ul>
+                                                                                    @foreach ($categorie->sousCategories->take(5) as $sousCategorie)
+                                                                                        <li><a href="{{ route('sousCategories.single', $sousCategorie) }}">{{ $sousCategorie->label }}</a></li>
+                                                                                    @endforeach
 
-                                                                            </ul>
-                                                                        </div>
+                                                                                </ul>
+                                                                            </div>
 
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            @endforeach
+                                                                @endforeach
 
 
-                                                        </div>
-                                                        <div class="row mt-2">
-                                                            <div class="col-12">
-                                                                <div class="menu-title">
-                                                                    <h5><a href="{{ route('categories.page') }}">Voir toutes les catégories<i class="ms-2 ri-flashlight-fill icon-trend"></i></a></h5>
+                                                            </div>
+                                                            <div class="row mt-2">
+                                                                <div class="col-12">
+                                                                    <div class="menu-title">
+                                                                        <h5><a href="{{ route('categories.page') }}">Voir toutes les catégories<i class="ms-2 ri-flashlight-fill icon-trend"></i></a></h5>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </li>
-                                            </ul>
-                                        </li>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        @else
+                                            <li class="mega hover-cls">
+                                                <a href="{{ route('categories.page') }}">Catégories <div class="lable-nav">Nouveau</div></a>
+                                            </li>
+                                        @endif
                                         {{-- <li>
                                             <a href="#!">shop</a>
                                             <ul>
@@ -547,7 +553,7 @@
                                                 </li>
                                             </ul>
                                         </li> --}}
-                                        <li><a href="">Favoris</a></li>
+                                        <li><a href="{{ route('wishlist.my') }}">Favoris</a></li>
                                         <li><a href="">Nous Contacter</a></li>
                                     </ul>
                                 </nav>
@@ -560,7 +566,7 @@
                                                 <i class="ri-search-line"></i>
                                             </div>
                                         </li>
-                                        <li class="onhover-div mobile-setting">
+                                        {{-- <li class="onhover-div mobile-setting">
                                             <div><i class="ri-equalizer-2-line"></i></div>
                                             <div class="show-div setting">
                                                 <h6>language</h6>
@@ -576,7 +582,7 @@
                                                     <li><a href="#!">dollar</a></li>
                                                 </ul>
                                             </div>
-                                        </li>
+                                        </li> --}}
                                         @if (Route::currentRouteName() != 'checkout')
                                             <li class="onhover-div mobile-cart">
                                                 <div data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">

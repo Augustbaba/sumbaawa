@@ -33,9 +33,11 @@ Route::get('/cart', [SumbaawaController::class, 'viewCart'])->name('cart.view');
 Route::get('/cart/get', [SumbaawaController::class, 'getCart'])->name('cart.get');
 Route::get('/checkout', [SumbaawaController::class, 'checkout'])->name('checkout')->middleware('auth');
 Route::post('/checkout/process', [SumbaawaController::class, 'checkoutProcess'])->name('checkout.process');
-Route::post('/wishlist/add/{produit}', [SumbaawaController::class, 'add'])->name('wishlist.add');
+Route::get('/wishlist/add/{produit:slug}', [SumbaawaController::class, 'addWishlist'])->middleware(['auth'])->name('wishlist.add');
+Route::get('/mes-favoris', [SumbaawaController::class, 'myWishlist'])->middleware(['auth'])->name('wishlist.my');
 Route::post('/store-delivery-info', [SumbaawaController::class, 'storeDeliveryInfo'])->name('store_delivery_info');
 Route::post('/clear-delivery-info', [SumbaawaController::class, 'clearDeliveryInfo'])->name('clear_delivery_info');
+Route::get('/search', [SumbaawaController::class, 'search'])->name('search');
 
 // Routes protégées par authentification
 Route::middleware('auth')->group(function () {
@@ -64,13 +66,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/categories', [CategorieController::class, 'index'])->name('categories.index');
 
     // Sous-catégories
-    Route::get('/sous-categories/create', [SousCategorieController::class, 'create'])->name('sousCategories.create');
-    Route::post('/sous-categories', [SousCategorieController::class, 'store'])->name('sousCategories.store');
-    Route::get('/sous-categories/{sousCategorie}/edit', [SousCategorieController::class, 'edit'])->name('sousCategories.edit');
+    Route::get('/sous-categories/create', [SousCategorieController::class, 'create'])->name('sous-categories.create');
+    Route::post('/sous-categories', [SousCategorieController::class, 'store'])->name('sous-categories.store');
+    Route::get('/sous-categories/{sousCategorie}/edit', [SousCategorieController::class, 'edit'])->name('sous-categories.edit');
     Route::put('/sous-categories/{sousCategorie}', [SousCategorieController::class, 'update'])->name('sousCategories.update');
-    Route::delete('/sous-categories/{sousCategorie}', [SousCategorieController::class, 'destroy'])->name('sousCategories.destroy');
-    Route::get('/sous-categories/{sousCategorie}', [SousCategorieController::class, 'show'])->name('sousCategories.show');
-    Route::get('/sous-categories', [SousCategorieController::class, 'index'])->name('sousCategories.index');
+    Route::delete('/sous-categories/{sousCategorie}', [SousCategorieController::class, 'destroy'])->name('sous-categories.destroy');
+    Route::get('/sous-categories/{sousCategorie}', [SousCategorieController::class, 'show'])->name('sous-categories.show');
+    Route::get('/sous-categories', [SousCategorieController::class, 'index'])->name('sous-categories.index');
 
     // Produits
     Route::get('/produits/create', [ProduitController::class, 'create'])->name('produits.create');

@@ -81,7 +81,7 @@
                     </li>
                     <li>
                         
-                        <a  href="{{ route('sousCategories.create') }}">Ajouter</a>
+                        <a  href="{{ route('sous-categories.create') }}">Ajouter</a>
                     </li>
                     <li>
                         <a  href="order-detail.html">Modifier</a>

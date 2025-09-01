@@ -1,89 +1,155 @@
 @extends('front.layouts.master')
-@section('title', $sousCategorie->label)
+@section('title', 'Résultats de recherche')
+@section('filAriane')
+    <li class="breadcrumb-item active" aria-current="page">Résultats de recherche pour "{{ $query }}"</li>
+@endsection
 @section('styles')
-    <link rel="stylesheet" type="text/css" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/css/vendors/price-range.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
     <style>
-        .view-thumbnail-slider .slider-image {
-            max-width: 80px;
-            max-height: 80px;
+        :root {
+            --primary-dark: #1a1a1a;
+            --primary-light: #f8f8f8;
+            --accent-gold: #b78d65;
+            --accent-gold-dark: #9a7150;
+            --text-muted: #777;
+        }
+
+        .banner-overlay {
+            background: linear-gradient(to right, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        .collection-banner {
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .collection-banner:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .partition2 > div:first-child .banner-overlay {
+            background: linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        .partition2 > div:last-child .banner-overlay {
+            background: linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        .btn-outline-light {
+            border-width: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-light:hover {
+            background-color: var(--accent-gold);
+            border-color: var(--accent-gold);
+            color: var(--primary-dark);
+            transform: translateY(-3px);
+        }
+
+        .section-b-space {
+            position: relative;
             overflow: hidden;
         }
-        .view-thumbnail-slider .slider-image img {
+
+        .section-b-space::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(183,141,101,0.2) 0%, rgba(183,141,101,0) 70%);
+            z-index: 0;
+        }
+
+        .section-b-space::after {
+            content: "";
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(183,141,101,0.1) 0%, rgba(183,141,101,0) 70%);
+            z-index: 0;
+        }
+
+        .filter-btn {
+            background: var(--accent-gold);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .filter-btn:hover {
+            background: var(--accent-gold-dark);
+        }
+
+        .product-wrapper-grid .col-grid-box {
+            transition: all 0.3s ease;
+        }
+
+        .product-wrapper-grid .col-grid-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .basic-product .img-wrapper img {
             width: 100%;
-            height: 100%;
             object-fit: cover;
         }
-        .description-text {
-            max-height: 100px;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
+
+        .basic-product .product-detail .brand-w-color a {
+            color: var(--primary-dark);
+            font-weight: 500;
+            text-decoration: none;
         }
-        .description-text.expanded {
-            max-height: none;
+
+        .basic-product .product-detail .brand-w-color a:hover {
+            color: var(--accent-gold);
         }
-        .see-more-btn {
-            cursor: pointer;
-            color: blue;
-            text-decoration: underline;
-            display: block;
-            margin-top: 5px;
+
+        .basic-product .product-detail h6 {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+
+        .basic-product .product-detail .price {
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+
+        .basic-product .product-detail .discounted-price {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-left: 0.5rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .no-results i {
+            font-size: 3rem;
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
         }
     </style>
 @endsection
-@section('filAriane')
-    <li class="breadcrumb-item">
-        <a href="{{ route('categories.single', $sousCategorie->categorie) }}">{{ $sousCategorie->categorie->label }}</a>
-    </li>
-    <li class="breadcrumb-item active">{{ $sousCategorie->label }}</li>
-@endsection
+
 @section('content')
     <!-- section start -->
     <section class="section-b-space ratio_asos">
         <div class="collection-wrapper">
             <div class="container">
                 <div class="row">
-                    <div class="col-xl-3 col-lg-4 collection-filter">
-                        <!-- side-bar collapse block start -->
-                        <div class="collection-filter-block">
-                            <!-- brand filter start -->
-                            <button class="collection-mobile-back btn">
-                                <span class="filter-back">Retour</span>
-                                <i class="ri-arrow-left-s-line"></i>
-                            </button>
-                            <div class="collection-collapse-block open">
-                                <div class="accordion collection-accordion" id="accordionPanelsStayOpenExample">
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button pt-0" type="button"
-                                                    data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne"
-                                                    aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
-                                                {{ $sousCategorie->categorie->label }}
-                                            </button>
-                                        </h2>
-                                        <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
-                                            <div class="accordion-body">
-                                                <ul class="collection-listing">
-                                                    <li>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input subcategory-checkbox" type="checkbox" checked value="{{ $sousCategorie->id }}">
-                                                            <label class="form-check-label" for="checkbox">
-                                                                {{ $sousCategorie->label }}
-                                                            </label>
-                                                        </div>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- side-bar collapse block end -->
-                    </div>
-                    <div class="collection-content col-xl-9 col-lg-8">
+                    <div class="collection-content col-xl-12 col-lg-12">
                         <div class="page-main-content">
                             <div class="row">
                                 <div class="col-sm-12">
@@ -119,12 +185,19 @@
                                                             <div class="basic-product theme-product-1">
                                                                 <div class="overflow-hidden">
                                                                     <div class="img-wrapper">
-                                                                        <a href="{{ route('produits.single', $produit) }}"><img
-                                                                                src="{{ asset($produit->image_main) }}"
-                                                                                class="img-fluid blur-up lazyload" alt="{{ $produit->name }}" style="height: 250px; object-fit: cover;"></a>
-                                                                        <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span></div>
+                                                                        <a href="{{ route('produits.single', $produit) }}">
+                                                                            <img src="{{ asset($produit->image_main) }}"
+                                                                                 class="img-fluid blur-up lazyload"
+                                                                                 alt="{{ $produit->name }}"
+                                                                                 style="height: 250px; object-fit: cover;">
+                                                                        </a>
+                                                                        <div class="rating-label">
+                                                                            <i class="ri-star-s-fill"></i> <span>4.5</span>
+                                                                        </div>
                                                                         <div class="cart-info">
-                                                                            <a href="{{ route('wishlist.add', $produit) }}" title="Ajouter aux favoris" class="wishlist-icon">
+                                                                            <a href="{{ route('wishlist.add', $produit) }}"
+                                                                               title="Ajouter aux favoris"
+                                                                               class="wishlist-icon">
                                                                                 <i class="ri-heart-{{ FrontHelper::isProductInFavorites($produit->id) ? 'fill' : 'line' }}"></i>
                                                                             </a>
                                                                             <button class="add-to-cart"
@@ -139,7 +212,9 @@
                                                                                     title="Ajouter au panier">
                                                                                 <i class="ri-shopping-cart-line"></i>
                                                                             </button>
-                                                                            <a href="{{ route('produits.single', $produit) }}" title="Voir le détail" class="quick-view-btn">
+                                                                            <a href="{{ route('produits.single', $produit) }}"
+                                                                               title="Voir le détail"
+                                                                               class="quick-view-btn">
                                                                                 <i class="ri-eye-line"></i>
                                                                             </a>
                                                                         </div>
@@ -147,12 +222,14 @@
                                                                     <div class="product-detail">
                                                                         <div>
                                                                             <div class="brand-w-color">
-                                                                                <a class="product-title" href="{{ route('produits.single', $produit) }}">
+                                                                                <a class="product-title"
+                                                                                   href="{{ route('produits.single', $produit) }}">
                                                                                     {{ $produit->name }}
                                                                                 </a>
                                                                             </div>
                                                                             <h6>{{ $produit->sousCategorie->label ?? 'Sous-catégorie non définie' }}</h6>
-                                                                            <h4 class="price">$ {{ number_format($produit->price, 2, '.', ',') }}
+                                                                            <h4 class="price">
+                                                                                $ {{ number_format($produit->price, 2, '.', ',') }}
                                                                                 @if ($produit->original_price)
                                                                                     <del>$ {{ number_format($produit->original_price, 2, '.', ',') }}</del>
                                                                                     <span class="discounted-price">
@@ -166,7 +243,10 @@
                                                             </div>
                                                         </div>
                                                     @empty
-                                                        <p>Aucun produit trouvé.</p>
+                                                        <div class="no-results">
+                                                            <i class="ri-search-line"></i>
+                                                            <p>Aucun produit trouvé pour "{{ $query }}".</p>
+                                                        </div>
                                                     @endforelse
                                                 </div>
                                             </div>
@@ -215,13 +295,16 @@
                         color: $this.data('product-color'),
                         niveau_confort: $this.data('product-confort'),
                         poids: $this.data('product-poids'),
-                        quantity: 1, // Quantité par défaut
+                        quantity: 1,
                         product_url: '{{ route('produits.single', ':slug') }}'.replace(':slug', $this.data('product-name').toLowerCase().replace(/\s+/g, '-'))
                     };
 
                     $.ajax({
                         url: '{{ route('cart.add') }}',
                         method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
                         data: {
                             product: productData
                         },
@@ -293,3 +376,4 @@
         });
     </script>
 @endsection
+
