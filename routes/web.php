@@ -59,10 +59,10 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Liste des recharges (GET)
     //Route::get('/recharges', [RechargeController::class, 'index'])->name('recharges.index');
-    
+
     // Affichage d'une recharge spécifique (GET)
     //Route::get('/recharges/{recharge}', [RechargeController::class, 'show'])->name('recharges.show');
-    
+
 
      Route::get('/recharges/create', [RechargeController::class, 'create'])->name('recharges.create');
    //  Route::post('/recharges', [RechargeController::class, 'store'])->name('recharges.store');

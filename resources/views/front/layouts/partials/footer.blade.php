@@ -11,7 +11,7 @@
                         <p>Découvrez les dernières tendances meubles avec nos collections exclusives.</p>
                         <ul class="contact-list">
                             <li><i class="ri-map-pin-line"></i>Sumba Awa Address</li>
-                            <li><i class="ri-phone-line"></i>123-456-7898</li>
+                            <li><i class="ri-phone-line"></i>+86 182 6063 1607</li>
                             <li><i class="ri-mail-line"></i>support@sumbaawa.com</li>
                         </ul>
                     </div>

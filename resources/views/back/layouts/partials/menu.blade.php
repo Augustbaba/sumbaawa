@@ -80,7 +80,7 @@
                             View</a>
                     </li>
                     <li>
-                        
+
                         <a  href="{{ route('subcategories.create') }}">Ajouter</a>
                     </li>
                     <li>
@@ -109,7 +109,7 @@
                     <li>
                         <a  href="shopping-cart.html">Desactiver</a>
                     </li>
-                   
+
                 </ul>
             </li>
             <li>
@@ -126,7 +126,7 @@
                     <li>
                         <a  href="buyer-orders.html">Historiques</a>
                     </li>
-                   
+
                 </ul>
             </li>
             <li>
@@ -140,8 +140,8 @@
                     <li>
                         <a  href="buyer-dashboard.html">listes</a>
                     </li>
-                    
-                   
+
+
                 </ul>
             </li>
             <li>
@@ -172,7 +172,7 @@
                     <span class="badge bg-success rounded-circle ms-auto">2</span>
                 </a>
             </li>
-         
+
             <li>
                 <a href="#" class="disabled">
                     <span class="nav-link-icon">

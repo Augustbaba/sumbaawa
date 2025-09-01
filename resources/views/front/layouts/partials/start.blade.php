@@ -199,7 +199,7 @@
                         <div class="header-contact">
                             <ul>
                                 <li>Bienvenue sur {{ FrontHelper::getAppName() }}</li>
-                                <li><i class="ri-phone-fill"></i>Nous Contacter: 123 - 456 - 7890</li>
+                                <li><i class="ri-phone-fill"></i>Nous Contacter: +86 182 6063 1607</li>
                             </ul>
                         </div>
                     </div>

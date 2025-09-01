@@ -156,11 +156,11 @@
 
 
     <!-- cookie bar start -->
-    <div class="cookie-bar">
+    {{-- <div class="cookie-bar">
         <p>Nous utilisons des cookies pour améliorer notre site et votre expérience d'achat. En poursuivant votre navigation, vous acceptez notre politique en matière de cookies.</p>
         <a href="#!" class="btn btn-solid btn-xs">Accepter</a>
         <a href="#!" class="btn btn-solid btn-xs">Refuser</a>
-    </div>
+    </div> --}}
     <!-- cookie bar end -->
 
     <!--modal popup start-->
