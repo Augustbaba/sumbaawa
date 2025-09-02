@@ -33,7 +33,7 @@
             @endif
 
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover mb-2">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -54,8 +54,8 @@
                                 <td>{{ number_format($produit->price, 2) }}</td>
                                 <td>
                                     @if ($produit->image_main)
-                                        <img src="{{ asset('storage/' . $produit->image_main) }}" 
-                                             alt="{{ $produit->name }}" 
+                                        <img src="{{ asset($produit->image_main) }}"
+                                             alt="{{ $produit->name }}"
                                              style="width: 50px; height: 50px; object-fit: cover;">
                                     @else
                                         Aucune image
@@ -63,16 +63,16 @@
                                 </td>
                                 <td>{{ $produit->color ?? 'N/A' }}</td>
                                 <td>
-                                    <a href="{{ route('produits.show', $produit->id) }}" 
+                                    <a href="{{ route('produits.show', $produit->id) }}"
                                        class="btn btn-sm btn-info">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="{{ route('produits.edit', $produit->id) }}" 
+                                    <a href="{{ route('produits.edit', $produit->id) }}"
                                        class="btn btn-sm btn-primary">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form action="{{ route('produits.destroy', $produit->id) }}" 
-                                          method="POST" 
+                                    <form action="{{ route('produits.destroy', $produit->id) }}"
+                                          method="POST"
                                           class="d-inline"
                                           onsubmit="return confirm('Voulez-vous vraiment supprimer ce produit ?')">
                                         @csrf
@@ -90,7 +90,7 @@
                         @endforelse
                     </tbody>
                 </table>
-                {{ $produits->links() }}
+                {{ $produits->links('vendor.pagination.bootstrap-5') }}
             </div>
         </div>
     </div>

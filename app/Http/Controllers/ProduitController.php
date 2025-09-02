@@ -44,7 +44,7 @@ public function store(Request $request)
 
         \Log::info('Validation passée');
 
-        $slug = Str::slug($validated['name']);
+        $slug = Str::slug($validated['name']). '-' . Str::random(5);
         $count = Produit::where('slug', 'like', $slug . '%')->count();
         $validated['slug'] = $count ? "{$slug}-{$count}" : $slug;
 
@@ -53,6 +53,7 @@ public function store(Request $request)
         // Upload image principale
         if ($request->hasFile('image_main')) {
             $validated['image_main'] = $request->file('image_main')->store('produits/main', 'public');
+            $validated['image_main'] = 'storage/' . $validated['image_main'];
         }
 
         $produit = Produit::create($validated);
@@ -64,7 +65,7 @@ public function store(Request $request)
                     $path = $image->store('produits/secondary', 'public');
                     Image::create([
                         'produit_id' => $produit->id,
-                        'url' => $path,
+                        'url' => 'storage/' . $path,
                         'reference' => 'image_' . time() . '_' . rand(1000, 9999),
                     ]);
                 }
@@ -123,7 +124,7 @@ public function store(Request $request)
         ]);
 
         // Auto-generate unique slug
-        $slug = Str::slug($validated['name']);
+        $slug = Str::slug($validated['name']). '-' . Str::random(5);
         $count = Produit::where('slug', 'like', $slug . '%')->where('id', '!=', $produit->id)->count();
         $validated['slug'] = $count ? "{$slug}-{$count}" : $slug;
 
@@ -133,9 +134,11 @@ public function store(Request $request)
         // Handle main image
         if ($request->hasFile('image_main')) {
             if ($produit->image_main) {
-                Storage::disk('public')->delete($produit->image_main);
+                $cheminRelatif = str_replace('storage/', '', $produit->image_main);
+                Storage::disk('public')->delete($cheminRelatif);
             }
             $validated['image_main'] = $request->file('image_main')->store('produits/main', 'public');
+            $validated['image_main'] = 'storage/' . $validated['image_main'];
         } else {
             $validated['image_main'] = $produit->image_main;
         }
@@ -148,7 +151,7 @@ public function store(Request $request)
                 $path = $image->store('produits/secondary', 'public');
                 Image::create([
                     'produit_id' => $produit->id,
-                    'url' => $path,
+                    'url' => 'storage/' . $path,
                     'reference' => 'image_' . time() . '_' . rand(1000, 9999),
                 ]);
             }
@@ -164,12 +167,14 @@ public function store(Request $request)
 
         // Delete main image
         if ($produit->image_main) {
-            Storage::disk('public')->delete($produit->image_main);
+            $cheminRelatif = str_replace('storage/', '', $produit->image_main);
+            Storage::disk('public')->delete($cheminRelatif);
         }
 
         // Delete secondary images
         foreach ($produit->images as $image) {
-            Storage::disk('public')->delete($image->url);
+            $cheminRelatif = str_replace('storage/', '', $image->url);
+            Storage::disk('public')->delete($cheminRelatif);
             $image->delete();
         }
 

@@ -23,7 +23,7 @@
     <div class="card">
         <div class="card-body">
             <h5 class="card-title"><i class="bi bi-eye me-2"></i>Détails du Produit</h5>
-            
+
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
@@ -64,7 +64,7 @@
                         <label class="form-label"><strong>Niveau de confort</strong></label>
                         <p>
                             @if ($produit->niveau_confort)
-                                {{ $produit->niveau_confort }} - 
+                                {{ $produit->niveau_confort }} -
                                 {{ ['1' => 'Basique', '2' => 'Standard', '3' => 'Confortable', '4' => 'Premium', '5' => 'Luxe'][$produit->niveau_confort] }}
                             @else
                                 N/A
@@ -92,8 +92,8 @@
                     <div class="mb-3">
                         <label class="form-label"><strong>Image principale</strong></label>
                         @if ($produit->image_main)
-                            <img src="{{ asset('storage/' . $produit->image_main) }}" 
-                                 alt="{{ $produit->name }}" 
+                            <img src="{{ asset($produit->image_main) }}"
+                                 alt="{{ $produit->name }}"
                                  style="width: 100px; height: 100px; object-fit: cover;">
                         @else
                             <p>Aucune image</p>
@@ -106,8 +106,8 @@
                         @if ($produit->images->isNotEmpty())
                             <div class="d-flex flex-wrap gap-2">
                                 @foreach ($produit->images as $image)
-                                    <img src="{{ asset('storage/' . $image->url) }}" 
-                                         alt="{{ $produit->name }}" 
+                                    <img src="{{ asset($image->url) }}"
+                                         alt="{{ $produit->name }}"
                                          style="width: 100px; height: 100px; object-fit: cover;">
                                 @endforeach
                             </div>
@@ -131,7 +131,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="d-flex justify-content-between">
                 <a href="{{ route('produits.index') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left me-2"></i> Retour

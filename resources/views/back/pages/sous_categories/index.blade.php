@@ -51,16 +51,16 @@
                                 <td>{{ $sousCategorie->slug }}</td>
                                 <td>{{ $sousCategorie->categorie ? $sousCategorie->categorie->label : 'N/A' }}</td>
                                 <td>
-                                    <a href="{{ route('sous-categories.show', $sousCategorie) }}" 
+                                    <a href="{{ route('sous-categories.show', $sousCategorie) }}"
                                        class="btn btn-sm btn-info">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="{{ route('sous-categories.edit', $sousCategorie) }}" 
+                                    <a href="{{ route('sous-categories.edit', $sousCategorie) }}"
                                        class="btn btn-sm btn-primary">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form action="{{ route('sous-categories.destroy', $sousCategorie) }}" 
-                                          method="POST" 
+                                    <form action="{{ route('sous-categories.destroy', $sousCategorie) }}"
+                                          method="POST"
                                           class="d-inline"
                                           onsubmit="return confirm('Voulez-vous vraiment supprimer cette sous-catégorie ?')">
                                         @csrf
@@ -78,7 +78,7 @@
                         @endforelse
                     </tbody>
                 </table>
-                {{ $sousCategories->links() }}
+                {{ $sousCategories->links('vendor.pagination.bootstrap-5') }}
             </div>
         </div>
     </div>
