@@ -20,7 +20,6 @@
             }
         });
 
-
         // Fonction pour formater les prix avec virgule pour les milliers
         function formatPrice(number) {
             return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -34,8 +33,7 @@
             if ($('#cart-item-count').length) {
                 $('#cart-item-count').text(count);
             }
-            // Activer/Désactiver les boutons en fonction du compteur
-            $('.view-cart, .checkout, .clear-cart').toggleClass('disabled', count === 0);
+            $('.view-cart, .checkout, .clear-cart').toggleClass('cart-disabled', count === 0);
         }
 
         // Initialiser le compteur du panier au chargement
@@ -74,9 +72,6 @@
 
                     const priceStr = item.price.toString().replace(/,/g, '');
                     const price = parseFloat(priceStr);
-                    const originalPriceStr = item.original_price ? item.original_price.toString().replace(/,/g, '') : null;
-                    const originalPrice = originalPriceStr ? parseFloat(originalPriceStr) : null;
-
                     if (isNaN(price)) {
                         console.error('Prix non valide pour l\'élément:', item);
                         return;
@@ -90,7 +85,7 @@
                                 </a>
                             </td>
                             <td>
-                                <a href="${item.product_url}">${item.name}</a>
+                                <a href="${item.product_url}">${item.name}</a><br><small>Couleur: ${item.color || 'Non spécifié'}</small>
                                 <div class="mobile-cart-content row">
                                     <div class="col">
                                         <div class="qty-box">
@@ -107,7 +102,6 @@
                                     </div>
                                     <div class="col table-price">
                                         <h2 class="td-color">$${formatPrice(price)}</h2>
-                                        ${originalPrice && originalPrice > price ? `<del>$${formatPrice(originalPrice)}</del>` : ''}
                                     </div>
                                     <div class="col">
                                         <h2 class="td-color">
@@ -120,10 +114,6 @@
                             </td>
                             <td class="table-price">
                                 <h2>$${formatPrice(price)}</h2>
-                                ${originalPrice && originalPrice > price ? `
-                                    <del>$${formatPrice(originalPrice)}</del>
-                                    <h6 class="theme-color">Vous économisez : $${formatPrice(originalPrice - price)}</h6>
-                                ` : ''}
                             </td>
                             <td>
                                 <div class="qty-box">
@@ -176,7 +166,7 @@
 
             let cartHtml = `
                 <div class="sidebar-title">
-                    <a href="/cart/clear" class="clear-cart ${!cart.items || cart.items.length === 0 ? 'disabled' : ''}">Vider le panier</a>
+                    <a href="/cart/clear" class="clear-cart ${!cart.items || cart.items.length === 0 ? 'cart-disabled' : ''}">Vider le panier</a>
                 </div>
                 <div class="cart-media">
                     <ul class="cart-product">
@@ -208,6 +198,9 @@
                                     <h4 class="quantity">
                                         <span>${item.quantity} x $${formatPrice(price)}</span>
                                     </h4>
+                                    <small class="color">
+                                        <span>Couleur: ${item.color || 'Non spécifié'}</span>
+                                    </small>
                                     <div class="qty-box">
                                         <div class="input-group qty-container">
                                             <button class="btn qty-btn-minus" data-product-id="${item.id}">
@@ -241,8 +234,8 @@
                         </li>
                         <li>
                             <div class="buttons">
-                                <a href="/cart" class="btn view-cart ${!cart.items || cart.items.length === 0 ? 'disabled' : ''}">Voir le panier</a>
-                                <a href="/checkout" class="btn checkout ${!cart.items || cart.items.length === 0 ? 'disabled' : ''}">Passer la commande</a>
+                                <a href="/cart" class="btn view-cart ${!cart.items || cart.items.length === 0 ? 'cart-disabled' : ''}">Voir le panier</a>
+                                <a href="/checkout" class="btn checkout ${!cart.items || cart.items.length === 0 ? 'cart-disabled' : ''}">Passer la commande</a>
                             </div>
                         </li>
                     </ul>
@@ -353,7 +346,7 @@
 
             $('.clear-cart').off('click').on('click', function (e) {
                 e.preventDefault();
-                if ($(this).hasClass('disabled')) return;
+                if ($(this).hasClass('cart-disabled')) return;
                 Swal.fire({
                     title: "Êtes-vous sûr ?",
                     text: "Vous ne pourrez pas annuler cette action !",

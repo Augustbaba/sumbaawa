@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FrontHelper;
+use App\Http\Requests\SendContactRequest;
+use App\Mail\receiveContactMail;
+use App\Mail\sendContactMail;
 use App\Models\Categorie;
 use App\Models\Commande;
 use App\Models\Commander;
@@ -12,6 +16,7 @@ use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class SumbaawaController extends Controller
@@ -39,6 +44,10 @@ class SumbaawaController extends Controller
         return view('front.pages.categories.index', compact('categories'));
     }
 
+    public function contact()
+    {
+        return view('front.pages.contact');
+    }
 
     public function sousCategoriesDetail(SousCategorie $sousCategorie)
     {
@@ -114,19 +123,25 @@ class SumbaawaController extends Controller
         $productData = $request->input('product');
         $cart = session()->get('cart', []);
 
+        // Déterminer la couleur à utiliser
+        $colors = isset($productData['color']) && $productData['color'] ? array_filter(array_map('trim', explode(',', $productData['color']))) : [];
+        $selectedColor = !empty($colors) ? reset($colors) : 'Aucune couleur'; // Prendre la couleur sélectionnée ou la première couleur
+
+        $produit = Produit::find($productData['id']);
         if (isset($cart[$productData['id']])) {
-            $cart[$productData['id']]['quantity'] += $productData['quantity'];
+            $cart[$productData['id']]['quantity'] += ($productData['quantity'] ?? 1);
+            $cart[$productData['id']]['color'] = $selectedColor; // Mettre à jour la couleur si nécessaire
         } else {
             $cart[$productData['id']] = [
                 'id' => $productData['id'],
                 'name' => $productData['name'],
                 'image_main' => $productData['image_main'],
-                'color' => $productData['color'],
-                'niveau_confort' => $productData['niveau_confort'],
+                'color' => $selectedColor, // Stocker uniquement la couleur sélectionnée
+                'niveau_confort' => $productData['niveau_confort'] ?? null,
                 'poids' => $productData['poids'],
                 'price' => $productData['price'],
-                'quantity' => $productData['quantity'],
-                'product_url' => route('produits.single', Str::slug($productData['name']))
+                'quantity' => $productData['quantity'] ?? 1,
+                'product_url' => route('produits.single', $produit->slug),
             ];
         }
 
@@ -401,6 +416,24 @@ class SumbaawaController extends Controller
             'produits' => $produits,
             'query' => $query,
         ]);
+    }
+
+    public function contactSend(SendContactRequest $request)
+    {
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'subject' => $request->subject,
+            'message' => $request->message,
+        ];
+
+
+        // Mail::to(FrontHelper::getSetting()->company_mail)->send(new sendContactMail($data));
+        Mail::to('adebissiimorou@gmail.com')->send(new sendContactMail($data));
+
+        Mail::to($data['email'])->send(new receiveContactMail($data));
+        return back()->with('contact_success', 'Message envoyé avec succès!');
     }
 
 

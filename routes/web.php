@@ -38,6 +38,8 @@ Route::get('/mes-favoris', [SumbaawaController::class, 'myWishlist'])->middlewar
 Route::post('/store-delivery-info', [SumbaawaController::class, 'storeDeliveryInfo'])->name('store_delivery_info');
 Route::post('/clear-delivery-info', [SumbaawaController::class, 'clearDeliveryInfo'])->name('clear_delivery_info');
 Route::get('/search', [SumbaawaController::class, 'search'])->name('search');
+Route::get('/contact-us', [SumbaawaController::class, 'contact'])->name('contact');
+Route::post('/contact-send', [SumbaawaController::class, 'contactSend'])->name('contact.send');
 
 // Routes protégées par authentification
 Route::middleware('auth')->group(function () {

@@ -37,12 +37,12 @@
                             @foreach ($cart as $item)
                                 <tr data-product-id="{{ $item['id'] }}">
                                     <td>
-                                        <a href="{{ route('produits.single', Str::slug($item['name'])) }}">
+                                        <a href="{{ $item['product_url'] }}">
                                             <img src="{{ $item['image_main'] }}" class="img-fluid" alt="{{ $item['name'] }}">
                                         </a>
                                     </td>
                                     <td>
-                                        <a href="{{ route('produits.single', Str::slug($item['name'])) }}">{{ $item['name'] }}</a>
+                                        <a href="{{ $item['product_url'] }}">{{ $item['name'] }}</a><br><small>Couleur: {{ $item['color']?? 'Non Spécifié' }}</small>
                                         <div class="mobile-cart-content row">
                                             <div class="col">
                                                 <div class="qty-box">

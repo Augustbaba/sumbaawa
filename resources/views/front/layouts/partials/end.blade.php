@@ -41,7 +41,7 @@
             @endphp
 
             <div class="sidebar-title">
-                <a href="{{ route('cart.clear') }}" class="clear-cart {{ $isCartEmpty ? 'disabled' : '' }}">Vider le panier</a>
+                <a href="{{ route('cart.clear') }}" class="clear-cart {{ $isCartEmpty ? 'cart-disabled' : '' }}">Vider le panier</a>
             </div>
             <div class="cart-media">
                 <ul class="cart-product">
@@ -57,6 +57,9 @@
                                     </a>
                                     <h4 class="quantity">
                                         <span>{{ $item['quantity'] }} x ${{ number_format($item['price'], 2) }}</span>
+                                    </h4>
+                                    <h4 class="color">
+                                        <span>Couleur: {{ $item['color']?? 'Non Spécifié' }}</span>
                                     </h4>
                                     <div class="qty-box">
                                         <div class="input-group qty-container">
@@ -89,8 +92,8 @@
                     </li>
                     <li>
                         <div class="buttons">
-                            <a href="{{ route('cart.view') }}" class="btn view-cart {{ $isCartEmpty ? 'disabled' : '' }}">Voir le panier</a>
-                            <a href="{{ route('checkout') }}" class="btn checkout {{ $isCartEmpty ? 'disabled' : '' }}">Passer la commande</a>
+                            <a href="{{ route('cart.view') }}" class="btn view-cart {{ $isCartEmpty ? 'cart-disabled' : '' }}">Voir le panier</a>
+                            <a href="{{ route('checkout') }}" class="btn checkout {{ $isCartEmpty ? 'cart-disabled' : '' }}">Passer la commande</a>
                         </div>
                     </li>
                 </ul>

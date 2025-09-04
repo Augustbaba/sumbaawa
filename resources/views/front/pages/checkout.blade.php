@@ -375,6 +375,10 @@
 
             <div class="product-details">
                 <div class="detail-row">
+                    <span class="detail-label">Couleur:</span>
+                    <span class="detail-value">{{ $item['color'] }}</span>
+                </div>
+                <div class="detail-row">
                     <span class="detail-label">Prix unitaire:</span>
                     <span class="detail-value">${{ number_format($item['price'], 2, '.', ',') }}</span>
                 </div>

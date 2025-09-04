@@ -11,7 +11,7 @@
                         <p>Découvrez les dernières tendances meubles avec nos collections exclusives.</p>
                         <ul class="contact-list">
                             <li><i class="ri-map-pin-line"></i>Sumba Awa Address</li>
-                            <li><i class="ri-phone-line"></i>+86 182 6063 1607</li>
+                            <li><i class="ri-phone-line"></i>+242044724102</li>
                             <li><i class="ri-mail-line"></i>support@sumbaawa.com</li>
                         </ul>
                     </div>
@@ -46,9 +46,9 @@
                                     <li><a class="text-content" href="{{ route('register') }}">S'inscrire</a></li>
                                     <li><a class="text-content" href="{{ route('login') }}">Se Connecter</a></li>
                                 @endguest
-                                <li><a class="text-content" href="">Favoris</a></li>
+                                <li><a class="text-content" href="{{ route('wishlist.my') }}">Favoris</a></li>
                                 <li><a class="text-content" href="">FAQ</a></li>
-                                <li><a class="text-content" href="#">Nous Contacter</a></li>
+                                <li><a class="text-content" href="{{ route('contact') }}">Contacter Nous</a></li>
                             </ul>
                         </div>
                     </div>
@@ -74,18 +74,13 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a target="_blank" href="https://twitter.com/">
-                                            <i class="ri-twitter-fill"></i>
+                                        <a target="_blank" href="https://tiktok.com/">
+                                            <i class="ri-tiktok-fill"></i>
                                         </a>
                                     </li>
                                     <li>
                                         <a target="_blank" href="https://instagram.com/">
-                                            <i class="ri-instagram-fill"></i>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a target="_blank" href="https://pinterest.com/">
-                                            <i class="ri-pinterest-fill"></i>
+                                            <i class="ri-youtube-fill"></i>
                                         </a>
                                     </li>
                                 </ul>

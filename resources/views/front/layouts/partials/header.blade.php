@@ -8,7 +8,7 @@
                         <div class="header-contact">
                             <ul>
                                 <li>Bienvenue sur {{ FrontHelper::getAppName() }}</li>
-                                <li><i class="ri-phone-fill"></i>Nous Contacter: +86 182 6063 1607</li>
+                                <li><i class="ri-phone-fill"></i>Contacter Nous: +242044724102</li>
                             </ul>
                         </div>
                     </div>
@@ -554,7 +554,7 @@
                                             </ul>
                                         </li> --}}
                                         <li><a href="{{ route('wishlist.my') }}">Favoris</a></li>
-                                        <li><a href="">Nous Contacter</a></li>
+                                        <li><a href="{{ route('contact') }}">Contacter Nous</a></li>
                                     </ul>
                                 </nav>
                             </div>

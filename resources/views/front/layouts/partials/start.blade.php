@@ -74,7 +74,7 @@
             padding: 10px 15px;
             cursor: pointer;
             z-index: 10;
-            transition: all 5s ease;
+            transition: all 0.3s ease;
         }
 
         .carousel-control:hover {
@@ -113,6 +113,48 @@
 
         .indicator.active {
             background: white;
+        }
+
+        /* Style pour le compte à rebours */
+        .countdown-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .countdown-box {
+            text-align: center;
+        }
+
+        .countdown-number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .countdown-label {
+            font-size: 0.8rem;
+            color: #555;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .carousel-slide {
+                min-height: 60vh;
+            }
+            h1 {
+                font-size: 1.8rem !important;
+            }
+            .btn-lg {
+                padding: 10px 20px !important;
+                font-size: 1rem !important;
+            }
+            .countdown-container {
+                flex-wrap: wrap;
+            }
+            .countdown-box {
+                min-width: 60px;
+            }
         }
 
         /* Styles existants */
@@ -183,6 +225,16 @@
             object-fit: cover; /* Assure que l'image s'adapte sans déformation */
         }
 
+        .cart-disabled {
+            color: #ccc !important; /* Couleur grisée */
+            background-color: #f5f5f5 !important; /* Fond grisé (ajustez si nécessaire) */
+            cursor: not-allowed !important; /* Curseur indiquant non cliquable */
+            pointer-events: none !important; /* Empêche les clics */
+            opacity: 0.6 !important; /* Effet visuel grisé */
+            text-decoration: none !important; /* Supprime le soulignement */
+        }
+
+
     </style>
     @yield('styles')
 </head>
@@ -199,7 +251,7 @@
                         <div class="header-contact">
                             <ul>
                                 <li>Bienvenue sur {{ FrontHelper::getAppName() }}</li>
-                                <li><i class="ri-phone-fill"></i>Nous Contacter: +86 182 6063 1607</li>
+                                <li><i class="ri-phone-fill"></i>Contacter Nous: +242044724102</li>
                             </ul>
                         </div>
                     </div>
@@ -252,12 +304,12 @@
                                                 <a href="{{ route('index') }}">Accueil</a>
                                             </li>
                                             <li>
-                                                <a href="#!">Catégories<div class="lable-nav">Nouveau</div></a>
+                                                <a href="{{ route('categories.page') }}">Catégories<div class="lable-nav">Nouveau</div></a>
                                             </li>
                                             <li>
                                                 <a href="{{ route('wishlist.my') }}">Favoris</a>
                                             </li>
-                                            <li><a href="#!">Nous Contacter</a>
+                                            <li><a href="{{ route('contact') }}">Contacter Nous</a>
                                             </li>
                                         </ul>
                                     </nav>

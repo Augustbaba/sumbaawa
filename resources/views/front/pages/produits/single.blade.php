@@ -1,5 +1,15 @@
 @php
     use Illuminate\Support\Str;
+    // Correspondance des couleurs pour affichage visuel
+    $colorMap = [
+        'Noir' => '#000000',
+        'Bleu' => '#0000FF',
+        'Gris' => '#808080',
+        'Blanc' => '#FFFFFF',
+        'Rouge' => '#FF0000',
+        'Vert' => '#008000',
+        'Jaune' => '#FFFF00',
+    ];
 @endphp
 
 @extends('front.layouts.master')
@@ -27,6 +37,22 @@
             text-decoration: underline;
             display: block;
             margin-top: 5px;
+        }
+        .color-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .color-option input {
+            margin-right: 10px;
+        }
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 10px;
+            border: 1px solid #ccc;
         }
     </style>
 @endsection
@@ -118,7 +144,29 @@
                                 <ul class="shipping-info">
                                     <li><span>Catégorie :</span> {{ $produit->sousCategorie->categorie->label }}</li>
                                     <li><span>Sous-catégorie :</span> {{ $produit->sousCategorie->label }}</li>
-                                    <li><span>Couleur :</span> {{ $produit->color ?? 'Non spécifié' }}</li>
+                                    @if ($produit->color)
+                                        <li>
+                                            <span>Couleur :</span>
+                                            <div class="color-options">
+                                                @php
+                                                    $colors = explode(',', $produit->color);
+                                                @endphp
+                                                @foreach ($colors as $index => $color)
+                                                    <div class="color-option">
+                                                        <input type="radio" name="color" value="{{ trim($color) }}"
+                                                               id="color-{{ $index }}"
+                                                               {{ $index === 0 ? 'checked' : '' }}>
+                                                        <label for="color-{{ $index }}">{{ trim($color) }}</label>
+                                                        @if (isset($colorMap[trim($color)]))
+                                                            <span class="color-swatch" style="background-color: {{ $colorMap[trim($color)] }};"></span>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </li>
+                                    @else
+                                        <li><span>Couleur :</span> Non spécifié</li>
+                                    @endif
                                     @if ($produit->niveau_confort)
                                         <li><span>Niveau de confort :</span> {{ $produit->niveau_confort }}</li>
                                     @endif
@@ -132,7 +180,6 @@
                                             data-product-id="{{ $produit->id }}"
                                             data-product-name="{{ $produit->name }}"
                                             data-product-image="{{ asset($produit->image_main) }}"
-                                            data-product-color="{{ $produit->color ?? '' }}"
                                             data-product-confort="{{ $produit->niveau_confort ?? '' }}"
                                             data-product-poids="{{ $produit->poids }}"
                                             data-product-price="{{ $produit->price }}">
@@ -204,6 +251,10 @@
                     </div>
                     <div class="product-5 product-m no-arrow">
                         @foreach ($relatedProduits as $related)
+                            @php
+                                $relatedColors = $related->color ? explode(',', $related->color) : [];
+                                $defaultColor = $relatedColors[0] ?? '';
+                            @endphp
                             <div class="basic-product theme-product-1">
                                 <div class="overflow-hidden">
                                     <div class="img-wrapper">
@@ -219,7 +270,7 @@
                                                             data-product-id="{{ $related->id }}"
                                                             data-product-name="{{ $related->name }}"
                                                             data-product-image="{{ asset($related->image_main) }}"
-                                                            data-product-color="{{ $related->color ?? '' }}"
+                                                            data-product-color="{{ $defaultColor }}"
                                                             data-product-confort="{{ $related->niveau_confort ?? '' }}"
                                                             data-product-poids="{{ $related->poids }}"
                                                             data-product-price="{{ $related->price }}"
@@ -233,17 +284,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="#quickView" data-bs-toggle="modal" title="Aperçu rapide"
-                                                       class="quick-view-btn"
-                                                       data-produit="{{ json_encode([
-                                                           'name' => $related->name,
-                                                           'slug' => $related->slug,
-                                                           'price' => $related->price,
-                                                           'original_price' => $related->original_price,
-                                                           'description' => $related->description,
-                                                           'image_main' => asset($related->image_main),
-                                                           'images' => $related->images ? $related->images->map(fn($image) => ['url' => asset($image->url)])->toArray() : null
-                                                       ]) }}">
+                                                    <a href="{{ route('produits.single', $related->slug) }}" title="Voir le détail">
                                                         <i class="ri-eye-line"></i>
                                                     </a>
                                                 </li>
@@ -291,8 +332,8 @@
     <script>
         (function($) {
             $(document).ready(function () {
-                // Initialiser le compteur du panier
                 cartUtils.initializeCartCount();
+                cartUtils.attachCartEvents();
 
                 // Initialiser le slider principal et les miniatures
                 try {
@@ -332,11 +373,14 @@
                 $('.add-to-cart').on('click', function (e) {
                     e.preventDefault();
                     const $this = $(this);
+                    const selectedColor = $this.closest('.product-buttons').length
+                        ? $('input[name="color"]:checked').val() || ''
+                        : $this.data('product-color'); // Utiliser la couleur par défaut pour produits similaires
                     const productData = {
                         id: $this.data('product-id'),
                         name: $this.data('product-name'),
                         image_main: $this.data('product-image'),
-                        color: $this.data('product-color'),
+                        color: selectedColor,
                         niveau_confort: $this.data('product-confort'),
                         poids: $this.data('product-poids'),
                         price: parseFloat($this.data('product-price').toString().replace(/,/g, '')),
@@ -350,6 +394,9 @@
                         method: 'POST',
                         data: {
                             product: productData
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
                         success: function (response) {
                             Swal.fire({
@@ -382,40 +429,38 @@
                         }
                     });
                 });
+
+                // Success message with SweetAlert2
+                const status_wishlist_success = '{{ session('wishlist_success') }}';
+                const status_wishlist_info = '{{ session('wishlist_info') }}';
+                if (status_wishlist_success) {
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        showConfirmButton: false,
+                        timer: 5000,
+                        timerProgressBar: true,
+                        icon: "success",
+                        title: status_wishlist_success
+                    }).then(() => {
+                        window.history.pushState({}, document.title, window.location.pathname);
+                    });
+                }
+
+                if (status_wishlist_info) {
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        showConfirmButton: false,
+                        timer: 5000,
+                        timerProgressBar: true,
+                        icon: "info",
+                        title: status_wishlist_info
+                    }).then(() => {
+                        window.history.pushState({}, document.title, window.location.pathname);
+                    });
+                }
             });
         })(jQuery);
-
-        // Success message with SweetAlert2
-        document.addEventListener('DOMContentLoaded', function() {
-            const status_wishlist_success = '{{ session('wishlist_success') }}';
-            const status_wishlist_info = '{{ session('wishlist_info') }}';
-            if (status_wishlist_success) {
-                Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    showConfirmButton: false,
-                    timer: 5000,
-                    timerProgressBar: true,
-                    icon: "success",
-                    title: status_wishlist_success
-                }).then(() => {
-                    window.history.pushState({}, document.title, window.location.pathname);
-                });
-            }
-
-            if (status_wishlist_info) {
-                Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    showConfirmButton: false,
-                    timer: 5000,
-                    timerProgressBar: true,
-                    icon: "info",
-                    title: status_wishlist_info
-                }).then(() => {
-                    window.history.pushState({}, document.title, window.location.pathname);
-                });
-            }
-        });
     </script>
 @endsection
