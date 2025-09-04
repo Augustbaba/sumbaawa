@@ -56,15 +56,13 @@
                 </a>
                 <ul>
                     <li>
-                        <a  href="product-list.html">List
+                        <a  href="{{ route('categories.index') }}">List
                             View</a>
                     </li>
                     <li>
                         <a  href="{{ route('categories.create') }}">Ajouter</a>
                     </li>
-                    <li>
-                        <a  href="order-detail.html">Modifier</a>
-                    </li>
+                    
                 </ul>
             </li>
             <li>
@@ -76,15 +74,13 @@
                 </a>
                 <ul>
                     <li>
-                        <a  href="product-list.html">List
+                        <a  href="{{ route('sous-categories.index') }}">List
                             View</a>
                     </li>
                     <li>
                         <a  href="{{ route('sous-categories.create') }}">Ajouter</a>
                     </li>
-                    <li>
-                        <a  href="order-detail.html">Modifier</a>
-                    </li>
+                  
                 </ul>
             </li>
             <li>
@@ -96,18 +92,14 @@
                 </a>
                 <ul>
                     <li>
-                        <a  href="product-list.html">List
+                        <a  href="{{ route('produits.index') }}">List
                             View</a>
                     </li>
                     <li>
                         <a  href="{{ route('produits.create') }}">Ajouter</a>
                     </li>
-                    <li>
-                        <a  href="product-detail.html">Modifier</a>
-                    </li>
-                    <li>
-                        <a  href="shopping-cart.html">Desactiver</a>
-                    </li>
+                    
+                    
 
                 </ul>
             </li>
