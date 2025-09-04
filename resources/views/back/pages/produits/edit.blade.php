@@ -137,7 +137,7 @@
                 <div class="mb-4">
                     <label for="image_main" class="form-label">Image principale</label>
                     <input type="file" class="form-control @error('image_main') is-invalid @enderror"
-                           id="image_main" name="image_main" accept="image/*">
+                           id="image_main" name="image_main" accept="image/jpeg,image/png,image/jpg,image/gif">
                     @error('image_main')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -155,7 +155,7 @@
                     <label class="form-label">Images secondaires</label>
                     <div id="secondary-images-container">
                         <div class="input-group mb-2">
-                            <input type="file" class="form-control" name="secondary_images[]" accept="image/*">
+                            <input type="file" class="form-control" name="secondary_images[]" accept="image/jpeg,image/png,image/jpg,image/gif">
                             <button type="button" class="btn btn-outline-danger remove-image" style="display: none;">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -167,7 +167,7 @@
                     @error('secondary_images')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
-                    <small class="text-muted">Ajoutez de nouvelles images secondaires</small>
+                    <small class="text-muted">Ajoutez jusqu'à 5 images secondaires</small>
                     @if ($produit->images->isNotEmpty())
                         <div class="mt-3">
                             <label class="form-label">Images secondaires actuelles</label>
@@ -177,14 +177,15 @@
                                         <img src="{{ asset($image->url) }}"
                                              alt="{{ $produit->name }}"
                                              style="width: 100px; height: 100px; object-fit: cover;">
-                                        <form action="{{ route('images.destroy', $image->id) }}" method="POST" class="position-absolute top-0 end-0">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger"
-                                                    onclick="return confirm('Voulez-vous supprimer cette image ?')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
+                                        <div class="position-absolute top-0 end-0">
+                                            <input type="checkbox" class="form-check-input"
+                                                   name="delete_images[]" value="{{ $image->id }}"
+                                                   id="delete_image_{{ $image->id }}">
+                                            <label class="form-check-label text-danger"
+                                                   for="delete_image_{{ $image->id }}">
+                                                Supprimer
+                                            </label>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
@@ -209,12 +210,18 @@
 document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('secondary-images-container');
     const addButton = document.getElementById('add-image-btn');
+    const maxImages = 5;
 
     addButton.addEventListener('click', function() {
+        const inputGroups = container.querySelectorAll('.input-group');
+        if (inputGroups.length >= maxImages) {
+            alert('Vous ne pouvez pas ajouter plus de ' + maxImages + ' images secondaires.');
+            return;
+        }
         const newInputGroup = document.createElement('div');
         newInputGroup.className = 'input-group mb-2';
         newInputGroup.innerHTML = `
-            <input type="file" class="form-control" name="secondary_images[]" accept="image/*">
+            <input type="file" class="form-control" name="secondary_images[]" accept="image/jpeg,image/png,image/jpg,image/gif">
             <button type="button" class="btn btn-outline-danger remove-image">
                 <i class="bi bi-trash"></i>
             </button>
@@ -230,6 +237,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    container.addEventListener('change', function(e) {
+        if (e.target.type === 'file') {
+            const file = e.target.files[0];
+            if (file && !['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(file.type)) {
+                alert('Veuillez sélectionner une image au format JPEG, PNG, JPG ou GIF.');
+                e.target.value = '';
+            }
+        }
+    });
+
     function updateRemoveButtons() {
         const inputGroups = container.querySelectorAll('.input-group');
         inputGroups.forEach((group, index) => {
@@ -241,6 +258,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    updateRemoveButtons();
 });
 </script>
 @endsection

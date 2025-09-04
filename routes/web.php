@@ -71,7 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/sous-categories/create', [SousCategorieController::class, 'create'])->name('sous-categories.create');
     Route::post('/sous-categories/store', [SousCategorieController::class, 'store'])->name('sous-categories.store');
     Route::get('/sous-categories/{sousCategorie}/edit', [SousCategorieController::class, 'edit'])->name('sous-categories.edit');
-    Route::put('/sous-categories/{sousCategorie}/update', [SousCategorieController::class, 'update'])->name('sousCategories.update');
+    Route::put('/sous-categories/{sousCategorie}/update', [SousCategorieController::class, 'update'])->name('sous-categories.update');
     Route::delete('/sous-categories/{sousCategorie}/destroy', [SousCategorieController::class, 'destroy'])->name('sous-categories.destroy');
     Route::get('/sous-categories/{sousCategorie}/show', [SousCategorieController::class, 'show'])->name('sous-categories.show');
     Route::get('/sous-categories/index', [SousCategorieController::class, 'index'])->name('sous-categories.index');
