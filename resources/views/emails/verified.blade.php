@@ -63,7 +63,7 @@
             <p>Bonjour <strong>{{ $user->name?? $user->email }}</strong>,</p>
             <p>Votre inscription a été validée avec succès ! 🎉</p>
             <p>Vous trouverez en pièce jointe les <span class="highlight">Conditions Générales d'Utilisation (CGU)</span> de notre plateforme. Nous vous invitons à les lire attentivement afin de mieux comprendre les règles et engagements liés à l'utilisation de nos services.</p>
-            <p>Si vous avez la moindre question ou préoccupation, n'hésitez pas à Contacter Nous. Nous serons ravis de vous assister.</p>
+            <p>Si vous avez la moindre question ou préoccupation, n'hésitez pas à Contactez-nous. Nous serons ravis de vous assister.</p>
             <p style="text-align: center;">
                 <a href="{{ route('index') }}" class="btn" style="color: white;">Accéder à la plateforme</a>
             </p>

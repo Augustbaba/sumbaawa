@@ -64,7 +64,7 @@
             <p>Nous souhaitons vous informer que nos <span class="highlight">Conditions Générales d'Utilisation (CGU)</span> ont récemment été mises à jour.</p>
             <p>Cette mise à jour a été effectuée afin de mieux protéger vos droits et d'améliorer l'expérience utilisateur sur notre plateforme.</p>
             <p>Nous vous invitons à lire attentivement la nouvelle version des CGU en pièce jointe.</p>
-            <p>Si vous avez des questions ou souhaitez obtenir des précisions, n'hésitez pas à Contacter Nous.</p>
+            <p>Si vous avez des questions ou souhaitez obtenir des précisions, n'hésitez pas à Contactez-nous.</p>
             <p style="text-align: center;">
                 <a href="{{ route('index') }}" class="btn" style="color: white;">Accéder à la plateforme</a>
             </p>

@@ -6,9 +6,16 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="description" content="multikart">
-    <meta name="keywords" content="multikart">
-    <meta name="author" content="multikart">
+    <meta name="description" content="Découvrez les dernières tendances en meubles et accessoires. Collections exclusives pour aménager et sublimer vos espaces avec style et confort.">
+    <meta name="keywords" content="meubles, mobilier, tendances meubles, décoration intérieure, chaises, fauteuils, bureaux, tables, rangements, cabines, accessoires maison, mobilier moderne, design intérieur, sumbaawa, sumba awa, sumbaawa.com">
+
+    @if (Route::currentRouteName() != 'cart.view' && Route::currentRouteName() != 'checkout')
+        <meta name="robots" content="index, follow">
+    @else
+        <meta name="robots" content="noindex, nofollow">
+    @endif
+
+    <meta name="author" content="{{ FrontHelper::getAppName() }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/favicon-32x32.png') }}">
@@ -251,7 +258,7 @@
                         <div class="header-contact">
                             <ul>
                                 <li>Bienvenue sur {{ FrontHelper::getAppName() }}</li>
-                                <li><i class="ri-phone-fill"></i>Contacter Nous: +242044724102</li>
+                                <li><i class="ri-phone-fill"></i>Contactez-nous: +242044724102</li>
                             </ul>
                         </div>
                     </div>
@@ -309,7 +316,7 @@
                                             <li>
                                                 <a href="{{ route('wishlist.my') }}">Favoris</a>
                                             </li>
-                                            <li><a href="{{ route('contact') }}">Contacter Nous</a>
+                                            <li><a href="{{ route('contact') }}">Contactez-nous</a>
                                             </li>
                                         </ul>
                                     </nav>

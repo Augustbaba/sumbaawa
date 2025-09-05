@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Categorie;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CategorieController extends Controller
@@ -27,13 +28,14 @@ class CategorieController extends Controller
         ]);
 
         // Génération du slug si vide
-        if (empty($validated['slug'])) {
+        // if (empty($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['label']);
-        }
+        // }
 
         // Gestion de l'image
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('categories', 'public');
+            $validated['image'] = 'storage/' . $validated['image'];
         }
 
         Categorie::create([
@@ -65,17 +67,19 @@ public function edit(Categorie $categorie)
         ]);
 
         // Génération du slug si vide
-        if (empty($validated['slug'])) {
+        // if (empty($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['label']);
-        }
+        // }
 
         // Gestion de l'image
         if ($request->hasFile('image')) {
             // Supprimer l'ancienne image si elle existe
-            if ($categorie->image && \Storage::disk('public')->exists($categorie->image)) {
-                \Storage::disk('public')->delete($categorie->image);
+            if ($categorie->image) {
+                $cheminRelatif = str_replace('storage/', '', $categorie->image);
+                Storage::disk('public')->delete($cheminRelatif);
             }
             $validated['image'] = $request->file('image')->store('categories', 'public');
+            $validated['image'] = 'storage/' . $validated['image'];
         } else {
             $validated['image'] = $categorie->image; // Conserver l'image existante
         }

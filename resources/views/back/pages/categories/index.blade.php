@@ -51,20 +51,20 @@
                                 <td>{{ $category->slug }}</td>
                                 <td>
                                     @if ($category->image)
-                                        <img src="{{ asset('storage/' . $category->image) }}" 
-                                             alt="{{ $category->label }}" 
+                                        <img src="{{ asset($category->image) }}"
+                                             alt="{{ $category->label }}"
                                              style="width: 50px; height: 50px; object-fit: cover;">
                                     @else
                                         Aucune image
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('categories.edit', $category) }}" 
+                                    <a href="{{ route('categories.edit', $category) }}"
                                        class="btn btn-sm btn-primary">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form action="{{ route('categories.destroy', $category) }}" 
-                                          method="POST" 
+                                    <form action="{{ route('categories.destroy', $category) }}"
+                                          method="POST"
                                           class="d-inline"
                                           onsubmit="return confirm('Voulez-vous vraiment supprimer cette catégorie ?')">
                                         @csrf

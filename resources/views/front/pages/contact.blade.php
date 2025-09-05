@@ -3,9 +3,9 @@
 @endphp
 
 @extends('front.layouts.master')
-@section('title', 'Contacter Nous')
+@section('title', 'Contactez-nous')
 @section('filAriane')
-    <li class="breadcrumb-item active" aria-current="page">Contacter Nous</li>
+    <li class="breadcrumb-item active" aria-current="page">Contactez-nous</li>
 @endsection
 @section('content')
     <section class="contact-page">
@@ -13,8 +13,8 @@
             <div class="row g-sm-4 g-3">
                 <div class="col-lg-5">
                     <div class="contact-title">
-                        <h2>Contacter Nous</h2>
-                        <p>Nous sommes là pour vous aider ! N'hésitez pas à Contacter Nous pour toute question, commentaire ou demande de renseignements. Nous vous répondrons dans les plus brefs délais.</p>
+                        <h2>Contactez-nous</h2>
+                        <p>Nous sommes là pour vous aider ! N'hésitez pas à Contactez-nous pour toute question, commentaire ou demande de renseignements. Nous vous répondrons dans les plus brefs délais.</p>
                     </div>
                 </div>
                 <div class="col-lg-7">

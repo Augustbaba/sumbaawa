@@ -48,7 +48,7 @@
                                 @endguest
                                 <li><a class="text-content" href="{{ route('wishlist.my') }}">Favoris</a></li>
                                 <li><a class="text-content" href="">FAQ</a></li>
-                                <li><a class="text-content" href="{{ route('contact') }}">Contacter Nous</a></li>
+                                <li><a class="text-content" href="{{ route('contact') }}">Contactez-nous</a></li>
                             </ul>
                         </div>
                     </div>
@@ -69,17 +69,17 @@
                             <div class="footer-social">
                                 <ul>
                                     <li>
-                                        <a target="_blank" href="https://facebook.com/">
+                                        <a target="_blank" href="https://www.facebook.com/profile.php?id=100087885648487">
                                             <i class="ri-facebook-fill"></i>
                                         </a>
                                     </li>
                                     <li>
-                                        <a target="_blank" href="https://tiktok.com/">
+                                        <a target="_blank" href="https://www.tiktok.com/@sumba_awa?is_from_webapp=1&sender_device=pc">
                                             <i class="ri-tiktok-fill"></i>
                                         </a>
                                     </li>
                                     <li>
-                                        <a target="_blank" href="https://instagram.com/">
+                                        <a target="_blank" href="https://youtube.com/@sumbaawa?si=dNJZfGMd-97dWahb">
                                             <i class="ri-youtube-fill"></i>
                                         </a>
                                     </li>

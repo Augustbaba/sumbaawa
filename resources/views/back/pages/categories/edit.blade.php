@@ -37,7 +37,7 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="label" class="form-label">Nom de la catégorie *</label>
-                            <input type="text" class="form-control @error('label') is-invalid @enderror" 
+                            <input type="text" class="form-control @error('label') is-invalid @enderror"
                                    id="label" name="label" value="{{ old('label', $categorie->label) }}" required>
                             @error('label')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -48,7 +48,7 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="slug" class="form-label">Slug *</label>
-                            <input type="text" class="form-control @error('slug') is-invalid @enderror" 
+                            <input type="text" class="form-control @error('slug') is-invalid @enderror"
                                    id="slug" name="slug" value="{{ old('slug', $categorie->slug) }}" required>
                             @error('slug')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -63,12 +63,12 @@
                             <label for="image" class="form-label">Image (facultatif)</label>
                             @if ($categorie->image)
                                 <div class="mb-2">
-                                    <img src="{{ asset('storage/' . $categorie->image) }}" alt="{{ $categorie->label }}"
+                                    <img src="{{ asset($categorie->image) }}" alt="{{ $categorie->label }}"
                                          class="img-thumbnail" style="max-width: 150px;">
                                     <p class="text-muted small">Image actuelle</p>
                                 </div>
                             @endif
-                            <input type="file" class="form-control @error('image') is-invalid @enderror" 
+                            <input type="file" class="form-control @error('image') is-invalid @enderror"
                                    id="image" name="image" accept="image/*">
                             @error('image')
                                 <div class="invalid-feedback">{{ $message }}</div>
