@@ -152,7 +152,7 @@
                                                                                 </a>
                                                                             </div>
                                                                             <h6>{{ $produit->sousCategorie->label ?? 'Sous-catégorie non définie' }}</h6>
-                                                                            <h4 class="price">$ {{ number_format($produit->price, 2, '.', ',') }}
+                                                                            <h4 class="price">{{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
                                                                                 @if ($produit->original_price)
                                                                                     <del>$ {{ number_format($produit->original_price, 2, '.', ',') }}</del>
                                                                                     <span class="discounted-price">

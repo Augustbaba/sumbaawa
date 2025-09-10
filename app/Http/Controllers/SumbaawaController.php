@@ -125,7 +125,7 @@ class SumbaawaController extends Controller
 
         // Déterminer la couleur à utiliser
         $colors = isset($productData['color']) && $productData['color'] ? array_filter(array_map('trim', explode(',', $productData['color']))) : [];
-        $selectedColor = !empty($colors) ? reset($colors) : 'Aucune couleur'; // Prendre la couleur sélectionnée ou la première couleur
+        $selectedColor = !empty($colors) ? reset($colors) : 'Néant'; // Prendre la couleur sélectionnée ou la première couleur
 
         $produit = Produit::find($productData['id']);
         if (isset($cart[$productData['id']])) {

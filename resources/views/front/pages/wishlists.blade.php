@@ -143,9 +143,9 @@
                                                                                 </a>
                                                                             </div>
                                                                             <h6>{{ $wishlist->produit->sousCategorie->label ?? 'Sous-catégorie non définie' }}</h6>
-                                                                            <h4 class="price">$ {{ number_format($wishlist->produit->price, 2, '.', ',') }}
+                                                                            <h4 class="price">{{ number_format($wishlist->produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
                                                                                 @if ($wishlist->produit->original_price)
-                                                                                    <del>$ {{ number_format($wishlist->produit->original_price, 2, '.', ',') }}</del>
+                                                                                    <del>$ {{ number_format($wishlist->produit->original_price, 0, '.', ' ') }}</del>
                                                                                     <span class="discounted-price">
                                                                                         {{ round((($wishlist->produit->original_price - $wishlist->produit->price) / $wishlist->produit->original_price) * 100) }}% Off
                                                                                     </span>

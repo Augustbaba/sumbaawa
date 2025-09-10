@@ -114,11 +114,11 @@
                                     <i class="ri-star-line"></i>
                                 </div>
                                 <span class="divider">|</span>
-                                <a href="#!">0 Avis</a>
+                                {{-- <a href="#!">0 Avis</a> --}}
                             </div>
                             <div class="price-text">
                                 <h3>
-                                    <span class="fw-normal">Prix :</span> $ {{ number_format($produit->price, 2, '.', ',') }}
+                                    <span class="fw-normal">Prix :</span> {{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
                                     @if ($produit->original_price)
                                         <del>$ {{ number_format($produit->original_price, 2, '.', ',') }}</del>
                                         <span class="discounted-price">
@@ -126,7 +126,7 @@
                                         </span>
                                     @endif
                                 </h3>
-                                <span>Inclus toutes les taxes</span>
+                                {{-- <span>Inclus toutes les taxes</span> --}}
                             </div>
                             <div class="description-wrapper">
                                 <p class="description-text">{!! Str::limit($produit->description, 100) !!}</p>
@@ -164,13 +164,13 @@
                                                 @endforeach
                                             </div>
                                         </li>
-                                    @else
-                                        <li><span>Couleur :</span> Non spécifié</li>
                                     @endif
                                     @if ($produit->niveau_confort)
                                         <li><span>Niveau de confort :</span> {{ $produit->niveau_confort }}</li>
                                     @endif
-                                    <li><span>Poids :</span> {{ $produit->poids }} kg</li>
+                                    @if ($produit->poids)
+                                        <li><span>Poids :</span> {{ $produit->poids }} kg</li>
+                                    @endif
                                     <li><span>Stock :</span> En stock</li>
                                 </ul>
                             </div>
@@ -222,11 +222,15 @@
                                     <div class="part">
                                         <h5 class="inner-title">Caractéristiques :</h5>
                                         <ul>
-                                            <li>Couleur : {{ $produit->color ?? 'Non spécifié' }}</li>
-                                            @if ($produit->niveau_confort)
-                                                <li>Niveau de confort : {{ $produit->niveau_confort }}</li>
+                                            @if ($produit->color)
+                                                <li>Couleur : {{ $produit->color }}</li> <br>
                                             @endif
-                                            <li>Poids : {{ $produit->poids }} kg</li>
+                                            @if ($produit->niveau_confort)
+                                                <li>Niveau de confort : {{ $produit->niveau_confort }}</li> <br>
+                                            @endif
+                                            @if ($produit->poids)
+                                                <li>Poids : {{ $produit->poids }} kg</li>
+                                            @endif
                                         </ul>
                                     </div>
                                 </div>
@@ -299,7 +303,7 @@
                                                 </a>
                                             </div>
                                             <h6>{{ $related->sousCategorie->label }}</h6>
-                                            <h4 class="price">$ {{ number_format($related->price, 2, '.', ',') }}
+                                            <h4 class="price">{{ number_format($related->price, 0, '.', ' ') }} <small style="font-size: 0.7em; color: gray;">CFA (XOF / XAF)</small>
                                                 @if ($related->original_price)
                                                     <del>$ {{ number_format($related->original_price, 2, '.', ',') }}</del>
                                                     <span class="discounted-price">

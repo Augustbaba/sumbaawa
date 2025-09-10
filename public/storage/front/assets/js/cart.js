@@ -22,7 +22,7 @@
 
         // Fonction pour formater les prix avec virgule pour les milliers
         function formatPrice(number) {
-            return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return number.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
         }
 
         // Fonction pour mettre à jour le compteur du panier
@@ -101,7 +101,7 @@
                                         </div>
                                     </div>
                                     <div class="col table-price">
-                                        <h2 class="td-color">$${formatPrice(price)}</h2>
+                                        <h2 class="td-color">${formatPrice(price)}<span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span></h2>
                                     </div>
                                     <div class="col">
                                         <h2 class="td-color">
@@ -113,7 +113,7 @@
                                 </div>
                             </td>
                             <td class="table-price">
-                                <h2>$${formatPrice(price)}</h2>
+                                <h2>${formatPrice(price)} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span></h2>
                             </td>
                             <td>
                                 <div class="qty-box">
@@ -128,7 +128,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <h2 class="td-color">$${formatPrice(price * item.quantity)}</h2>
+                                    <h2 class="td-color">${formatPrice(price * item.quantity)} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span></h2>
                                 </td>
                                 <td>
                                     <a href="#!" class="icon remove-btn" data-product-id="${item.id}">
@@ -143,7 +143,7 @@
             }
 
             if ($('.cart-table tfoot h2').length) {
-                $('.cart-table tfoot h2').text(`$${formatPrice(total)}`);
+                $('.cart-table tfoot h2').text(`${formatPrice(total)}`);
             }
             updateCartCount(cart.items ? cart.items.length : 0);
             attachCartEvents();
@@ -196,7 +196,7 @@
                                         <h4>${item.name}</h4>
                                     </a>
                                     <h4 class="quantity">
-                                        <span>${item.quantity} x $${formatPrice(price)}</span>
+                                        <span>${item.quantity} x ${formatPrice(price)} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span></span>
                                     </h4>
                                     <small class="color">
                                         <span>Couleur: ${item.color || 'Non spécifié'}</span>
@@ -229,7 +229,7 @@
                     <ul class="cart_total">
                         <li>
                             <div class="total">
-                                <h5>Sous-total : <span>$${formatPrice(totalNum)}</span></h5>
+                                <h5>Sous-total : <span>${formatPrice(totalNum)} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span></span></h5>
                             </div>
                         </li>
                         <li>

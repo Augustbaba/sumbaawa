@@ -33,7 +33,7 @@ class UserTableSeeder extends Seeder
         $user2 = User::create([
             'name'=> "Augustin Tobi HOUNTONDJI",
             'email'=> "augustinhountondji82@gmail.com",
-            'phone'=> "002290153647262",
+            'phone'=> "002290163547262",
             'status' => true,
             'password' => bcrypt('Dev2@APC'),
             'created_at' => now(),
