@@ -8,7 +8,7 @@
                         <div class="footer-logo"><a href="{{ route('index') }}"><img alt="logo" style="width: 150px; height: auto;" class="img-fluid"
                                     src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo-white.png') }}">
                             </a></div>
-                        <p>Découvrez les dernières tendances meubles avec nos collections exclusives.</p>
+                        <p>Découvrez nos dernières tendances en meubles, bijoux et véhicules exclusifs.</p>
                         <ul class="contact-list">
                             <li><i class="ri-map-pin-line"></i>Sumba Awa Address</li>
                             <li><i class="ri-phone-line"></i>+242044724102</li>

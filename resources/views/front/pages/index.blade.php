@@ -74,13 +74,13 @@
                 <div class="col-md-6">
                     <div class="position-relative rounded-3 overflow-hidden">
                         <a href="{{ route('categories.page') }}" class="collection-banner">
-                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/furniture/10.png') }}"
+                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/collection1.jpg') }}"
                                  class="img-fluid blur-up lazyload w-100"
-                                 alt="Promotion meubles salon"
+                                 alt="Promotion bijoux"
                                  style="height: 300px; object-fit: cover;">
                             <div class="banner-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center ps-4">
-                                <h3 class="text-white mb-1">Jusqu'à -50%</h3>
-                                <p class="text-white mb-2">Collection Salon Exclusive</p>
+                                <h3 class="text-white mb-1">Brillez chaque jour</h3>
+                                <p class="text-white mb-2">Éclat, Élégance, Raffinement</p>
                                 <span class="text-white fw-bold">ACHETER MAINTENANT →</span>
                             </div>
                         </a>
@@ -91,13 +91,13 @@
                 <div class="col-md-6">
                     <div class="position-relative rounded-3 overflow-hidden">
                         <a href="{{ route('categories.page') }}" class="collection-banner">
-                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/furniture/12.png') }}"
+                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/collection2.jpg') }}"
                                  class="img-fluid blur-up lazyload w-100"
-                                 alt="Promotion meubles salon"
+                                 alt="Promotion véhicules"
                                  style="height: 300px; object-fit: cover;">
                             <div class="banner-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center ps-4">
-                                <h3 class="text-white mb-1">Jusqu'à -50%</h3>
-                                <p class="text-white mb-2">Collection Salon Exclusive</p>
+                                <h3 class="text-white mb-1">Roulez avec style</h3>
+                                <p class="text-white mb-2">Vitesse, Classe, Confort</p>
                                 <span class="text-white fw-bold">ACHETER MAINTENANT →</span>
                             </div>
                         </a>
@@ -117,8 +117,9 @@
         <div class="row">
             <div class="col-lg-6 offset-lg-3">
                 <div class="product-para">
-                    <p class="text-center">À la recherche des dernières tendances en matière de mobilier et d’accessoires d’intérieur ?
-                        Bienvenue dans notre sélection « Dernières Nouveautés », qui vous propose les créations les plus récentes de vos marques préférées pour sublimer chaque espace de votre maison ou bureau.</p>
+                    <p class="text-center">À la recherche des dernières tendances en mobilier, bijoux et véhicules ?
+                        Bienvenue dans notre sélection « Dernières Nouveautés », qui vous propose les créations les plus récentes de vos marques préférées pour enrichir votre style et vos espaces.
+                    </p>
                 </div>
             </div>
         </div>
@@ -179,7 +180,7 @@
                                             </a>
                                         </div>
                                         <h6>{{ $produit->sousCategorie->label }}</h6>
-                                        <h4 class="price"> {{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
+                                        <h4 class="price"> {{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span>
                                             @if ($produit->original_price)
                                                 <del>$ {{ number_format($produit->original_price, 0, '.', ' ') }}</del>
                                                 <span class="discounted-price">
@@ -294,7 +295,7 @@
                                                                 </a>
                                                             </div>
                                                             <h6>{{ $produit->sousCategorie->label }}</h6>
-                                                            <h4 class="price">{{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
+                                                            <h4 class="price">{{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span>
                                                                 @if ($produit->original_price)
                                                                     <del>$ {{ number_format($produit->original_price, 0, '.', ' ') }}</del>
                                                                     <span class="discounted-price">
@@ -371,24 +372,56 @@
     <!-- service layout end -->
 
     <!-- instagram section -->
-    <section class="instagram ratio_square">
-        <div class="container-fluid">
+    <div class="title1 section-t-space">
+        {{-- <h4>Catégories</h4> --}}
+        <h2 class="title-inner1">Catégories de produits</h2>
+    </div>
+
+    <section class="section-b-space pt-0 ratio_asos">
+        <div class="container">
             <div class="row">
-                <div class="col-md-12 p-0">
-                    <h2 class="title-borderless">Catégories</h2>
-                    <div class="slide-7 no-arrow slick-instagram">
-                        @foreach (FrontHelper::allCategories() as $categorie)
-                            <div>
-                                <a href="{{ route('categories.single', $categorie) }}">
-                                    <div class="instagram-box">
-                                        <img src="{{ asset($categorie->image) }}"
-                                             class="bg-img" alt="{{ $categorie->label }}">
-                                        <div class="overlay"><span style="font-size: 20px; color: white;">{{ $categorie->label }}</span></div>
-                                    </div>
-                                </a>
+                <div class="col">
+                    <div class="theme-tab">
+                        <div class="tab-content-cls">
+                            <div id="tab-4" class="tab-content active default">
+                                <div class="g-3 g-md-4 row row-cols-2 row-cols-md-3 row-cols-xl-4">
+                                    @foreach (FrontHelper::fourCategories() as $categorie)
+                                        <div>
+                                            <div class="basic-product theme-product-1">
+                                                <div class="overflow-hidden">
+                                                    <div class="img-wrapper">
+                                                        <a href="{{ route('categories.single', $categorie) }}"><img
+                                                                src="{{ asset($categorie->image) }}"
+                                                                class="img-fluid blur-up lazyload" alt="{{ $categorie->label }}" style="height: 250px; object-fit: cover;"></a>
+                                                        {{-- <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span></div> --}}
+                                                        <div class="cart-info">
+                                                            <a href="{{ route('categories.single', $categorie) }}"  title="Voir le détail" class="quick-view-btn">
+                                                                <i class="ri-eye-line"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    <div class="product-detail">
+                                                        <div>
+                                                            <div class="brand-w-color">
+                                                                <a class="product-title" href="{{ route('categories.single', $categorie) }}">
+                                                                    {{ $categorie->label }}
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
-                        @endforeach
+                        </div>
                     </div>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="{{ route('categories.page') }}" class="btn btn-solid btn-lg px-5 py-3 rounded-0">
+                        Voir toutes les catégories <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -777,7 +810,7 @@
 
             // Lancer le carrousel automatiquement
             showSlide(currentSlide);
-            setInterval(autoSlide, 5000);
+            setInterval(autoSlide, 6000);
         });
 
         // JavaScript pour le compte à rebours

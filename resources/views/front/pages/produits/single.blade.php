@@ -118,7 +118,7 @@
                             </div>
                             <div class="price-text">
                                 <h3>
-                                    <span class="fw-normal">Prix :</span> {{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
+                                    <span class="fw-normal">Prix :</span> {{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span>
                                     @if ($produit->original_price)
                                         <del>$ {{ number_format($produit->original_price, 2, '.', ',') }}</del>
                                         <span class="discounted-price">
@@ -303,7 +303,7 @@
                                                 </a>
                                             </div>
                                             <h6>{{ $related->sousCategorie->label }}</h6>
-                                            <h4 class="price">{{ number_format($related->price, 0, '.', ' ') }} <small style="font-size: 0.7em; color: gray;">CFA (XOF / XAF)</small>
+                                            <h4 class="price">{{ number_format($related->price, 0, '.', ' ') }} <small style="font-size: 0.7em; color: gray;">XOF</small>
                                                 @if ($related->original_price)
                                                     <del>$ {{ number_format($related->original_price, 2, '.', ',') }}</del>
                                                     <span class="discounted-price">

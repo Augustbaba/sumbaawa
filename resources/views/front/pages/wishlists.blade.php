@@ -143,7 +143,7 @@
                                                                                 </a>
                                                                             </div>
                                                                             <h6>{{ $wishlist->produit->sousCategorie->label ?? 'Sous-catégorie non définie' }}</h6>
-                                                                            <h4 class="price">{{ number_format($wishlist->produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
+                                                                            <h4 class="price">{{ number_format($wishlist->produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span>
                                                                                 @if ($wishlist->produit->original_price)
                                                                                     <del>$ {{ number_format($wishlist->produit->original_price, 0, '.', ' ') }}</del>
                                                                                     <span class="discounted-price">

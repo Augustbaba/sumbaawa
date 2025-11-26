@@ -56,7 +56,7 @@
                                         <h4>{{ $item['name'] }}</h4>
                                     </a>
                                     <h4 class="quantity">
-                                        <span>{{ $item['quantity'] }} x {{ number_format($item['price'], 0, '.', ' ') }}</span> <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
+                                        <span>{{ $item['quantity'] }} x {{ number_format($item['price'], 0, '.', ' ') }}</span> <span style="font-size: 0.9em; color: gray;">XOF</span>
                                     </h4>
                                     <h4 class="color">
                                         <span>Couleur: {{ $item['color']?? 'Non Spécifié' }}</span>
@@ -87,7 +87,7 @@
                 <ul class="cart_total">
                     <li>
                         <div class="total">
-                            <h5>Sous-total : <span>{{ number_format($total, 0, '.', ' ') }}</span><span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span></h5>
+                            <h5>Sous-total : <span>{{ number_format($total, 0, '.', ' ') }}</span><span style="font-size: 0.9em; color: gray;">XOF</span></h5>
                         </div>
                     </li>
                     <li>

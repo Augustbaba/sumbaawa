@@ -356,7 +356,7 @@
             <div class="stat-label">Poids Total</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">{{ number_format($totalCart, 0, '.', '') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span></div>
+            <div class="stat-value">{{ number_format($totalCart, 0, '.', '') }} <span style="font-size: 0.9em; color: gray;">XOF</span></div>
             <div class="stat-label">Total</div>
         </div>
     </div>
@@ -369,7 +369,7 @@
                     <img src="{{ $item['image_main'] }}" alt="{{ $item['name'] }}" class="product-image">
                     <h3 class="product-name">{{ $item['name'] }}</h3>
                 </div>
-                <div class="product-price">{{ number_format($item['price'] * $item['quantity'], 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span></div>
+                <div class="product-price">{{ number_format($item['price'] * $item['quantity'], 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span></div>
                 <i class="ri-arrow-down-s-line accordion-icon"></i>
             </div>
 
@@ -380,7 +380,7 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Prix unitaire:</span>
-                    <span class="detail-value">{{ number_format($item['price'], 0, '.', ' ') }}</span> <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
+                    <span class="detail-value">{{ number_format($item['price'], 0, '.', ' ') }}</span> <span style="font-size: 0.9em; color: gray;">XOF</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Quantité:</span>
@@ -407,7 +407,7 @@
     <div class="order-totals">
         <div class="total-row grand-total">
             <span class="total-label">Total à payer:</span>
-            <span class="total-value">{{ number_format($totalCart, 0, '.', ' ') }}</span> <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
+            <span class="total-value">{{ number_format($totalCart, 0, '.', ' ') }}</span> <span style="font-size: 0.9em; color: gray;">XOF</span>
         </div>
 
         <button class="checkout-btn" id="openPaymentModal">
@@ -619,7 +619,7 @@
                         <div style="display: inline-block; padding: 0.5rem 1rem; background: #f5f5f5; border-radius: 20px;">
                             <span style="font-weight: 600; color: #b78d65;">Montant:</span>
                             ${formattedAmount}
-                            <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
+                            <span style="font-size: 0.9em; color: gray;">XOF</span>
                         </div>
                     </div>
                 </div>
@@ -638,7 +638,7 @@
                             <div style="text-align: center;">
                                 <i class="ri-checkbox-circle-fill" style="font-size: 4rem; color: #4CAF50;"></i>
                                 <p style="margin-top: 1rem; font-size: 1.1rem;">
-                                    Votre paiement de ${formattedAmount} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span> a été effectué avec succès.
+                                    Votre paiement de ${formattedAmount} <span style="font-size: 0.9em; color: gray;">XOF</span> a été effectué avec succès.
                                 </p>
                                 ${requiresDelivery ?
                                     `<p style="font-size: 0.9rem;">Votre commande sera livrée à l'adresse fournie.</p>` :

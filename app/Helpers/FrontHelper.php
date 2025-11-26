@@ -75,6 +75,13 @@ class FrontHelper
         return $categories;
     }
 
+    public static function fourCategories()
+    {
+
+        $categories = Categorie::orderBy('label', 'desc')->take(4)->get();
+        return $categories;
+    }
+
     public static function fourProducts()
     {
         return Produit::orderBy('created_at', 'desc')->take(4)->get();

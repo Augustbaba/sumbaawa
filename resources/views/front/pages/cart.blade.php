@@ -58,7 +58,7 @@
                                                 </div>
                                             </div>
                                             <div class="col table-price">
-                                                <h2 class="td-color">{{ number_format($item['price'], 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span></h2>
+                                                <h2 class="td-color">{{ number_format($item['price'], 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span></h2>
                                                 @if (isset($item['original_price']) && $item['original_price'] > $item['price'])
                                                     <del>${{ number_format($item['original_price'], 2, '.', ',') }}</del>
                                                 @endif
@@ -73,7 +73,7 @@
                                         </div>
                                     </td>
                                     <td class="table-price">
-                                        <h2>{{ number_format($item['price'], 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span></h2>
+                                        <h2>{{ number_format($item['price'], 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span></h2>
                                         @if (isset($item['original_price']) && $item['original_price'] > $item['price'])
                                             <del>${{ number_format($item['original_price'], 2, '.', ',') }}</del>
                                             <h6 class="theme-color">Vous économisez : ${{ number_format($item['original_price'] - $item['price'], 2, '.', ',') }}</h6>
@@ -93,7 +93,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <h2 class="td-color">{{ number_format($item['price'] * $item['quantity'], 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span></h2>
+                                        <h2 class="td-color">{{ number_format($item['price'] * $item['quantity'], 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span></h2>
                                     </td>
                                     <td>
                                         <a href="#!" class="icon remove-btn" data-product-id="{{ $item['id'] }}">
@@ -109,7 +109,7 @@
                             <td colspan="4" class="d-md-table-cell d-none">Total :</td>
                             <td class="d-md-none">Total :</td>
                             <td>
-                                <h2>{{ number_format($total, 0, '.', ' ') }} </h2><span style="font-size: 0.9em; color: gray;">CFA (XOF / XAF)</span>
+                                <h2>{{ number_format($total, 0, '.', ' ') }} </h2><span style="font-size: 0.9em; color: gray;">XOF</span>
                             </td>
                         </tr>
                     </tfoot>

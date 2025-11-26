@@ -47,15 +47,15 @@
     <div class="card">
         <div class="card-body">
             <h5 class="card-title"><i class="bi bi-plus-circle me-2"></i>Nouveau Produit</h5>
-            
+
             <form action="{{ route('produits.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                
+
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="sous_categorie_id" class="form-label">Sous-Catégorie *</label>
-                            <select class="form-select @error('sous_categorie_id') is-invalid @enderror" 
+                            <select class="form-select @error('sous_categorie_id') is-invalid @enderror"
                                     id="sous_categorie_id" name="sous_categorie_id" required>
                                 <option value="">Sélectionnez une sous-catégorie</option>
                                 @foreach($sousCategories as $sousCategorie)
@@ -69,11 +69,11 @@
                             @enderror
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="name" class="form-label">Nom du produit *</label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                            <input type="text" class="form-control @error('name') is-invalid @enderror"
                                    id="name" name="name" value="{{ old('name') }}" required>
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -81,19 +81,19 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="price" class="form-label">Prix (XOF) *</label>
-                            <input type="number" step="0.01" class="form-control @error('price') is-invalid @enderror" 
+                            <input type="number" step="0.01" class="form-control @error('price') is-invalid @enderror"
                                    id="price" name="price" value="{{ old('price') }}" required>
                             @error('price')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Couleurs</label>
@@ -101,8 +101,8 @@
                                 @foreach(['Noir', 'Blanc', 'Bleu', 'Rouge', 'Vert', 'Jaune', 'Gris'] as $color)
                                     <div class="col-6">
                                         <div class="form-check">
-                                            <input type="checkbox" class="form-check-input @error('colors') is-invalid @enderror @error('colors.*') is-invalid @enderror" 
-                                                   name="colors[]" value="{{ $color }}" 
+                                            <input type="checkbox" class="form-check-input @error('colors') is-invalid @enderror @error('colors.*') is-invalid @enderror"
+                                                   name="colors[]" value="{{ $color }}"
                                                    id="color_{{ $color }}" {{ in_array($color, old('colors', [])) ? 'checked' : '' }}>
                                             <label class="form-check-label" for="color_{{ $color }}">{{ $color }}</label>
                                         </div>
@@ -118,12 +118,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="niveau_confort" class="form-label">Niveau de confort</label>
-                            <select class="form-select @error('niveau_confort') is-invalid @enderror" 
+                            <select class="form-select @error('niveau_confort') is-invalid @enderror"
                                     id="niveau_confort" name="niveau_confort">
                                 <option value="">Sélectionnez un niveau</option>
                                 <option value="1" {{ old('niveau_confort') == '1' ? 'selected' : '' }}>1 - Basique</option>
@@ -137,11 +137,11 @@
                             @enderror
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="poids" class="form-label">Poids (kg)</label>
-                            <input type="number" step="0.1" class="form-control @error('poids') is-invalid @enderror" 
+                            <input type="number" step="0.1" class="form-control @error('poids') is-invalid @enderror"
                                    id="poids" name="poids" value="{{ old('poids') }}">
                             @error('poids')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -149,19 +149,19 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control @error('description') is-invalid @enderror" 
+                    <textarea class="form-control @error('description') is-invalid @enderror"
                               id="description" name="description" rows="3">{{ old('description') }}</textarea>
                     @error('description')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="mb-4">
                     <label for="image_main" class="form-label">Image principale *</label>
-                    <input type="file" class="form-control @error('image_main') is-invalid @enderror" 
+                    <input type="file" class="form-control @error('image_main') is-invalid @enderror"
                            id="image_main" name="image_main" accept="image/*" required>
                     @error('image_main')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -171,12 +171,12 @@
                     @enderror
                     <small class="text-muted">Cette image sera affichée comme image principale du produit</small>
                 </div>
-                
+
                 <div class="mb-4">
                     <label class="form-label">Images secondaires</label>
                     <div id="secondary-images-container">
                         <div class="input-group mb-2">
-                            <input type="file" class="form-control @error('secondary_images') is-invalid @enderror @error('secondary_images.*') is-invalid @enderror" 
+                            <input type="file" class="form-control @error('secondary_images') is-invalid @enderror @error('secondary_images.*') is-invalid @enderror"
                                    name="secondary_images[]" accept="image/*">
                             <button type="button" class="btn btn-outline-danger remove-image" style="display: none;">
                                 <i class="bi bi-trash"></i>
@@ -194,7 +194,7 @@
                     @enderror
                     <small class="text-muted">Vous pouvez ajouter plusieurs images supplémentaires</small>
                 </div>
-                
+
                 <div class="d-flex justify-content-between">
                     <a href="{{ route('produits.index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left me-2"></i> Annuler
@@ -212,7 +212,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('secondary-images-container');
     const addButton = document.getElementById('add-image-btn');
-    
+
     addButton.addEventListener('click', function() {
         const newInputGroup = document.createElement('div');
         newInputGroup.className = 'input-group mb-2';
@@ -225,14 +225,14 @@ document.addEventListener('DOMContentLoaded', function() {
         container.appendChild(newInputGroup);
         updateRemoveButtons();
     });
-    
+
     container.addEventListener('click', function(e) {
         if (e.target.closest('.remove-image')) {
             e.target.closest('.input-group').remove();
             updateRemoveButtons();
         }
     });
-    
+
     function updateRemoveButtons() {
         const inputGroups = container.querySelectorAll('.input-group');
         inputGroups.forEach((group, index) => {
