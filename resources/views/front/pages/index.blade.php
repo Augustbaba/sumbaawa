@@ -429,7 +429,7 @@
     <!-- instagram section end -->
 
     <!-- logo section -->
-    <section class="section-b-space">
+    {{-- <section class="section-b-space">
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
@@ -445,7 +445,7 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section> --}}
     <!-- logo section end -->
 
     <!-- Quick-view modal popup start -->

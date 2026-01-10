@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Controllers\AlibabaImportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SumbaawaController;
@@ -14,6 +16,9 @@ use Illuminate\Support\Facades\Route;
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+
+
 
 // Routes publiques (accessibles sans authentification)
 Route::get('/', function () {
@@ -87,6 +92,12 @@ Route::middleware('auth')->group(function () {
 
     // Images
     Route::delete('/images/{image}', [ImageController::class, 'destroy'])->name('images.destroy');
+
+
+
 });
+Route::get('/import-alibaba', [AlibabaImportController::class, 'showForm'])->name('alibaba.form');
+Route::post('/import-alibaba', [AlibabaImportController::class, 'import'])->name('alibaba.import');
+Route::post('/import-alibaba/save', [AlibabaImportController::class, 'save'])->name('alibaba.save');
 
 require __DIR__.'/auth.php';

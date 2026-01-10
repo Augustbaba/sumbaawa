@@ -31,4 +31,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'alibaba' => [
+        'app_key' => env('ALIBABA_APP_KEY'),
+        'app_secret' => env('ALIBABA_APP_SECRET'),
+        'access_token' => env('ALIBABA_ACCESS_TOKEN'),
+        'api_url' => env('ALIBABA_API_URL', 'https://gw.api.taobao.com/router/rest'),
+    ],
+
 ];

@@ -9,13 +9,15 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
+        "diglactic/laravel-breadcrumbs": "^9.0.0",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/breeze": "^1.29",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "spatie/laravel-permission": "^6.3",
-        "diglactic/laravel-breadcrumbs": "^9.0.0"
+        "symfony/css-selector": "^7.4",
+        "symfony/dom-crawler": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
