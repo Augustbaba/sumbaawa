@@ -41,6 +41,11 @@ class User extends Authenticatable
         return $this->hasMany(Wishlist::class);
     }
 
+    public function commandes()
+    {
+        return $this->hasMany(Commande::class);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

@@ -9,16 +9,16 @@ class Produit extends Model
     use HasFactory;
 
     protected $table = 'produits';
-    
+
     protected $fillable = [
-        'name', 
-        'slug', 
-        'description', 
-        'image_main', 
-        'price', 
-        'color', 
-        'sous_categorie_id', 
-        'niveau_confort', 
+        'name',
+        'slug',
+        'description',
+        'image_main',
+        'price',
+        'color',
+        'sous_categorie_id',
+        'niveau_confort',
         'poids'
     ];
 
@@ -35,5 +35,13 @@ class Produit extends Model
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class);
+    }
+
+    // Relation avec les commandes (à travers commander)
+    public function commandes()
+    {
+        return $this->belongsToMany(Commande::class, 'commander', 'produit_id', 'commande_id')
+                    ->withPivot('quantity', 'description_produit', 'unit_price', 'total_price')
+                    ->withTimestamps();
     }
 }

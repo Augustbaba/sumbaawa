@@ -229,10 +229,31 @@
             transform: rotate(180deg);
         }
 
-        .wisapay-logo {
-            max-width: 200px;
-            margin: 0 auto 1.5rem;
-            display: block;
+        .payment-methods {
+            display: flex;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .payment-method {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .payment-method.selected {
+            border-color: var(--accent-gold);
+            background-color: rgba(183, 141, 101, 0.05);
+        }
+
+        .payment-method i {
+            font-size: 2rem;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
         }
 
         .delivery-form {
@@ -299,6 +320,30 @@
             margin-top: 0.5rem;
         }
 
+        .paypal-button-container {
+            margin: 2rem auto;
+            text-align: center;
+        }
+
+        #paypal-button-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .notice-box {
+            background-color: #fff9e6;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .notice-box i {
+            color: #ffc107;
+            margin-right: 0.5rem;
+        }
+
         @media (max-width: 768px) {
             .order-stats {
                 grid-template-columns: 1fr 1fr;
@@ -314,7 +359,8 @@
                 text-align: right;
             }
 
-            .delivery-options {
+            .delivery-options,
+            .payment-methods {
                 flex-direction: column;
             }
         }
@@ -331,10 +377,6 @@
 
             .product-image {
                 margin-bottom: 0.5rem;
-            }
-
-            .wisapay-logo {
-                max-width: 150px;
             }
         }
     </style>
@@ -418,7 +460,13 @@
 @endsection
 
 @section('scripts')
+@php
+    $mode = config('services.paypal.mode');
+    $clientId = config("services.paypal.{$mode}.client_id");
+@endphp
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- PayPal SDK -->
+<script src="https://www.paypal.com/sdk/js?client-id={{ $clientId }}&currency=USD&intent=capture"></script>
 
 <script>
     // Fonction pour afficher/masquer les détails du produit
@@ -432,6 +480,7 @@
     // Variables globales
     let requiresDelivery = false;
     let deliveryFormData = {};
+    let selectedPaymentMethod = null;
 
     // Attendre que le DOM soit chargé
     document.addEventListener('DOMContentLoaded', function() {
@@ -449,21 +498,29 @@
             title: 'Options de livraison',
             html: `
                 <div style="text-align: center;">
-                    <p style="margin-bottom: 1.5rem;">Souhaitez-vous une livraison à domicile ?</p>
+                    <p style="margin-bottom: 1.5rem;">Souhaitez-vous une livraison ?</p>
+
+                    <div class="notice-box" style="text-align: left;">
+                        <i class="ri-information-line"></i>
+                        <strong>Important :</strong> Après finalisation de votre commande, vous recevrez un email détaillant
+                        le processus de livraison en fonction de votre choix.
+                    </div>
+
                     <div class="delivery-options">
                         <div class="delivery-option" id="deliveryYes">
                             <i class="ri-truck-line"></i>
-                            <div>Oui, livrez-moi</div>
+                            <div>Oui, livrez-moi (Tinda Awa)</div>
                         </div>
                         <div class="delivery-option" id="deliveryNo">
                             <i class="ri-store-2-line"></i>
-                            <div>Non, je viens chercher</div>
+                            <div>Non, livrez à mon cargo</div>
                         </div>
                     </div>
+
                     <div id="deliveryFormContainer" style="display: none;">
                         <div class="delivery-form">
                             <div class="form-group">
-                                <label class="form-label">Type de livraison</label>
+                                <label class="form-label">Type de transport</label>
                                 <select class="form-control" id="deliveryType" required>
                                     <option value="">Sélectionnez un type</option>
                                     @foreach (FrontHelper::allTypes() as $type)
@@ -485,27 +542,53 @@
                                 <input type="text" class="form-control" id="city" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Adresse</label>
+                                <label class="form-label">Adresse complète</label>
                                 <input type="text" class="form-control" id="address" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Code postal</label>
-                                <input type="text" class="form-control" id="postalCode" required>
+                                <label class="form-label">Nom du destinataire</label>
+                                <input type="text" class="form-control" id="recipientName" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" required>
+                                <label class="form-label">Téléphone du destinataire</label>
+                                <input type="tel" class="form-control" id="recipientPhone" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="cargoFormContainer" style="display: none;">
+                        <div class="delivery-form">
+                            <div class="form-group">
+                                <label class="form-label">Type de transport</label>
+                                <select class="form-control" id="cargoDeliveryType" required>
+                                    <option value="">Sélectionnez un type</option>
+                                    @foreach (FrontHelper::allTypes() as $type)
+                                        <option value="{{ $type->id }}">{{ $type->label }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Téléphone</label>
-                                <input type="tel" class="form-control" id="phone" required>
+                                <label class="form-label">Ville du cargo</label>
+                                <input type="text" class="form-control" id="cargoCity" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Adresse du cargo</label>
+                                <input type="text" class="form-control" id="cargoAddress" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nom de la personne à contacter</label>
+                                <input type="text" class="form-control" id="cargoContactName" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Téléphone de contact</label>
+                                <input type="tel" class="form-control" id="cargoContactPhone" required>
                             </div>
                         </div>
                     </div>
                 </div>
             `,
             showCancelButton: true,
-            confirmButtonText: 'Continuer vers le paiement',
+            confirmButtonText: 'Suivant',
             cancelButtonText: 'Annuler',
             cancelButtonColor: '#777',
             confirmButtonColor: '#b78d65',
@@ -521,6 +604,7 @@
                         this.classList.add('selected');
                         if (deliveryNo) deliveryNo.classList.remove('selected');
                         document.getElementById('deliveryFormContainer').style.display = 'block';
+                        document.getElementById('cargoFormContainer').style.display = 'none';
                         Swal.getConfirmButton().disabled = false;
                     });
                 }
@@ -530,6 +614,7 @@
                         requiresDelivery = false;
                         this.classList.add('selected');
                         if (deliveryYes) deliveryYes.classList.remove('selected');
+                        document.getElementById('cargoFormContainer').style.display = 'block';
                         document.getElementById('deliveryFormContainer').style.display = 'none';
                         Swal.getConfirmButton().disabled = false;
                     });
@@ -543,169 +628,214 @@
                     const country = document.getElementById('country').value;
                     const city = document.getElementById('city').value;
                     const address = document.getElementById('address').value;
-                    const postalCode = document.getElementById('postalCode').value;
-                    const email = document.getElementById('email').value;
-                    const phone = document.getElementById('phone').value;
+                    const recipientName = document.getElementById('recipientName').value;
+                    const recipientPhone = document.getElementById('recipientPhone').value;
 
-                    if (!deliveryType || !country || !city || !address || !postalCode || !email || !phone) {
+                    if (!deliveryType || !country || !city || !address || !recipientName || !recipientPhone) {
                         Swal.showValidationMessage('Veuillez remplir tous les champs du formulaire');
                         return false;
                     }
-
-                    // Envoyer les données de livraison au serveur pour stockage dans la session
-                    fetch("{{ route('store_delivery_info') }}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            deliveryType,
-                            country,
-                            city,
-                            address,
-                            postalCode,
-                            email,
-                            phone
-                        })
-                    }).catch(error => {
-                        console.error('Erreur lors de l\'enregistrement des informations de livraison:', error);
-                    });
 
                     deliveryFormData = {
                         deliveryType,
                         country,
                         city,
                         address,
-                        postalCode,
-                        email,
-                        phone
+                        recipientName,
+                        recipientPhone,
+                        deliveryMethod: 'tinda_awa'
                     };
                 } else {
-                    // Supprimer les informations de livraison si pas de livraison
-                    fetch("{{ route('clear_delivery_info') }}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        }
-                    }).catch(error => {
-                        console.error('Erreur lors de la suppression des informations de livraison:', error);
-                    });
+                    const cargoDeliveryType = document.getElementById('cargoDeliveryType').value;
+                    const cargoCity = document.getElementById('cargoCity').value;
+                    const cargoAddress = document.getElementById('cargoAddress').value;
+                    const cargoContactName = document.getElementById('cargoContactName').value;
+                    const cargoContactPhone = document.getElementById('cargoContactPhone').value;
+
+                    if (!cargoDeliveryType || !cargoCity || !cargoAddress || !cargoContactName || !cargoContactPhone) {
+                        Swal.showValidationMessage('Veuillez remplir tous les champs du formulaire cargo');
+                        return false;
+                    }
+
+                    deliveryFormData = {
+                        deliveryType: cargoDeliveryType,
+                        city: cargoCity,
+                        address: cargoAddress,
+                        contactName: cargoContactName,
+                        contactPhone: cargoContactPhone,
+                        deliveryMethod: 'cargo'
+                    };
                 }
-                return true;
+
+                // Envoyer les données de livraison au serveur
+                return fetch("{{ route('store_delivery_info') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(deliveryFormData)
+                }).then(response => response.json())
+                  .then(data => {
+                      if (!data.success) {
+                          Swal.showValidationMessage('Erreur lors de l\'enregistrement des informations');
+                          return false;
+                      }
+                      return true;
+                  }).catch(error => {
+                      Swal.showValidationMessage('Erreur réseau');
+                      return false;
+                  });
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                showWisaPayModal();
+                showPaymentMethodSelection();
             }
         });
     }
 
-    // Fonction pour afficher le modal WisaPay
-    function showWisaPayModal() {
+    // Fonction pour afficher la sélection du mode de paiement
+    function showPaymentMethodSelection() {
         const totalAmount = {{ $totalCart }};
         const formattedAmount = '{{ number_format($totalCart, 0, '.', ' ') }}';
+        const amountInUSD = {{ number_format($totalCart / 600, 2) }};
 
         Swal.fire({
-            title: 'Paiement via WisaPay',
+            title: 'Mode de paiement',
             html: `
                 <div style="text-align: center;">
-                    <img src="{{ asset(FrontHelper::getEnvFolder() .'partners/p1.png') }}" alt="WisaPay" class="wisapay-logo">
-                    <p style="margin-top: 1rem; font-size: 1.1rem;">
-                        Veuillez confirmer le paiement sur votre portefeuille WisaPay
-                    </p>
-                    <div style="margin: 1.5rem 0;">
-                        <div style="display: inline-block; padding: 0.5rem 1rem; background: #f5f5f5; border-radius: 20px;">
-                            <span style="font-weight: 600; color: #b78d65;">Montant:</span>
-                            ${formattedAmount}
-                            <span style="font-size: 0.9em; color: gray;">XOF</span>
+                    <p style="margin-bottom: 1.5rem;">Choisissez votre mode de paiement</p>
+                    <div style="margin-bottom: 1.5rem; font-size: 1.1rem;">
+                        <strong>Montant à payer:</strong><br>
+                        ${formattedAmount} <span style="font-size: 0.9em; color: gray;">XOF</span><br>
+                        <span style="font-size: 0.9em; color: var(--text-muted);">
+                            (≈ ${amountInUSD} USD)
+                        </span>
+                    </div>
+                    <div class="payment-methods">
+                        <div class="payment-method" id="paypalMethod">
+                            <i class="ri-paypal-line"></i>
+                            <div>PayPal</div>
+                            <small style="color: var(--text-muted);">Carte bancaire, PayPal</small>
                         </div>
                     </div>
+                    <div id="paypal-button-container" style="margin-top: 1.5rem;"></div>
                 </div>
             `,
             showConfirmButton: false,
             showCancelButton: true,
-            cancelButtonText: 'Annuler',
+            cancelButtonText: 'Retour',
             cancelButtonColor: '#777',
-            width: '500px',
+            width: '600px',
             allowOutsideClick: false,
             didOpen: () => {
-                setTimeout(() => {
-                    Swal.fire({
-                        title: 'Paiement réussi!',
-                        html: `
-                            <div style="text-align: center;">
-                                <i class="ri-checkbox-circle-fill" style="font-size: 4rem; color: #4CAF50;"></i>
-                                <p style="margin-top: 1rem; font-size: 1.1rem;">
-                                    Votre paiement de ${formattedAmount} <span style="font-size: 0.9em; color: gray;">XOF</span> a été effectué avec succès.
-                                </p>
-                                ${requiresDelivery ?
-                                    `<p style="font-size: 0.9rem;">Votre commande sera livrée à l'adresse fournie.</p>` :
-                                    '<p style="font-size: 0.9rem;">Veuillez venir chercher votre commande en magasin.</p>'
-                                }
-                            </div>
-                        `,
-                        icon: 'success',
-                        confirmButtonText: 'Continuer',
-                        confirmButtonColor: '#b78d65',
-                        allowOutsideClick: false
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            submitOrderData();
-                        }
-                    });
-                }, 5000);
+                const paypalMethod = document.getElementById('paypalMethod');
+                selectedPaymentMethod = 'paypal';
+                paypalMethod.classList.add('selected');
+                renderPayPalButton();
             }
         });
     }
 
-    // Fonction pour envoyer les données de commande
-    function submitOrderData() {
-        const orderData = {
-            requiresDelivery,
-            deliveryInfo: requiresDelivery ? deliveryFormData : null,
-            totalAmount: {{ $totalCart }},
-            cartItems: {!! json_encode(session('cart', [])) !!}
-        };
+    // Fonction pour initialiser le bouton PayPal
+    function renderPayPalButton() {
+        const totalAmountUSD = {{ $totalCart / 600 }};
 
-        fetch("{{ route('checkout.process') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        paypal.Buttons({
+            style: {
+                layout: 'vertical',
+                color:  'gold',
+                shape:  'rect',
+                label:  'paypal'
             },
-            body: JSON.stringify(orderData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    title: 'Succès',
-                    text: 'Commande enregistrée avec succès',
-                    icon: 'success',
-                    confirmButtonColor: '#b78d65'
-                }).then(() => {
-                    window.location.href = "{{ route('index') }}";
+
+            createOrder: function(data, actions) {
+                return fetch("{{ route('paypal.create-order') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        amount: totalAmountUSD,
+                        requiresDelivery: requiresDelivery,
+                        deliveryInfo: deliveryFormData
+                    })
+                }).then(function(res) {
+                    return res.json();
+                }).then(function(data) {
+                    return data.orderID;
                 });
-            } else {
+            },
+
+            onApprove: function(data, actions) {
+                return fetch("{{ route('paypal.capture-order') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        orderID: data.orderID,
+                        requiresDelivery: requiresDelivery,
+                        deliveryInfo: deliveryFormData
+                    })
+                }).then(function(res) {
+                    return res.json();
+                }).then(function(details) {
+                    if (details.success) {
+                        Swal.fire({
+                            title: 'Paiement réussi!',
+                            html: `
+                                <div style="text-align: center;">
+                                    <i class="ri-checkbox-circle-fill" style="font-size: 4rem; color: #4CAF50;"></i>
+                                    <p style="margin-top: 1rem; font-size: 1.1rem;">
+                                        Votre paiement a été effectué avec succès.
+                                    </p>
+                                    <p style="font-size: 0.9rem;">
+                                        Code commande: ${details.order_code}<br>
+                                        Vous recevrez un email de confirmation sous peu.
+                                    </p>
+                                </div>
+                            `,
+                            icon: 'success',
+                            confirmButtonText: 'Voir ma commande',
+                            confirmButtonColor: '#b78d65',
+                            allowOutsideClick: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = "{{ route('order.confirmation') }}?order_id=" + details.order_id;
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Erreur de paiement',
+                            text: details.error || 'Le paiement n\'a pas pu être traité.',
+                            icon: 'error',
+                            confirmButtonColor: '#b78d65'
+                        });
+                    }
+                });
+            },
+
+            onError: function(err) {
                 Swal.fire({
                     title: 'Erreur',
-                    text: data.error || 'Une erreur est survenue lors de l\'enregistrement de la commande.',
+                    text: 'Une erreur est survenue lors du traitement du paiement. Veuillez réessayer.',
                     icon: 'error',
                     confirmButtonColor: '#b78d65'
                 });
+            },
+
+            onCancel: function(data) {
+                Swal.fire({
+                    title: 'Paiement annulé',
+                    text: 'Vous avez annulé le processus de paiement.',
+                    icon: 'info',
+                    confirmButtonColor: '#b78d65'
+                });
             }
-        })
-        .catch(error => {
-            console.error('Erreur:', error);
-            Swal.fire({
-                title: 'Erreur',
-                text: 'Une erreur est survenue lors de l\'enregistrement de la commande.',
-                icon: 'error',
-                confirmButtonColor: '#b78d65'
-            });
-        });
+        }).render('#paypal-button-container');
     }
 </script>
 @endsection

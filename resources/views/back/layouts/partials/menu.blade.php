@@ -24,12 +24,7 @@
                 <a href="{{ route('profile.edit') }}" class="dropdown-item d-flex align-items-center">
                     <i class="bi bi-person dropdown-item-icon"></i> Profil
                 </a>
-                <a href="#" class="dropdown-item d-flex align-items-center">
-                    <i class="bi bi-envelope dropdown-item-icon"></i> Inbox
-                </a>
-                <a href="#" class="dropdown-item d-flex align-items-center" data-sidebar-target="#settings">
-                    <i class="bi bi-gear dropdown-item-icon"></i> Settings
-                </a>
+
                 <a href="{{ route('logout') }}" class="dropdown-item d-flex align-items-center text-danger"
                    target="_blank">
                     <i class="bi bi-box-arrow-right dropdown-item-icon"></i> Se Déconnecter
@@ -39,16 +34,17 @@
         <ul>
             <li class="menu-divider">E-Commerce Sumba Awa</li>
             <li>
-                <a  class="active"
-                    href="index.html">
+                <a  class="{{ Route::currentRouteName() == 'dashboard' ? 'active' : '' }}"
+                    href="{{ route('dashboard') }}">
                     <span class="nav-link-icon">
                         <i class="bi bi-bar-chart"></i>
                     </span>
                     <span>Dashboard</span>
                 </a>
             </li>
+            @hasanyrole('admin|dev')
             <li>
-                <a href="#">
+                <a href="#" class="{{ Route::currentRouteName() == 'categories.index' || Route::currentRouteName() == 'categories.create' ? 'active' : '' }}">
                     <span class="nav-link-icon">
                         <i class="bi bi-receipt"></i>
                     </span>
@@ -62,11 +58,11 @@
                     <li>
                         <a  href="{{ route('categories.create') }}">Ajouter</a>
                     </li>
-                    
+
                 </ul>
             </li>
             <li>
-                <a href="#">
+                <a href="#" class="{{ Route::currentRouteName() == 'sous-categories.index' || Route::currentRouteName() == 'sous-categories.create' ? 'active' : '' }}">
                     <span class="nav-link-icon">
                         <i class="bi bi-receipt"></i>
                     </span>
@@ -80,11 +76,11 @@
                     <li>
                         <a  href="{{ route('sous-categories.create') }}">Ajouter</a>
                     </li>
-                  
+
                 </ul>
             </li>
             <li>
-                <a href="#">
+                <a href="#" class="{{ Route::currentRouteName() == 'produits.index' || Route::currentRouteName() == 'produits.create' ? 'active' : '' }}">
                     <span class="nav-link-icon">
                         <i class="bi bi-truck"></i>
                     </span>
@@ -98,30 +94,13 @@
                     <li>
                         <a  href="{{ route('produits.create') }}">Ajouter</a>
                     </li>
-                    
-                    
+
+
 
                 </ul>
             </li>
             <li>
-                <a href="#">
-                    <span class="nav-link-icon">
-                        <i class="bi bi-wallet2"></i>
-                    </span>
-                    <span>Recharges</span>
-                </a>
-                <ul>
-                    <li>
-                        <a  href="{{ route('recharges.create') }}">Recharge</a>
-                    </li>
-                    <li>
-                        <a  href="buyer-orders.html">Historiques</a>
-                    </li>
-
-                </ul>
-            </li>
-            <li>
-                <a  href="customers.html">
+                <a  href="#" class="{{ Route::currentRouteName() == 'admin.commandes.index' ? 'active' : '' }}">
                     <span class="nav-link-icon">
                         <i class="bi bi-person-badge"></i>
                     </span>
@@ -129,14 +108,14 @@
                 </a>
                 <ul>
                     <li>
-                        <a  href="buyer-dashboard.html">listes</a>
+                        <a  href="{{ route('admin.commandes.index') }}">listes</a>
                     </li>
 
 
                 </ul>
             </li>
             <li>
-                <a href="#">
+                <a href="#" class="{{ Route::currentRouteName() == 'users.index' ? 'active' : '' }}">
                     <span class="nav-link-icon">
                         <i class="bi bi-receipt"></i>
                     </span>
@@ -144,34 +123,13 @@
                 </a>
                 <ul>
                     <li>
-                        <a href="invoices.html"
+                        <a href="{{ route('users.index') }}"
                            >Utilisateurs</a>
-                    </li>
-                    <li>
-                        <a href="invoice-detail.html"
-                           >Detail</a>
                     </li>
                 </ul>
             </li>
-            <li class="menu-divider">Apps</li>
-            <li>
-                <a  href="chats.html">
-                    <span class="nav-link-icon">
-                        <i class="bi bi-chat-square"></i>
-                    </span>
-                    <span>Chats</span>
-                    <span class="badge bg-success rounded-circle ms-auto">2</span>
-                </a>
-            </li>
+            @endhasrole
 
-            <li>
-                <a href="#" class="disabled">
-                    <span class="nav-link-icon">
-                        <i class="bi bi-hand-index-thumb"></i>
-                    </span>
-                    <span>Disabled</span>
-                </a>
-            </li>
         </ul>
     </div>
 </div>

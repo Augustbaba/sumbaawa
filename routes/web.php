@@ -1,14 +1,17 @@
 <?php
 
+use App\Http\Controllers\AdminCommandeController;
 use App\Http\Controllers\AlibabaImportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SumbaawaController;
 use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\CategorieController;
+use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\SousCategorieController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\ShippingPaymentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -45,6 +48,15 @@ Route::post('/clear-delivery-info', [SumbaawaController::class, 'clearDeliveryIn
 Route::get('/search', [SumbaawaController::class, 'search'])->name('search');
 Route::get('/contact-us', [SumbaawaController::class, 'contact'])->name('contact');
 Route::post('/contact-send', [SumbaawaController::class, 'contactSend'])->name('contact.send');
+
+// Routes PayPal
+Route::post('/checkout/paypal/create-order', [SumbaawaController::class, 'createPayPalOrder'])->name('paypal.create-order');
+Route::post('/checkout/paypal/capture-order', [SumbaawaController::class, 'capturePayPalOrder'])->name('paypal.capture-order');
+Route::get('/checkout/success', [SumbaawaController::class, 'checkoutSuccess'])->name('checkout.success');
+Route::get('/checkout/cancel', [SumbaawaController::class, 'checkoutCancel'])->name('checkout.cancel');
+
+// Confirmation de commande
+Route::get('/checkout/confirmation', [SumbaawaController::class, 'confirmation'])->name('order.confirmation');
 
 // Routes protégées par authentification
 Route::middleware('auth')->group(function () {
@@ -90,11 +102,43 @@ Route::middleware('auth')->group(function () {
     Route::get('/produits/show/{produit}', [ProduitController::class, 'show'])->name('produits.show');
     Route::get('/produits/index', [ProduitController::class, 'index'])->name('produits.index');
 
+    Route::prefix('mes-commandes')->name('user.orders.')->group(function () {
+        Route::get('/{code}', [DashboardController::class, 'show'])->name('show');
+        Route::put('/{code}/received', [DashboardController::class, 'markAsReceived'])->name('received');
+    });
+
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::get('/', [App\Http\Controllers\UserController::class, 'index'])->name('index');
+        Route::get('/{user}/edit', [App\Http\Controllers\UserController::class, 'edit'])->name('edit');
+        Route::put('/{user}/update', [App\Http\Controllers\UserController::class, 'update'])->name('update');
+        Route::delete('/{user}/destroy', [App\Http\Controllers\UserController::class, 'destroy'])->name('destroy');
+    });
+
     // Images
     Route::delete('/images/{image}', [ImageController::class, 'destroy'])->name('images.destroy');
 
+    // Paiement frais de livraison
+    Route::get('/pay-shipping/{code}', [ShippingPaymentController::class, 'showPayment'])->name('shipping.payment.show');
+    Route::post('/shipping/paypal/create', [ShippingPaymentController::class, 'createPayPalOrder'])->name('shipping.paypal.create');
+    Route::post('/shipping/paypal/capture', [ShippingPaymentController::class, 'capturePayPalOrder'])->name('shipping.paypal.capture');
+    Route::get('/shipping-payment/success', [ShippingPaymentController::class, 'success'])->name('shipping.payment.success');
+    Route::get('/shipping-payment/cancel/{id}', [ShippingPaymentController::class, 'cancel'])->name('shipping.payment.cancel');
 
 
+
+
+});
+
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    // Commandes
+    Route::prefix('commandes')->name('commandes.')->group(function () {
+        Route::get('/', [CommandeController::class, 'index'])->name('index');
+        Route::get('/stats', [CommandeController::class, 'stats'])->name('stats');
+        Route::get('/export', [CommandeController::class, 'export'])->name('export');
+        Route::get('/{commande:code}', [CommandeController::class, 'show'])->name('show');
+        Route::put('/{id}/status', [CommandeController::class, 'updateStatus'])->name('updateStatus');
+        Route::post('/{id}/shipping-fees', [CommandeController::class, 'saveShippingFees'])->name('saveShippingFees');
+    });
 });
 Route::get('/import-alibaba', [AlibabaImportController::class, 'showForm'])->name('alibaba.form');
 Route::post('/import-alibaba', [AlibabaImportController::class, 'import'])->name('alibaba.import');

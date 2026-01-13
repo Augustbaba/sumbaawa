@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Helpers\FrontHelper;
 use App\Http\Requests\SendContactRequest;
+use App\Mail\DeliveryProcessingEmail;
+use App\Mail\OrderConfirmationEmail;
 use App\Mail\receiveContactMail;
 use App\Mail\sendContactMail;
 use App\Models\Categorie;
@@ -18,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class SumbaawaController extends Controller
 {
@@ -273,7 +276,12 @@ class SumbaawaController extends Controller
     public function checkout()
     {
         // Récupérer le panier depuis la session
-        $cart = session('cart', []);
+        $cart = session('cart');
+
+        // Si le panier n'existe pas ou est vide → redirection accueil
+        if (empty($cart) || !is_array($cart)) {
+            return redirect()->route('index');
+        }
 
         // Calculer le poids total (somme des poids unitaires * quantité)
         $totalWeight = array_sum(array_map(fn($item) => $item['poids'] * $item['quantity'], $cart));
@@ -281,82 +289,381 @@ class SumbaawaController extends Controller
         // Calculer le total du panier (somme des prix unitaires * quantité)
         $totalCart = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
 
-        // Définir le prix de livraison par kg (configurable)
-        $shippingRate = config('cart.shipping_rate', 5.00); // Par défaut 5.00 $, peut être défini dans config/cart.php
-
-        // Calculer le coût total de livraison
-        $totalShipping = $totalWeight * $shippingRate;
-
-        // Calculer le grand total
-        // $grandTotal = $totalCart + $totalShipping;
-
         // Retourner la vue avec les données
-        return view('front.pages.checkout', compact('cart', 'totalWeight', 'totalCart', 'shippingRate', 'totalShipping', 'totalCart'));
+        return view('front.pages.checkout', compact('cart', 'totalWeight', 'totalCart'));
     }
 
-    public function checkoutProcess(Request $request)
+    // Créer une commande PayPal
+    public function createPayPalOrder(Request $request)
     {
-        $data = $request->all();
-        $cart = session('cart', []);
+        try {
+            Log::info('Création commande PayPal', $request->all());
 
-        if (empty($cart)) {
-            return response()->json(['error' => 'Le panier est vide'], 400);
+            $request->validate([
+                'amount' => 'required|numeric|min:0.01',
+                'requiresDelivery' => 'required|boolean',
+                'deliveryInfo' => 'required_if:requiresDelivery,true'
+            ]);
+
+            $provider = new PayPalClient;
+
+            $config = [
+                'mode' => config('services.paypal.mode', 'sandbox'),
+                'sandbox' => [
+                    'client_id' => config('services.paypal.sandbox.client_id'),
+                    'client_secret' => config('services.paypal.sandbox.client_secret'),
+                    'app_id' => 'APP-80W284485P519543T',
+                ],
+                'live' => [
+                    'client_id' => config('services.paypal.live.client_id'),
+                    'client_secret' => config('services.paypal.live.client_secret'),
+                    'app_id' => config('services.paypal.live.app_id'),
+                ],
+                'payment_action' => 'Sale',
+                'currency' => 'USD',
+                'notify_url' => '',
+                'locale' => 'en_US',
+                'validate_ssl' => true,
+            ];
+
+            $provider->setApiCredentials($config);
+            $token = $provider->getAccessToken();
+
+            $amountUSD = round($request->amount, 2);
+
+            $order = $provider->createOrder([
+                "intent" => "CAPTURE",
+                "purchase_units" => [
+                    [
+                        "amount" => [
+                            "currency_code" => "USD",
+                            "value" => $amountUSD
+                        ],
+                        "description" => "Achat sur " . config('app.name')
+                    ]
+                ],
+                "application_context" => [
+                    "cancel_url" => route('checkout.cancel'),
+                    "return_url" => route('checkout.success')
+                ]
+            ]);
+
+            if (isset($order['id']) && $order['id'] != null) {
+                // Stocker temporairement les infos de livraison
+                if ($request->deliveryInfo) {
+                    session(['pending_delivery_info' => $request->deliveryInfo]);
+                }
+
+                session(['paypal_order_id' => $order['id']]);
+
+                return response()->json(['orderID' => $order['id']]);
+            }
+
+            Log::error('Erreur création commande PayPal', $order);
+            return response()->json(['error' => 'Erreur lors de la création de la commande'], 500);
+
+        } catch (\Exception $e) {
+            Log::error('Exception createPayPalOrder: ' . $e->getMessage());
+            return response()->json(['error' => 'Erreur serveur: ' . $e->getMessage()], 500);
         }
+    }
 
+    public function capturePayPalOrder(Request $request)
+    {
+        try {
+            Log::info('Capture commande PayPal', $request->all());
+
+            $request->validate([
+                'orderID' => 'required',
+                'requiresDelivery' => 'required|boolean',
+                'deliveryInfo' => 'required_if:requiresDelivery,true'
+            ]);
+
+            $provider = new PayPalClient;
+
+            $config = [
+                'mode' => config('services.paypal.mode', 'sandbox'),
+                'sandbox' => [
+                    'client_id' => config('services.paypal.sandbox.client_id'),
+                    'client_secret' => config('services.paypal.sandbox.client_secret'),
+                    'app_id' => 'APP-80W284485P519543T',
+                ],
+                'live' => [
+                    'client_id' => config('services.paypal.live.client_id'),
+                    'client_secret' => config('services.paypal.live.client_secret'),
+                    'app_id' => config('services.paypal.live.app_id'),
+                ],
+                'payment_action' => 'Sale',
+                'currency' => 'USD',
+                'notify_url' => '',
+                'locale' => 'en_US',
+                'validate_ssl' => true,
+            ];
+
+            $provider->setApiCredentials($config);
+            $provider->getAccessToken();
+
+            $result = $provider->capturePaymentOrder($request->orderID);
+
+            if (isset($result['status']) && $result['status'] == 'COMPLETED') {
+                return $this->createOrderAfterPayment($result, $request);
+            } else {
+                Log::error('Capture PayPal échouée', $result);
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Le paiement n\'a pas pu être capturé'
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception capturePayPalOrder: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur lors du traitement: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function createOrderAfterPayment($paypalResult, $request)
+    {
         $userId = Auth::id();
         if (!$userId) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
 
+        $cart = session('cart', []);
+        if (empty($cart)) {
+            return response()->json(['error' => 'Le panier est vide'], 400);
+        }
+
+        $totalCart = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
         $code = 'CMD-' . strtoupper(Str::random(8));
         $address = null;
         $typeId = null;
+        $deliveryMethod = null;
+        $deliveryInfo = null;
 
-        if ($data['requiresDelivery'] && isset($data['deliveryInfo'])) {
-            $delivery = $data['deliveryInfo'];
-            $pays = Pays::findOrFail($delivery['country']);
-            $address = "Pays: {$pays->name}, Ville: {$delivery['city']}, Adresse: {$delivery['address']}, Code Postal: {$delivery['postalCode']}";
-            $typeId = $delivery['deliveryType'];
+        // Récupérer les infos de livraison
+        $deliveryData = $request->deliveryInfo ?? session('pending_delivery_info');
+
+        if ($deliveryData) {
+            $deliveryMethod = $deliveryData['deliveryMethod'] ?? null;
+            $typeId = $deliveryData['deliveryType'] ?? null;
+
+            if ($deliveryMethod === 'tinda_awa') {
+                $pays = Pays::find($deliveryData['country']);
+                $address = "Livraison Tinda Awa - " .
+                          "Pays: {$pays->name}, " .
+                          "Ville: {$deliveryData['city']}, " .
+                          "Adresse: {$deliveryData['address']}, " .
+                          "Destinataire: {$deliveryData['recipientName']}, " .
+                          "Tél: {$deliveryData['recipientPhone']}";
+            } else {
+                $address = "Livraison Cargo - " .
+                          "Ville: {$deliveryData['city']}, " .
+                          "Adresse: {$deliveryData['address']}, " .
+                          "Contact: {$deliveryData['contactName']}, " .
+                          "Tél: {$deliveryData['contactPhone']}";
+            }
+
+            $deliveryInfo = json_encode($deliveryData);
         }
 
+        // Créer la commande
         $commande = Commande::create([
             'user_id' => $userId,
             'code' => $code,
             'address' => $address,
             'type_id' => $typeId,
+            'delivery_method' => $deliveryMethod,
+            'delivery_info' => $deliveryInfo,
+            'payment_method' => 'paypal',
+            'payment_status' => 'paid',
+            'status' => 'pending',
+            'payment_id' => $paypalResult['id'],
+            'payment_email' => $paypalResult['payer']['email_address'] ?? null,
+            'total_amount' => $totalCart,
         ]);
 
+        // Ajouter les produits
         foreach ($cart as $item) {
-            $description = "Couleur: {$item['color']}, Niveau de confort: {$item['niveau_confort']}, Poids: {$item['poids']} kg";
+            $description = "Couleur: {$item['color']}, Niveau confort: {$item['niveau_confort']}, Poids: {$item['poids']} kg";
 
             Commander::create([
                 'commande_id' => $commande->id,
                 'produit_id' => $item['id'],
                 'quantity' => $item['quantity'],
                 'description_produit' => $description,
+                'unit_price' => $item['price'],
+                'total_price' => $item['price'] * $item['quantity'],
             ]);
         }
 
-        // Vider le panier
+        // Envoyer les emails
+        $this->sendOrderEmails($commande, $deliveryData);
+
+        // Nettoyer la session
         session()->forget('cart');
+        session()->forget('pending_delivery_info');
+        session()->forget('delivery_info');
 
         return response()->json([
             'success' => true,
+            'order_id' => $commande->id,
+            'order_code' => $code,
+            'transaction_id' => $paypalResult['id'],
             'message' => 'Commande enregistrée avec succès'
         ]);
     }
 
+    private function sendOrderEmails($order, $deliveryData)
+    {
+        try {
+            $user = Auth::user();
+
+            // Email 1: Confirmation de commande
+            Mail::to($user->email)->send(new OrderConfirmationEmail($order));
+
+            // Email 2: Processus de livraison
+            Mail::to($user->email)->send(new DeliveryProcessingEmail($order, $deliveryData));
+
+        } catch (\Exception $e) {
+            Log::error('Erreur envoi email: ' . $e->getMessage());
+        }
+    }
+
+
+    public function confirmation(Request $request)
+    {
+        $orderId = $request->query('order_id');
+
+        if (!$orderId) {
+            return redirect()->route('checkout')->with('error', 'Commande non trouvée');
+        }
+
+        // Option 1: Utiliser la relation commandesProduits (nom correct)
+        $order = Commande::with(['commandesProduits.produit', 'user', 'type'])
+            ->where('id', $orderId)
+            ->where('user_id', Auth::id())
+            ->first();
+
+
+        if (!$order) {
+            return redirect()->route('checkout')->with('error', 'Commande non trouvée');
+        }
+
+        return view('front.pages.checkout-success', compact('order'));
+    }
+
+    public function checkoutSuccess(Request $request)
+    {
+        $orderId = $request->query('order_id');
+
+        if (!$orderId) {
+            // Essayer de récupérer la dernière commande
+            $order = Commande::with(['commandesProduits.produit', 'user', 'type'])
+                ->where('user_id', Auth::id())
+                ->latest()
+                ->first();
+        } else {
+            $order = Commande::with(['commandesProduits.produit', 'user', 'type'])
+                ->where('id', $orderId)
+                ->where('user_id', Auth::id())
+                ->first();
+        }
+
+        if (!$order) {
+            return redirect()->route('checkout')->with('error', 'Commande non trouvée');
+        }
+
+        return view('front.pages.checkout-success', compact('order'));
+    }
+
+    public function checkoutCancel(Request $request)
+    {
+        return view('front.pages.checkout-cancel');
+    }
+
+    // public function checkoutProcess(Request $request)
+    // {
+    //     $data = $request->all();
+    //     $cart = session('cart', []);
+
+    //     if (empty($cart)) {
+    //         return response()->json(['error' => 'Le panier est vide'], 400);
+    //     }
+
+    //     $userId = Auth::id();
+    //     if (!$userId) {
+    //         return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+    //     }
+
+    //     $code = 'CMD-' . strtoupper(Str::random(8));
+    //     $address = null;
+    //     $typeId = null;
+
+    //     if ($data['requiresDelivery'] && isset($data['deliveryInfo'])) {
+    //         $delivery = $data['deliveryInfo'];
+    //         $pays = Pays::findOrFail($delivery['country']);
+    //         $address = "Pays: {$pays->name}, Ville: {$delivery['city']}, Adresse: {$delivery['address']}, Code Postal: {$delivery['postalCode']}";
+    //         $typeId = $delivery['deliveryType'];
+    //     }
+
+    //     $commande = Commande::create([
+    //         'user_id' => $userId,
+    //         'code' => $code,
+    //         'address' => $address,
+    //         'type_id' => $typeId,
+    //     ]);
+
+    //     foreach ($cart as $item) {
+    //         $description = "Couleur: {$item['color']}, Niveau de confort: {$item['niveau_confort']}, Poids: {$item['poids']} kg";
+
+    //         Commander::create([
+    //             'commande_id' => $commande->id,
+    //             'produit_id' => $item['id'],
+    //             'quantity' => $item['quantity'],
+    //             'description_produit' => $description,
+    //         ]);
+    //     }
+
+    //     // Vider le panier
+    //     session()->forget('cart');
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Commande enregistrée avec succès'
+    //     ]);
+    // }
+
     public function storeDeliveryInfo(Request $request)
     {
         $data = $request->validate([
+            'deliveryMethod' => 'required|in:tinda_awa,cargo',
             'deliveryType' => 'required',
-            'country' => 'required',
             'city' => 'required',
             'address' => 'required',
-            'postalCode' => 'required',
-            'email' => 'required|email',
-            'phone' => 'required',
         ]);
+
+        // Ajouter des champs spécifiques selon la méthode
+        if ($data['deliveryMethod'] === 'tinda_awa') {
+            $request->validate([
+                'country' => 'required',
+                'recipientName' => 'required',
+                'recipientPhone' => 'required',
+            ]);
+
+            $data['country'] = $request->country;
+            $data['recipientName'] = $request->recipientName;
+            $data['recipientPhone'] = $request->recipientPhone;
+        } else {
+            $request->validate([
+                'contactName' => 'required',
+                'contactPhone' => 'required',
+            ]);
+
+            $data['contactName'] = $request->contactName;
+            $data['contactPhone'] = $request->contactPhone;
+        }
 
         session(['delivery_info' => $data]);
 

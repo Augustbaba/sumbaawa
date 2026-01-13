@@ -19,7 +19,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
 
     <!-- Bootstrap icons -->
-    <link rel="stylesheet" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/back/dist/icons/bootstrap-icons-1.4.0/bootstrap-icons.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+    {{-- <link rel="stylesheet" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/back/dist/icons/bootstrap-icons-1.4.0/bootstrap-icons.min.css') }}" type="text/css"> --}}
     <!-- Bootstrap Docs -->
     <link rel="stylesheet" href="{{ asset(FrontHelper::getEnvFolder() . 'storage/back/dist/css/bootstrap-docs.css') }}" type="text/css">
 
