@@ -123,12 +123,6 @@ class CommandeController extends Controller
 
             Mail::to($user->email)->send(new ShippingFeeEmail($commande));
 
-            // Enregistrer dans les logs
-            Log::info('Email frais de livraison envoyé', [
-                'commande_id' => $commande->id,
-                'user_id' => $user->id,
-                'email' => $user->email
-            ]);
 
         } catch (\Exception $e) {
             Log::error('Erreur envoi email frais de livraison: ' . $e->getMessage());
@@ -145,11 +139,6 @@ class CommandeController extends Controller
 
             Mail::to($user->email)->send(new OrderStatusUpdateEmail($commande, $oldStatus));
 
-            Log::info('Email mise à jour statut envoyé', [
-                'commande_id' => $commande->id,
-                'old_status' => $oldStatus,
-                'new_status' => $commande->status
-            ]);
 
         } catch (\Exception $e) {
             Log::error('Erreur envoi email statut: ' . $e->getMessage());

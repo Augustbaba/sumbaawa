@@ -47,6 +47,52 @@ class User extends Authenticatable
     }
 
     /**
+     * Relation avec les notifications
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Récupérer les notifications non lues
+     */
+    public function unreadNotifications()
+    {
+        return $this->notifications()->unread()->recent();
+    }
+
+    /**
+     * Récupérer les notifications lues
+     */
+    public function readNotifications()
+    {
+        return $this->notifications()->read()->recent();
+    }
+
+    /**
+     * Compter les notifications non lues
+     */
+    public function unreadNotificationsCount()
+    {
+        return $this->notifications()->unread()->count();
+    }
+
+    /**
+     * Créer une notification
+     */
+    public function notify($type, $title, $message, $data = null)
+    {
+        return $this->notifications()->create([
+            'type' => $type,
+            'title' => $title,
+            'message' => $message,
+            'data' => $data,
+            'is_read' => false
+        ]);
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>

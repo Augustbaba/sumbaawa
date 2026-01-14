@@ -14,10 +14,14 @@
     </a>
     <!-- ./ Logo -->
     <div class="page-title">Tableau de bord</div>
-    
+
     <div class="header-bar ms-auto">
         <ul class="navbar-nav justify-content-end">
-
+            <li class="nav-item">
+                <a href="#" class="nav-link nav-link-notify" data-count="2" data-sidebar-target="#notifications">
+                    <i class="bi bi-bell icon-lg"></i>
+                </a>
+            </li>
             <li class="nav-item ms-3">
                 <a class="btn btn-primary btn-icon" href="{{ route('logout') }}">
                     <i class="bi bi-box-arrow-right"></i> Se Déconnecter

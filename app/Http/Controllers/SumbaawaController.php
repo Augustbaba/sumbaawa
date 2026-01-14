@@ -521,7 +521,7 @@ class SumbaawaController extends Controller
             $user = Auth::user();
 
             // Email 1: Confirmation de commande
-            Mail::to($user->email)->send(new OrderConfirmationEmail($order));
+            // Mail::to($user->email)->send(new OrderConfirmationEmail($order));
 
             // Email 2: Processus de livraison
             Mail::to($user->email)->send(new DeliveryProcessingEmail($order, $deliveryData));

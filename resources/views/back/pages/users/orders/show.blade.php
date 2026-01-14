@@ -23,6 +23,23 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
+            
+            @if($commande->shipping_status == 'fee_pending' && $commande->status == 'ready_pickup')
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="ri-money-dollar-circle-line me-2"></i>
+                        <strong>Frais de livraison en attente</strong><br>
+                        Des frais de livraison de <strong>{{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</strong>
+                        doivent être payés pour finaliser votre commande.
+                    </div>
+                    <a href="{{ route('shipping.payment.show', $commande->code) }}"
+                    class="btn btn-success btn-sm">
+                        <i class="ri-money-dollar-circle-line me-1"></i> Payer maintenant
+                    </a>
+                </div>
+            </div>
+            @endif
 
             <div class="card">
                 <div class="card-header bg-primary text-white">
@@ -337,6 +354,17 @@
                                     <div class="col-md-6">
                                         <p><strong>Montant :</strong><br>
                                         {{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</p>
+
+                                        <!-- AJOUTER CE BOUTON SI LES FRAIS SONT EN ATTENTE -->
+                                        @if($commande->shipping_status == 'fee_pending' && $commande->status == 'ready_pickup')
+                                        <div class="mt-3">
+                                            <a href="{{ route('shipping.payment.show', $commande->code) }}"
+                                            class="btn btn-success btn-sm">
+                                                <i class="ri-money-dollar-circle-line me-1"></i> Payer les frais de livraison
+                                            </a>
+                                            <small class="d-block text-muted mt-1">Valable 7 jours</small>
+                                        </div>
+                                        @endif
                                     </div>
                                     <div class="col-md-6">
                                         <p><strong>Statut :</strong><br>
@@ -349,6 +377,14 @@
                                             @else N/A
                                             @endif
                                         </span></p>
+
+                                        @if($commande->shipping_payment_id)
+                                        <p class="mt-2"><small>ID: {{ $commande->shipping_payment_id }}</small></p>
+                                        @endif
+
+                                        @if($commande->shipping_payment_date)
+                                        <p><small>Payé le: {{ \Carbon\Carbon::parse($commande->shipping_payment_date)->format('d/m/Y H:i') }}</small></p>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

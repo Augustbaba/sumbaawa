@@ -1,6 +1,6 @@
 <!-- content-footer -->
     <footer class="content-footer">
-        <div>© {{ date('Y') }} - <a href="" target="_blank">{{ FrontHelper::getAppName() }}</a></div>
+        <div>© {{ date('Y') }} - <a href="{{ route('index') }}" target="_blank">{{ FrontHelper::getAppName() }}</a></div>
         <div>
             <nav class="nav gap-4">
                 <a href="" class="nav-link">Licenses</a>
