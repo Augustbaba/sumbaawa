@@ -566,6 +566,35 @@
                                                 <i class="ri-search-line"></i>
                                             </div>
                                         </li>
+                                        <li class="onhover-div mobile-setting">
+                                            <div><i class="ri-money-dollar-circle-line"></i></div>
+                                            <div class="show-div setting">
+                                                <h6>Devise</h6>
+                                                <ul class="currency-list">
+                                                    @php
+                                                        $currentCurrency = FrontHelper::current_currency();
+                                                        $activeCurrencies = \App\Models\Currency::where('is_active', true)->get();
+                                                    @endphp
+
+                                                    @foreach($activeCurrencies as $currency)
+                                                        <li>
+                                                            <a href="#"
+                                                            class="currency-switch"
+                                                            data-currency="{{ $currency->code }}"
+                                                            @if($currentCurrency && $currentCurrency->code === $currency->code)
+                                                                style="font-weight: bold; color: var(--theme-color);"
+                                                            @endif>
+                                                                {{ $currency->code }}
+                                                                @if($currentCurrency && $currentCurrency->code === $currency->code)
+                                                                    <i class="ri-check-line"></i>
+                                                                @endif
+                                                            </a>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </li>
+
                                         {{-- <li class="onhover-div mobile-setting">
                                             <div><i class="ri-equalizer-2-line"></i></div>
                                             <div class="show-div setting">
@@ -591,6 +620,7 @@
                                                 <span class="cart_qty_cls">2</span>
                                             </li>
                                         @endif
+
                                     </ul>
                                 </div>
                             </div>

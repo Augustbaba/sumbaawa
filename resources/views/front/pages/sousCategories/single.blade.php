@@ -68,8 +68,8 @@
                                                 <ul class="collection-listing">
                                                     <li>
                                                         <div class="form-check">
-                                                            <input class="form-check-input subcategory-checkbox" type="checkbox" checked value="{{ $sousCategorie->id }}">
-                                                            <label class="form-check-label" for="checkbox">
+                                                            <input class="form-check-input subcategory-checkbox" type="checkbox" checked value="{{ $sousCategorie->id }}" id="checkbox-{{ $sousCategorie->id }}">
+                                                            <label class="form-check-label" for="checkbox-{{ $sousCategorie->id }}">
                                                                 {{ $sousCategorie->label }}
                                                             </label>
                                                         </div>
@@ -119,12 +119,17 @@
                                                             <div class="basic-product theme-product-1">
                                                                 <div class="overflow-hidden">
                                                                     <div class="img-wrapper">
-                                                                        <a href="{{ route('produits.single', $produit) }}"><img
-                                                                                src="{{ asset($produit->image_main) }}"
-                                                                                class="img-fluid blur-up lazyload" alt="{{ $produit->name }}" style="height: 250px; object-fit: cover;"></a>
+                                                                        <a href="{{ route('produits.single', $produit) }}">
+                                                                            <img src="{{ asset($produit->image_main) }}"
+                                                                                 class="img-fluid blur-up lazyload"
+                                                                                 alt="{{ $produit->name }}"
+                                                                                 style="height: 250px; object-fit: cover;">
+                                                                        </a>
                                                                         <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span></div>
                                                                         <div class="cart-info">
-                                                                            <a href="{{ route('wishlist.add', $produit) }}" title="Ajouter aux favoris" class="wishlist-icon">
+                                                                            <a href="{{ route('wishlist.add', $produit) }}"
+                                                                               title="Ajouter aux favoris"
+                                                                               class="wishlist-icon">
                                                                                 <i class="ri-heart-{{ FrontHelper::isProductInFavorites($produit->id) ? 'fill' : 'line' }}"></i>
                                                                             </a>
                                                                             <button class="add-to-cart"
@@ -139,7 +144,9 @@
                                                                                     title="Ajouter au panier">
                                                                                 <i class="ri-shopping-cart-line"></i>
                                                                             </button>
-                                                                            <a href="{{ route('produits.single', $produit) }}" title="Voir le détail" class="quick-view-btn">
+                                                                            <a href="{{ route('produits.single', $produit) }}"
+                                                                               title="Voir le détail"
+                                                                               class="quick-view-btn">
                                                                                 <i class="ri-eye-line"></i>
                                                                             </a>
                                                                         </div>
@@ -152,9 +159,12 @@
                                                                                 </a>
                                                                             </div>
                                                                             <h6>{{ $produit->sousCategorie->label ?? 'Sous-catégorie non définie' }}</h6>
-                                                                            <h4 class="price">{{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span>
+                                                                            <h4 class="price"
+                                                                                data-price="{{ $produit->price }}"
+                                                                                data-original-price="{{ $produit->original_price ?? 0 }}">
+                                                                                {{ FrontHelper::format_currency($produit->price) }}
                                                                                 @if ($produit->original_price)
-                                                                                    <del>$ {{ number_format($produit->original_price, 2, '.', ',') }}</del>
+                                                                                    <del>{{ FrontHelper::format_currency($produit->original_price) }}</del>
                                                                                     <span class="discounted-price">
                                                                                         {{ round((($produit->original_price - $produit->price) / $produit->original_price) * 100) }}% Off
                                                                                     </span>
@@ -166,7 +176,12 @@
                                                             </div>
                                                         </div>
                                                     @empty
-                                                        <p>Aucun produit trouvé.</p>
+                                                        <div class="col-12">
+                                                            <div class="alert alert-info text-center">
+                                                                <i class="ri-information-line"></i>
+                                                                <p class="mb-0">Aucun produit trouvé dans cette sous-catégorie.</p>
+                                                            </div>
+                                                        </div>
                                                     @endforelse
                                                 </div>
                                             </div>
@@ -192,70 +207,159 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/price-range.js') }}"></script>
+    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/currency.js') }}"></script>
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/cart.js') }}"></script>
     <script>
         (function($) {
             $(document).ready(function () {
-                // Initialiser le compteur du panier
-                cartUtils.initializeCartCount();
+                // Attendre que la config de devise soit chargée
+                CurrencyHelper.load().then(() => {
+                    // Mettre à jour tous les prix sur la page
+                    updateAllPrices();
 
-                // Attacher les événements du panier pour delete-button et clear-cart dans l'offcanvas
-                cartUtils.attachCartEvents();
+                    // Initialiser le compteur du panier
+                    if (window.cartUtils) {
+                        cartUtils.initializeCartCount();
+                        cartUtils.attachCartEvents();
+                    }
+                });
 
-                // Gestion du bouton "Ajouter au panier"
-                $('.add-to-cart').on('click', function (e) {
-                    e.preventDefault();
-                    const $this = $(this);
-                    const productData = {
-                        id: $this.data('product-id'),
-                        name: $this.data('product-name'),
-                        image_main: $this.data('product-image'),
-                        price: parseFloat($this.data('product-price').toString().replace(/,/g, '')),
-                        original_price: $this.data('product-original-price') ? parseFloat($this.data('product-original-price').toString().replace(/,/g, '')) : null,
-                        color: $this.data('product-color'),
-                        niveau_confort: $this.data('product-confort'),
-                        poids: $this.data('product-poids'),
-                        quantity: 1, // Quantité par défaut
-                        product_url: '{{ route('produits.single', ':slug') }}'.replace(':slug', $this.data('product-name').toLowerCase().replace(/\s+/g, '-'))
-                    };
+                // Fonction pour mettre à jour tous les prix affichés
+                function updateAllPrices() {
+                    // Mettre à jour tous les éléments avec data-price
+                    $('[data-price]').each(function() {
+                        const priceInXOF = parseFloat($(this).data('price'));
+                        const originalPrice = $(this).data('original-price');
 
-                    $.ajax({
-                        url: '{{ route('cart.add') }}',
-                        method: 'POST',
-                        data: {
-                            product: productData
-                        },
-                        success: function (response) {
-                            Swal.fire({
-                                toast: true,
-                                position: "top-end",
-                                showConfirmButton: false,
-                                timer: 3000,
-                                timerProgressBar: true,
-                                icon: "success",
-                                title: "Votre produit a été ajouté au panier"
-                            });
-                            cartUtils.updateCartOffcanvas(response.cart);
-                            if ($('#cartOffcanvas').length) {
-                                $('#cartOffcanvas').offcanvas('show');
-                            } else {
-                                console.error('L\'élément #cartOffcanvas n\'existe pas dans le DOM.');
+                        if (!isNaN(priceInXOF)) {
+                            // Formater le prix principal
+                            const formattedPrice = CurrencyHelper.format(priceInXOF);
+
+                            // Construire le HTML du prix
+                            let priceHtml = formattedPrice;
+
+                            // Ajouter le prix original barré si disponible
+                            if (originalPrice && parseFloat(originalPrice) > 0) {
+                                const originalPriceNum = parseFloat(originalPrice);
+                                const formattedOriginalPrice = CurrencyHelper.format(originalPriceNum);
+                                const discount = Math.round(((originalPriceNum - priceInXOF) / originalPriceNum) * 100);
+                                priceHtml += ` <del>${formattedOriginalPrice}</del>`;
+                                priceHtml += ` <span class="discounted-price">${discount}% Off</span>`;
                             }
-                        },
-                        error: function (xhr) {
-                            console.error('Erreur lors de l\'ajout au panier:', xhr.responseText);
-                            Swal.fire({
-                                toast: true,
-                                position: "top-end",
-                                showConfirmButton: false,
-                                timer: 3000,
-                                timerProgressBar: true,
-                                icon: "error",
-                                title: "Erreur lors de l\'ajout au panier"
-                            });
+
+                            $(this).html(priceHtml);
                         }
                     });
-                });
+                }
+
+                // Gestion du bouton "Ajouter au panier"
+                function attachCartEventsToProducts() {
+                    $('.add-to-cart').off('click').on('click', function (e) {
+                        e.preventDefault();
+                        const $this = $(this);
+                        const productData = {
+                            id: $this.data('product-id'),
+                            name: $this.data('product-name'),
+                            image_main: $this.data('product-image'),
+                            price: parseFloat($this.data('product-price').toString().replace(/[,\s]/g, '')),
+                            original_price: $this.data('product-original-price') ? parseFloat($this.data('product-original-price').toString().replace(/[,\s]/g, '')) : null,
+                            color: $this.data('product-color'),
+                            niveau_confort: $this.data('product-confort'),
+                            poids: $this.data('product-poids'),
+                            quantity: 1,
+                            product_url: '{{ route('produits.single', ':slug') }}'.replace(':slug', $this.data('product-name').toLowerCase().replace(/\s+/g, '-'))
+                        };
+
+                        $.ajax({
+                            url: '{{ route('cart.add') }}',
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            data: {
+                                product: productData
+                            },
+                            success: function (response) {
+                                Swal.fire({
+                                    toast: true,
+                                    position: "top-end",
+                                    showConfirmButton: false,
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                    icon: "success",
+                                    title: "Votre produit a été ajouté au panier"
+                                });
+                                if (window.cartUtils) {
+                                    cartUtils.updateCartOffcanvas(response.cart);
+                                }
+                                if ($('#cartOffcanvas').length) {
+                                    $('#cartOffcanvas').offcanvas('show');
+                                } else {
+                                    console.error('L\'élément #cartOffcanvas n\'existe pas dans le DOM.');
+                                }
+                            },
+                            error: function (xhr) {
+                                console.error('Erreur lors de l\'ajout au panier:', xhr.responseText);
+                                Swal.fire({
+                                    toast: true,
+                                    position: "top-end",
+                                    showConfirmButton: false,
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                    icon: "error",
+                                    title: "Erreur lors de l\'ajout au panier"
+                                });
+                            }
+                        });
+                    });
+                }
+
+                // Attacher les événements au chargement initial
+                attachCartEventsToProducts();
+
+                // Gestion de la pagination
+                function attachPaginationEvents() {
+                    $('.pagination a').off('click').on('click', function (e) {
+                        e.preventDefault();
+                        const url = $(this).attr('href');
+
+                        $.ajax({
+                            url: url,
+                            method: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html'
+                            },
+                            success: function (html) {
+                                $('#produits-section').html(html);
+                                // Mettre à jour les prix après avoir chargé les nouveaux produits
+                                updateAllPrices();
+                                attachPaginationEvents();
+                                attachCartEventsToProducts();
+
+                                // Scroll vers le haut de la section produits
+                                $('html, body').animate({
+                                    scrollTop: $('#produits-section').offset().top - 100
+                                }, 500);
+                            },
+                            error: function (xhr) {
+                                console.error('Erreur lors de la pagination:', xhr.responseText);
+                                Swal.fire({
+                                    toast: true,
+                                    position: "top-end",
+                                    showConfirmButton: false,
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                    icon: "error",
+                                    title: "Erreur lors du chargement des produits"
+                                });
+                            }
+                        });
+                    });
+                }
+
+                // Initialiser les événements de pagination
+                attachPaginationEvents();
             });
         })(jQuery);
 

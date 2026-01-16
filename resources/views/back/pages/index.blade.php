@@ -52,11 +52,11 @@
                                             {{ $commande->created_at }}
                                         </td>
                                         <td>
-                                            <strong>{{ number_format($commande->total_amount, 0, '.', ' ') }} XOF</strong>
+                                            <strong>{{ FrontHelper::format_currency($commande->total_amount) }} </strong>
                                             @if($commande->shipping_fee)
                                             <br>
                                             <small class="text-muted">
-                                                + {{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF livraison
+                                                + {{ FrontHelper::format_currency($commande->shipping_fee) }}  livraison
                                             </small>
                                             @endif
                                         </td>

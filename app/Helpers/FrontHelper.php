@@ -12,6 +12,7 @@ use App\Models\Categorie;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Contribute;
+use App\Models\Currency;
 use App\Models\Departement;
 use App\Models\Testimonial;
 use App\Models\User;
@@ -35,6 +36,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 
@@ -52,6 +54,149 @@ class FrontHelper
             $folder = 'public/';
         }
         return $folder;
+    }
+
+    /**
+     * Obtenir la devise courante
+     */
+    public static function current_currency()
+    {
+        // Vérifier d'abord la config
+        if (config('app.current_currency')) {
+            return config('app.current_currency');
+        }
+
+        // Sinon, essayer de récupérer depuis le cookie
+        if (request()->hasCookie('currency_code')) {
+            $currency = Currency::where('code', request()->cookie('currency_code'))
+                               ->where('is_active', true)
+                               ->first();
+            if ($currency) {
+                config(['app.current_currency' => $currency]);
+                return $currency;
+            }
+        }
+
+        // Utilisateur connecté avec préférence
+        if (auth()->check() && auth()->user()->preferred_currency_id) {
+            $currency = Currency::find(auth()->user()->preferred_currency_id);
+            if ($currency) {
+                config(['app.current_currency' => $currency]);
+                return $currency;
+            }
+        }
+
+        // Devise par défaut
+        $defaultCurrency = Currency::where('is_default', true)->first()
+                          ?? Currency::where('code', 'XOF')->first();
+
+        config(['app.current_currency' => $defaultCurrency]);
+        return $defaultCurrency;
+    }
+
+    /**
+     * Convertir un montant d'une devise vers une autre
+     * Tous les montants en BD sont en XOF (devise de base)
+     *
+     * @param float $amount - Montant en XOF (devise de base)
+     * @param string|null $fromCurrencyCode - Code de la devise source (si null, considéré comme XOF)
+     * @param string|null $toCurrencyCode - Code de la devise cible (si null, utilise la devise courante)
+     * @return float
+     */
+    public static function convert_currency($amount, $fromCurrencyCode = 'XOF', $toCurrencyCode = null)
+    {
+        // Si pas de devise cible spécifiée, utiliser la devise courante
+        if (!$toCurrencyCode) {
+            $currentCurrency = self::current_currency();
+            $toCurrencyCode = $currentCurrency->code;
+        }
+
+        // Si les devises sont identiques, pas de conversion
+        if ($fromCurrencyCode === $toCurrencyCode) {
+            return $amount;
+        }
+
+        // Étape 1 : Convertir le montant en XOF (devise de base) si nécessaire
+        $amountInXOF = $amount;
+
+        if ($fromCurrencyCode !== 'XOF') {
+            $fromCurrency = Currency::where('code', $fromCurrencyCode)
+                                   ->where('is_active', true)
+                                   ->first();
+
+            if (!$fromCurrency) {
+                return $amount; // Devise source non trouvée, retourner le montant original
+            }
+
+            // Convertir vers XOF : montant * taux
+            $amountInXOF = $amount * $fromCurrency->exchange_rate;
+        }
+
+        // Étape 2 : Convertir de XOF vers la devise cible
+        if ($toCurrencyCode === 'XOF') {
+            return $amountInXOF;
+        }
+
+        $toCurrency = Currency::where('code', $toCurrencyCode)
+                             ->where('is_active', true)
+                             ->first();
+
+        if (!$toCurrency) {
+            return $amountInXOF; // Devise cible non trouvée, retourner le montant en XOF
+        }
+
+        // Convertir de XOF vers la devise cible : montant / taux
+        return $amountInXOF / $toCurrency->exchange_rate;
+    }
+
+    /**
+     * Formater un montant avec la devise
+     *
+     * @param float $amount - Montant en XOF (devise de base en BD)
+     * @param string|null $currencyCode - Code de la devise pour l'affichage (si null, utilise la devise courante)
+     * @return string
+     */
+    public static function format_currency($amount, $currencyCode = null)
+    {
+        $currentCurrency = self::current_currency();
+
+        if (!$currencyCode) {
+            $currencyCode = $currentCurrency->code;
+        }
+
+        $currency = Currency::where('code', $currencyCode)
+                           ->where('is_active', true)
+                           ->first();
+
+        if (!$currency) {
+            return number_format($amount, 0, ',', ' ') . ' XOF';
+        }
+
+        // Convertir le montant de XOF vers la devise cible
+        $convertedAmount = self::convert_currency($amount, 'XOF', $currencyCode);
+
+        // Format selon la devise (0 décimales pour XOF, 2 pour les autres)
+        $decimals = ($currencyCode === 'XOF') ? 0 : 2;
+        $formatted = number_format($convertedAmount, $decimals, ',', ' ');
+
+        return $formatted . ' ' . $currency->symbol;
+    }
+
+    /**
+     * Obtenir uniquement le montant converti sans formatage
+     *
+     * @param float $amount - Montant en XOF
+     * @param string|null $currencyCode - Code de la devise cible
+     * @return float
+     */
+    public static function get_converted_amount($amount, $currencyCode = null)
+    {
+        if (!$currencyCode) {
+            $currentCurrency = self::current_currency();
+            $currencyCode = $currentCurrency->code;
+        }
+
+        return self::convert_currency($amount, 'XOF', $currencyCode);
     }
 
     public static function allCategories()
@@ -89,8 +234,68 @@ class FrontHelper
 
     public static function fourProductsPopulars()
     {
-        // à revoir, ecriture de la requete de selection des produits populaires
-        return Produit::orderBy('id', 'desc')->take(4)->get();
+        try {
+            // Compter le nombre de fois où chaque produit apparaît dans les commandes
+            $popularProducts = DB::table('commanders')
+                ->join('commandes', 'commanders.commande_id', '=', 'commandes.id')
+                ->join('produits', 'commanders.produit_id', '=', 'produits.id')
+                ->select(
+                    'commanders.produit_id',
+                    DB::raw('SUM(commanders.quantity) as total_quantity'),
+                    DB::raw('COUNT(DISTINCT commanders.commande_id) as order_count')
+                )
+                ->where('commandes.payment_status', 'paid')
+                ->where('commandes.status', '!=', 'cancelled')
+                ->groupBy('commanders.produit_id')
+                ->orderByDesc('total_quantity')
+                ->orderByDesc('order_count')
+                ->orderByDesc(DB::raw('total_quantity * produits.price'))
+                ->limit(4)
+                ->pluck('produit_id')
+                ->toArray();
+
+
+            // Si on a trouvé des produits populaires, les récupérer avec leurs informations
+            if (!empty($popularProducts)) {
+                return Produit::whereIn('id', $popularProducts)
+                    // ->where('is_active', true)
+                    ->orderByRaw('FIELD(id, ' . implode(',', $popularProducts) . ')')
+                    ->get();
+            }
+
+            // Fallback: produits les plus récents avec des ventes
+            $fallbackProducts = DB::table('commanders')
+                ->select('produit_id')
+                ->join('produits', 'commanders.produit_id', '=', 'produits.id')
+                // ->where('produits.is_active', true)
+                ->groupBy('produit_id')
+                ->havingRaw('SUM(quantity) > 0')
+                ->orderByDesc('produits.created_at')
+                ->take(4)
+                ->get()
+                ->pluck('produit_id')
+                ->toArray();
+
+            if (!empty($fallbackProducts)) {
+                return Produit::whereIn('id', $fallbackProducts)
+                    // ->where('is_active', true)
+                    ->orderByRaw('FIELD(id, ' . implode(',', $fallbackProducts) . ')')
+                    ->get();
+            }
+
+            // Dernier fallback: 4 derniers produits actifs
+            return Produit::orderBy('created_at', 'desc')
+                ->take(4)
+                ->get();
+
+        } catch (\Exception $e) {
+            // En cas d'erreur, retourner les 4 derniers produits actifs
+            Log::error('Erreur dans fourProductsPopulars: ' . $e->getMessage());
+
+            return Produit::orderBy('created_at', 'desc')
+                ->take(4)
+                ->get();
+        }
     }
 
     public static function randomProjectsInProgress()

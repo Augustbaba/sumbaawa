@@ -30,7 +30,7 @@
             <div class="notice">
                 <strong>Important :</strong>
                 @if(isset($deliveryData['deliveryMethod']) && $deliveryData['deliveryMethod'] === 'tinda_awa')
-                Votre commande sera livrée via notre partenaire Tinda Awa. Les frais de livraison seront calculés en fonction de votre adresse et vous recevrez un autre email pour effectuer ce paiement.
+                Votre commande sera livrée via notre partenaire Tinda Awa. Les frais de livraison seront calculés en fonction de votre adresse et du moyen de transport choisi ({{ $order->type ? $order->type->label : 'N/A' }}) et vous recevrez un autre email pour effectuer ce paiement.
                 @else
                 Votre commande sera préparée pour être envoyée à votre cargo. Nous analyserons les frais de déplacement jusqu'à votre cargo et vous ferons un retour via un autre email pour effectuer ce paiement.
                 @endif

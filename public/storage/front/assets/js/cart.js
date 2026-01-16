@@ -1,5 +1,69 @@
+// public/front/assets/js/cart.js
 (function($) {
     $(document).ready(function () {
+        // Variable globale pour stocker la configuration de la devise
+        let currencyConfig = {
+            code: 'XOF',
+            symbol: 'FCFA',
+            exchange_rate: 1,
+            decimals: 0
+        };
+
+        // Charger la configuration de la devise au démarrage
+        function loadCurrencyConfig() {
+            return $.ajax({
+                url: '/api/current-currency',
+                method: 'GET',
+                success: function(data) {
+                    currencyConfig = data;
+                    console.log('Configuration de devise chargée:', currencyConfig);
+                },
+                error: function(xhr) {
+                    console.error('Erreur lors du chargement de la devise:', xhr.responseText);
+                }
+            });
+        }
+
+        // Convertir un montant (de XOF vers la devise courante)
+        function convertCurrency(amount) {
+            if (!amount || isNaN(amount)) {
+                return 0;
+            }
+            const numAmount = parseFloat(amount.toString().replace(/[,\s]/g, ''));
+
+            // Si c'est déjà en XOF, convertir vers la devise courante
+            if (currencyConfig.code === 'XOF') {
+                return numAmount;
+            }
+
+            // Convertir de XOF vers la devise cible
+            return numAmount / currencyConfig.exchange_rate;
+        }
+
+        // Formater un montant avec la devise
+        function formatCurrency(amount) {
+            const convertedAmount = convertCurrency(amount);
+            const decimals = currencyConfig.decimals;
+
+            const formatted = convertedAmount.toLocaleString('fr-FR', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+
+            return `${formatted} <span style="font-size: 0.9em; color: gray;">${currencyConfig.symbol}</span>`;
+        }
+
+        // Formater un prix simple (sans HTML)
+        function formatPrice(amount) {
+            const convertedAmount = convertCurrency(amount);
+            const decimals = currencyConfig.decimals;
+
+            return convertedAmount.toLocaleString('fr-FR', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+        }
+
         // Configurer le token CSRF pour AJAX
         $.ajaxSetup({
             headers: {
@@ -19,11 +83,6 @@
                 toast.onmouseleave = Swal.resumeTimer;
             }
         });
-
-        // Fonction pour formater les prix avec virgule pour les milliers
-        function formatPrice(number) {
-            return number.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-        }
 
         // Fonction pour mettre à jour le compteur du panier
         function updateCartCount(count) {
@@ -70,7 +129,7 @@
                         return;
                     }
 
-                    const priceStr = item.price.toString().replace(/,/g, '');
+                    const priceStr = item.price.toString().replace(/[,\s]/g, '');
                     const price = parseFloat(priceStr);
                     if (isNaN(price)) {
                         console.error('Prix non valide pour l\'élément:', item);
@@ -101,7 +160,7 @@
                                         </div>
                                     </div>
                                     <div class="col table-price">
-                                        <h2 class="td-color">${formatPrice(price)}<span style="font-size: 0.9em; color: gray;">XOF</span></h2>
+                                        <h2 class="td-color">${formatCurrency(price)}</h2>
                                     </div>
                                     <div class="col">
                                         <h2 class="td-color">
@@ -113,7 +172,7 @@
                                 </div>
                             </td>
                             <td class="table-price">
-                                <h2>${formatPrice(price)} <span style="font-size: 0.9em; color: gray;">XOF</span></h2>
+                                <h2>${formatCurrency(price)}</h2>
                             </td>
                             <td>
                                 <div class="qty-box">
@@ -128,7 +187,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <h2 class="td-color">${formatPrice(price * item.quantity)} <span style="font-size: 0.9em; color: gray;">XOF</span></h2>
+                                    <h2 class="td-color">${formatCurrency(price * item.quantity)}</h2>
                                 </td>
                                 <td>
                                     <a href="#!" class="icon remove-btn" data-product-id="${item.id}">
@@ -143,7 +202,7 @@
             }
 
             if ($('.cart-table tfoot h2').length) {
-                $('.cart-table tfoot h2').text(`${formatPrice(total)}`);
+                $('.cart-table tfoot h2').html(formatCurrency(total));
             }
             updateCartCount(cart.items ? cart.items.length : 0);
             attachCartEvents();
@@ -196,7 +255,7 @@
                                         <h4>${item.name}</h4>
                                     </a>
                                     <h4 class="quantity">
-                                        <span>${item.quantity} x ${formatPrice(price)} <span style="font-size: 0.9em; color: gray;">XOF</span></span>
+                                        <span>${item.quantity} x ${formatCurrency(price)}</span>
                                     </h4>
                                     <small class="color">
                                         <span>Couleur: ${item.color || 'Non spécifié'}</span>
@@ -229,7 +288,7 @@
                     <ul class="cart_total">
                         <li>
                             <div class="total">
-                                <h5>Sous-total : <span>${formatPrice(totalNum)} <span style="font-size: 0.9em; color: gray;">XOF</span></span></h5>
+                                <h5>Sous-total : <span>${formatCurrency(totalNum)}</span></h5>
                             </div>
                         </li>
                         <li>
@@ -386,12 +445,23 @@
             });
         }
 
+        // Charger la config de devise puis initialiser le panier
+        loadCurrencyConfig().then(() => {
+            initializeCartCount();
+            attachCartEvents();
+        });
+
         // Exposer les fonctions nécessaires pour être appelées ailleurs
         window.cartUtils = {
             initializeCartCount: initializeCartCount,
             updateCartTable: updateCartTable,
             updateCartOffcanvas: updateCartOffcanvas,
-            attachCartEvents: attachCartEvents
+            attachCartEvents: attachCartEvents,
+            formatCurrency: formatCurrency,
+            formatPrice: formatPrice,
+            convertCurrency: convertCurrency,
+            getCurrencyConfig: () => currencyConfig,
+            reloadCurrency: loadCurrencyConfig
         };
     });
 })(jQuery);

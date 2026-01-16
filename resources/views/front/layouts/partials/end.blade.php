@@ -56,7 +56,7 @@
                                         <h4>{{ $item['name'] }}</h4>
                                     </a>
                                     <h4 class="quantity">
-                                        <span>{{ $item['quantity'] }} x {{ number_format($item['price'], 0, '.', ' ') }}</span> <span style="font-size: 0.9em; color: gray;">XOF</span>
+                                        <span>{{ $item['quantity'] }} x {{ FrontHelper::format_currency($item['price']) }}</span>
                                     </h4>
                                     <h4 class="color">
                                         <span>Couleur: {{ $item['color']?? 'Non Spécifié' }}</span>
@@ -87,7 +87,7 @@
                 <ul class="cart_total">
                     <li>
                         <div class="total">
-                            <h5>Sous-total : <span>{{ number_format($total, 0, '.', ' ') }}</span><span style="font-size: 0.9em; color: gray;">XOF</span></h5>
+                            <h5>Sous-total : <span>{{ FrontHelper::format_currency($total) }}</span></h5>
                         </div>
                     </li>
                     <li>
@@ -279,9 +279,17 @@
 
     <!-- latest jquery-->
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/jquery-3.3.1.min.js') }}"></script>
+    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/currency.js') }}" defer></script>
+    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/currency-switcher.js') }}" defer></script>
+    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/currency-display.js') }}" defer></script>
 
     <!-- fly cart ui jquery-->
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/jquery-ui.min.js') }}"></script>
+
+    <!-- currency js-->
+    {{-- <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/currency.js') }}"></script>
+    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/currency-switcher.js') }}"></script>
+    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/update-prices.js') }}"></script> --}}
 
     <!-- exitintent jquery-->
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/jquery.exitintent.js') }}"></script>

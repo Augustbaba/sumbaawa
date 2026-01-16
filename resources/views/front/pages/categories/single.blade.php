@@ -130,15 +130,47 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/price-range.js') }}"></script>
+    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/currency.js') }}"></script>
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/cart.js') }}"></script>
     <script>
         (function($) {
             $(document).ready(function () {
-                // Initialiser le compteur du panier
-                cartUtils.initializeCartCount();
+                // Attendre que la config de devise soit chargée
+                CurrencyHelper.load().then(() => {
+                    // Mettre à jour tous les prix sur la page
+                    updateAllPrices();
 
-                // Attacher les événements du panier pour delete-button et clear-cart dans l'offcanvas
-                cartUtils.attachCartEvents();
+                    // Initialiser le compteur du panier
+                    if (window.cartUtils) {
+                        cartUtils.initializeCartCount();
+                        cartUtils.attachCartEvents();
+                    }
+                });
+
+                // Fonction pour mettre à jour tous les prix affichés
+                function updateAllPrices() {
+                    // Mettre à jour tous les éléments avec data-price
+                    $('[data-price]').each(function() {
+                        const priceInXOF = parseFloat($(this).data('price'));
+                        const originalPrice = $(this).data('original-price');
+
+                        // Formater le prix principal
+                        const formattedPrice = CurrencyHelper.format(priceInXOF);
+
+                        // Construire le HTML du prix
+                        let priceHtml = formattedPrice;
+
+                        // Ajouter le prix original barré si disponible
+                        if (originalPrice && originalPrice > 0) {
+                            const formattedOriginalPrice = CurrencyHelper.format(parseFloat(originalPrice));
+                            const discount = Math.round(((originalPrice - priceInXOF) / originalPrice) * 100);
+                            priceHtml += ` <del>${formattedOriginalPrice}</del>`;
+                            priceHtml += ` <span class="discounted-price">${discount}% Off</span>`;
+                        }
+
+                        $(this).html(priceHtml);
+                    });
+                }
 
                 // Gestion du bouton "Ajouter au panier"
                 function attachCartEventsToProducts() {
@@ -149,8 +181,8 @@
                             id: $this.data('product-id'),
                             name: $this.data('product-name'),
                             image_main: $this.data('product-image'),
-                            price: parseFloat($this.data('product-price').toString().replace(/,/g, '')),
-                            original_price: $this.data('product-original-price') ? parseFloat($this.data('product-original-price').toString().replace(/,/g, '')) : null,
+                            price: parseFloat($this.data('product-price').toString().replace(/[,\s]/g, '')),
+                            original_price: $this.data('product-original-price') ? parseFloat($this.data('product-original-price').toString().replace(/[,\s]/g, '')) : null,
                             color: $this.data('product-color'),
                             niveau_confort: $this.data('product-confort'),
                             poids: $this.data('product-poids'),
@@ -161,6 +193,9 @@
                         $.ajax({
                             url: '{{ route('cart.add') }}',
                             method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
                             data: {
                                 product: productData
                             },
@@ -174,7 +209,9 @@
                                     icon: "success",
                                     title: "Votre produit a été ajouté au panier"
                                 });
-                                cartUtils.updateCartOffcanvas(response.cart);
+                                if (window.cartUtils) {
+                                    cartUtils.updateCartOffcanvas(response.cart);
+                                }
                                 if ($('#cartOffcanvas').length) {
                                     $('#cartOffcanvas').offcanvas('show');
                                 } else {
@@ -222,6 +259,8 @@
                         },
                         success: function (html) {
                             produitsSection.html(html);
+                            // Mettre à jour les prix après avoir chargé les nouveaux produits
+                            updateAllPrices();
                             attachPaginationEvents();
                             attachCartEventsToProducts();
                         },

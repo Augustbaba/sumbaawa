@@ -46,7 +46,7 @@
 
             <div class="amount-box">
                 <p style="margin: 0 0 10px 0;">Frais de livraison à régler :</p>
-                <div class="amount">{{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</div>
+                <div class="amount">{{ FrontHelper::format_currency($commande->shipping_fee) }} </div>
 
                 @if($commande->estimated_delivery)
                 <p style="margin: 10px 0 0 0;">
@@ -58,11 +58,11 @@
             <table class="details-table">
                 <tr>
                     <td>Frais de livraison :</td>
-                    <td>{{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</td>
+                    <td>{{ FrontHelper::format_currency($commande->shipping_fee) }} </td>
                 </tr>
                 <tr style="background: #f8f9fa; font-weight: bold;">
                     <td>Total à payer :</td>
-                    <td>{{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</td>
+                    <td>{{ FrontHelper::format_currency($commande->shipping_fee) }} </td>
                 </tr>
             </table>
 

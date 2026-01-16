@@ -100,7 +100,7 @@
 
             <div class="detail-item">
                 <span>Frais de livraison payés :</span>
-                <strong>{{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</strong>
+                <strong>{{ FrontHelper::format_currency($commande->shipping_fee) }} </strong>
             </div>
 
             <div class="detail-item">

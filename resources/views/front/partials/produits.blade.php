@@ -5,12 +5,17 @@
                 <div class="basic-product theme-product-1">
                     <div class="overflow-hidden">
                         <div class="img-wrapper">
-                            <a href="{{ route('produits.single', $produit) }}"><img
-                                    src="{{ asset($produit->image_main) }}"
-                                    class="img-fluid blur-up lazyload" alt="{{ $produit->name }}" style="height: 250px; object-fit: cover;"></a>
+                            <a href="{{ route('produits.single', $produit) }}">
+                                <img src="{{ asset($produit->image_main) }}"
+                                     class="img-fluid blur-up lazyload"
+                                     alt="{{ $produit->name }}"
+                                     style="height: 250px; object-fit: cover;">
+                            </a>
                             <div class="rating-label"><i class="ri-star-s-fill"></i> <span>4.5</span></div>
                             <div class="cart-info">
-                                <a href="{{ route('wishlist.add', $produit) }}" title="Ajouter aux favoris" class="wishlist-icon">
+                                <a href="{{ route('wishlist.add', $produit) }}"
+                                   title="Ajouter aux favoris"
+                                   class="wishlist-icon">
                                     <i class="ri-heart-{{ FrontHelper::isProductInFavorites($produit->id) ? 'fill' : 'line' }}"></i>
                                 </a>
                                 <button class="add-to-cart"
@@ -25,7 +30,9 @@
                                         title="Ajouter au panier">
                                     <i class="ri-shopping-cart-line"></i>
                                 </button>
-                                <a href="{{ route('produits.single', $produit) }}" title="Voir le détail" class="quick-view-btn">
+                                <a href="{{ route('produits.single', $produit) }}"
+                                   title="Voir le détail"
+                                   class="quick-view-btn">
                                     <i class="ri-eye-line"></i>
                                 </a>
                             </div>
@@ -38,9 +45,12 @@
                                     </a>
                                 </div>
                                 <h6>{{ $produit->sousCategorie->label ?? 'Sous-catégorie non définie' }}</h6>
-                                <h4 class="price">{{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span>
+                                <h4 class="price"
+                                    data-price="{{ $produit->price }}"
+                                    data-original-price="{{ $produit->original_price ?? 0 }}">
+                                    {{ FrontHelper::format_currency($produit->price) }}
                                     @if ($produit->original_price)
-                                        <del>$ {{ number_format($produit->original_price, 0, '.', ' ') }}</del>
+                                        <del>{{ FrontHelper::format_currency($produit->original_price) }}</del>
                                         <span class="discounted-price">
                                             {{ round((($produit->original_price - $produit->price) / $produit->original_price) * 100) }}% Off
                                         </span>
@@ -52,7 +62,12 @@
                 </div>
             </div>
         @empty
-            <p>Aucun produit trouvé.</p>
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="ri-information-line"></i>
+                    <p class="mb-0">Aucun produit trouvé dans cette catégorie.</p>
+                </div>
+            </div>
         @endforelse
     </div>
 </div>
@@ -62,3 +77,37 @@
         {{ $produits->links('vendor.pagination.bootstrap-5') }}
     </div>
 </div>
+
+{{-- Script pour initialiser les prix après le chargement AJAX --}}
+<script>
+    (function() {
+        // Fonction pour mettre à jour les prix (sera appelée après chargement AJAX)
+        if (typeof CurrencyHelper !== 'undefined' && CurrencyHelper.load) {
+            CurrencyHelper.load().then(() => {
+                document.querySelectorAll('[data-price]').forEach(function(element) {
+                    const priceInXOF = parseFloat(element.dataset.price);
+                    const originalPrice = element.dataset.originalPrice;
+
+                    if (!isNaN(priceInXOF)) {
+                        // Formater le prix principal
+                        const formattedPrice = CurrencyHelper.format(priceInXOF);
+
+                        // Construire le HTML du prix
+                        let priceHtml = formattedPrice;
+
+                        // Ajouter le prix original barré si disponible
+                        if (originalPrice && parseFloat(originalPrice) > 0) {
+                            const originalPriceNum = parseFloat(originalPrice);
+                            const formattedOriginalPrice = CurrencyHelper.format(originalPriceNum);
+                            const discount = Math.round(((originalPriceNum - priceInXOF) / originalPriceNum) * 100);
+                            priceHtml += ` <del>${formattedOriginalPrice}</del>`;
+                            priceHtml += ` <span class="discounted-price">${discount}% Off</span>`;
+                        }
+
+                        element.innerHTML = priceHtml;
+                    }
+                });
+            });
+        }
+    })();
+</script>

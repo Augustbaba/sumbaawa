@@ -136,7 +136,10 @@
 
             <div class="summary-item">
                 <span>Frais de livraison :</span>
-                <span>{{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</span>
+                <span id="shipping-fee-display"
+                      data-amount-xof="{{ $commande->shipping_fee }}">
+                    {{ FrontHelper::format_currency($commande->shipping_fee) }}
+                </span>
             </div>
 
             @if($commande->delivery_method == 'tinda_awa' && $commande->estimated_delivery)
@@ -148,7 +151,14 @@
 
             <div class="summary-item total-amount">
                 <span>Total à payer :</span>
-                <span>{{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</span>
+                <span id="total-amount-display"
+                      data-amount-xof="{{ $commande->shipping_fee }}">
+                    {{ FrontHelper::format_currency($commande->shipping_fee) }}
+                </span>
+            </div>
+
+            <div class="mt-3 text-center" style="font-size: 0.9rem; color: #777;">
+                <span id="usd-equivalent"></span>
             </div>
         </div>
 
@@ -181,17 +191,91 @@
 @php
     $mode = config('services.paypal.mode');
     $clientId = config("services.paypal.{$mode}.client_id");
-    $amountInUSD = round($commande->shipping_fee / 600, 2); // Conversion XOF en USD
+    $currentCurrency = FrontHelper::current_currency();
 @endphp
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/currency.js') }}"></script>
 <script src="https://www.paypal.com/sdk/js?client-id={{ $clientId }}&currency=USD&intent=capture"></script>
 
 <script>
+    // Configuration de la devise
+    const CURRENCY_CONFIG = {
+        currentCode: '{{ $currentCurrency->code }}',
+        currentSymbol: '{{ $currentCurrency->symbol }}',
+        currentRate: {{ $currentCurrency->exchange_rate }},
+        shippingFeeXOF: {{ $commande->shipping_fee }},
+
+        // Taux de change (tous basés sur XOF)
+        rates: {
+            'XOF': 1,
+            'EUR': {{ \App\Models\Currency::where('code', 'EUR')->value('exchange_rate') ?? 655.957 }},
+            'USD': {{ \App\Models\Currency::where('code', 'USD')->value('exchange_rate') ?? 600 }},
+            'GBP': {{ \App\Models\Currency::where('code', 'GBP')->value('exchange_rate') ?? 750 }}
+        }
+    };
+
+    /**
+     * Convertir XOF vers USD
+     */
+    function convertToUSD(amountXOF) {
+        return parseFloat((amountXOF / CURRENCY_CONFIG.rates.USD).toFixed(2));
+    }
+
+    /**
+     * Formater un montant
+     */
+    function formatAmount(amountInXOF) {
+        if (typeof CurrencyHelper !== 'undefined') {
+            return CurrencyHelper.format(amountInXOF);
+        }
+
+        // Fallback
+        const converted = amountInXOF / CURRENCY_CONFIG.currentRate;
+        const decimals = CURRENCY_CONFIG.currentCode === 'XOF' ? 0 : 2;
+        const formatted = converted.toLocaleString('fr-FR', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+        return `${formatted} ${CURRENCY_CONFIG.currentSymbol}`;
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        renderPayPalButton();
+        // Charger la config de devise et mettre à jour l'affichage
+        if (typeof CurrencyHelper !== 'undefined') {
+            CurrencyHelper.load().then(() => {
+                updatePriceDisplay();
+                renderPayPalButton();
+            });
+        } else {
+            updatePriceDisplay();
+            renderPayPalButton();
+        }
     });
 
+    /**
+     * Mettre à jour l'affichage des prix
+     */
+    function updatePriceDisplay() {
+        const shippingFeeXOF = CURRENCY_CONFIG.shippingFeeXOF;
+        const amountUSD = convertToUSD(shippingFeeXOF);
+
+        // Mettre à jour les montants affichés
+        document.querySelectorAll('[data-amount-xof]').forEach(element => {
+            const amountXOF = parseFloat(element.dataset.amountXof);
+            element.textContent = formatAmount(amountXOF);
+        });
+
+        // Afficher l'équivalent en USD
+        document.getElementById('usd-equivalent').textContent =
+            `≈ $${amountUSD.toFixed(2)} USD`;
+    }
+
+    /**
+     * Initialiser le bouton PayPal
+     */
     function renderPayPalButton() {
-        const amountUSD = {{ $amountInUSD }};
+        const shippingFeeXOF = CURRENCY_CONFIG.shippingFeeXOF;
+        const amountUSD = convertToUSD(shippingFeeXOF);
 
         paypal.Buttons({
             style: {
@@ -210,16 +294,26 @@
                     },
                     body: JSON.stringify({
                         commande_id: {{ $commande->id }},
-                        amount: amountUSD
+                        amount: amountUSD,
+                        currency: CURRENCY_CONFIG.currentCode,
+                        amountInXOF: shippingFeeXOF
                     })
                 }).then(function(res) {
                     return res.json();
                 }).then(function(data) {
-                    if (data.orderID) {
+                    if (data.success && data.orderID) {
                         return data.orderID;
                     } else {
                         throw new Error(data.error || 'Erreur lors de la création du paiement');
                     }
+                }).catch(function(error) {
+                    console.error('Erreur création commande:', error);
+                    Swal.fire({
+                        title: 'Erreur',
+                        text: error.message || 'Impossible de créer la commande PayPal',
+                        icon: 'error',
+                        confirmButtonColor: '#b78d65'
+                    });
                 });
             },
 
@@ -231,14 +325,33 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({
-                        orderID: data.orderID
+                        orderID: data.orderID,
+                        currency: CURRENCY_CONFIG.currentCode,
+                        amountInXOF: shippingFeeXOF
                     })
                 }).then(function(res) {
                     return res.json();
                 }).then(function(details) {
                     if (details.success) {
-                        // Rediriger vers la page de succès
-                        window.location.href = "{{ route('shipping.payment.success') }}";
+                        Swal.fire({
+                            title: 'Paiement réussi!',
+                            html: `
+                                <div style="text-align: center;">
+                                    <i class="ri-checkbox-circle-fill" style="font-size: 4rem; color: #4CAF50;"></i>
+                                    <p style="margin-top: 1rem;">
+                                        Votre paiement des frais de livraison a été effectué avec succès.
+                                    </p>
+                                </div>
+                            `,
+                            icon: 'success',
+                            confirmButtonText: 'Voir ma commande',
+                            confirmButtonColor: '#b78d65',
+                            allowOutsideClick: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = "{{ route('shipping.payment.success') }}";
+                            }
+                        });
                     } else {
                         Swal.fire({
                             title: 'Erreur de paiement',
@@ -247,10 +360,19 @@
                             confirmButtonColor: '#b78d65'
                         });
                     }
+                }).catch(function(error) {
+                    console.error('Erreur capture paiement:', error);
+                    Swal.fire({
+                        title: 'Erreur',
+                        text: 'Une erreur est survenue lors du traitement du paiement.',
+                        icon: 'error',
+                        confirmButtonColor: '#b78d65'
+                    });
                 });
             },
 
             onError: function(err) {
+                console.error('Erreur PayPal:', err);
                 Swal.fire({
                     title: 'Erreur',
                     text: 'Une erreur est survenue lors du traitement du paiement. Veuillez réessayer.',

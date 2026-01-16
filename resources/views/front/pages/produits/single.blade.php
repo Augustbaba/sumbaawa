@@ -117,10 +117,12 @@
                                 {{-- <a href="#!">0 Avis</a> --}}
                             </div>
                             <div class="price-text">
-                                <h3>
-                                    <span class="fw-normal">Prix :</span> {{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span>
+                                <h3 data-price="{{ $produit->price }}"
+                                    data-original-price="{{ $produit->original_price ?? 0 }}">
+                                    <span class="fw-normal">Prix :</span>
+                                    <span class="current-price">{{ FrontHelper::format_currency($produit->price) }}</span>
                                     @if ($produit->original_price)
-                                        <del>$ {{ number_format($produit->original_price, 2, '.', ',') }}</del>
+                                        <del class="original-price">{{ FrontHelper::format_currency($produit->original_price) }}</del>
                                         <span class="discounted-price">
                                             {{ round((($produit->original_price - $produit->price) / $produit->original_price) * 100) }}% Off
                                         </span>
@@ -303,9 +305,12 @@
                                                 </a>
                                             </div>
                                             <h6>{{ $related->sousCategorie->label }}</h6>
-                                            <h4 class="price">{{ number_format($related->price, 0, '.', ' ') }} <small style="font-size: 0.7em; color: gray;">XOF</small>
+                                            <h4 class="price"
+                                                data-price="{{ $related->price }}"
+                                                data-original-price="{{ $related->original_price ?? 0 }}">
+                                                {{ FrontHelper::format_currency($related->price) }}
                                                 @if ($related->original_price)
-                                                    <del>$ {{ number_format($related->original_price, 2, '.', ',') }}</del>
+                                                    <del>{{ FrontHelper::format_currency($related->original_price) }}</del>
                                                     <span class="discounted-price">
                                                         {{ round((($related->original_price - $related->price) / $related->original_price) * 100) }}% Off
                                                     </span>
@@ -328,6 +333,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/jquery.elevatezoom.js') }}"></script>
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/timer.js') }}"></script>
+    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/currency.js') }}"></script>
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/cart.js') }}"></script>
     <script>
         // Charger jQuery 3.6.0 en dernier pour éviter les conflits
@@ -336,8 +342,63 @@
     <script>
         (function($) {
             $(document).ready(function () {
-                cartUtils.initializeCartCount();
-                cartUtils.attachCartEvents();
+                // Attendre que la config de devise soit chargée
+                CurrencyHelper.load().then(() => {
+                    // Mettre à jour tous les prix sur la page
+                    updateAllPrices();
+
+                    // Initialiser le compteur du panier
+                    if (window.cartUtils) {
+                        cartUtils.initializeCartCount();
+                        cartUtils.attachCartEvents();
+                    }
+                });
+
+                // Fonction pour mettre à jour tous les prix affichés
+                function updateAllPrices() {
+                    // Mettre à jour le prix principal du produit
+                    const mainPriceElement = $('.price-text h3[data-price]');
+                    if (mainPriceElement.length) {
+                        const priceInXOF = parseFloat(mainPriceElement.data('price'));
+                        const originalPrice = mainPriceElement.data('original-price');
+
+                        if (!isNaN(priceInXOF)) {
+                            const formattedPrice = CurrencyHelper.format(priceInXOF);
+
+                            // Mettre à jour le prix actuel
+                            mainPriceElement.find('.current-price').html(formattedPrice);
+
+                            // Mettre à jour le prix original si disponible
+                            if (originalPrice && parseFloat(originalPrice) > 0) {
+                                const originalPriceNum = parseFloat(originalPrice);
+                                const formattedOriginalPrice = CurrencyHelper.format(originalPriceNum);
+                                mainPriceElement.find('.original-price').html(formattedOriginalPrice);
+                            }
+                        }
+                    }
+
+                    // Mettre à jour les prix des produits similaires
+                    $('[data-price]').not('.price-text h3').each(function() {
+                        const priceInXOF = parseFloat($(this).data('price'));
+                        const originalPrice = $(this).data('original-price');
+
+                        if (!isNaN(priceInXOF)) {
+                            const formattedPrice = CurrencyHelper.format(priceInXOF);
+
+                            let priceHtml = formattedPrice;
+
+                            if (originalPrice && parseFloat(originalPrice) > 0) {
+                                const originalPriceNum = parseFloat(originalPrice);
+                                const formattedOriginalPrice = CurrencyHelper.format(originalPriceNum);
+                                const discount = Math.round(((originalPriceNum - priceInXOF) / originalPriceNum) * 100);
+                                priceHtml += ` <del>${formattedOriginalPrice}</del>`;
+                                priceHtml += ` <span class="discounted-price">${discount}% Off</span>`;
+                            }
+
+                            $(this).html(priceHtml);
+                        }
+                    });
+                }
 
                 // Initialiser le slider principal et les miniatures
                 try {
@@ -387,7 +448,7 @@
                         color: selectedColor,
                         niveau_confort: $this.data('product-confort'),
                         poids: $this.data('product-poids'),
-                        price: parseFloat($this.data('product-price').toString().replace(/,/g, '')),
+                        price: parseFloat($this.data('product-price').toString().replace(/[,\s]/g, '')),
                         quantity: $this.closest('.product-buttons').length
                             ? parseInt($this.closest('.product-buttons').find('.input-number').val()) || 1
                             : 1 // Quantité par défaut pour produits similaires
@@ -412,7 +473,9 @@
                                 icon: "success",
                                 title: "Votre produit a été ajouté au panier"
                             });
-                            cartUtils.updateCartOffcanvas(response.cart);
+                            if (window.cartUtils) {
+                                cartUtils.updateCartOffcanvas(response.cart);
+                            }
                             if ($('#cartOffcanvas').length) {
                                 $('#cartOffcanvas').offcanvas('show');
                             } else {

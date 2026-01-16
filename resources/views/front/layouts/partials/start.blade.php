@@ -329,11 +329,11 @@
                                                     <i class="ri-search-line"></i>
                                                 </div>
                                             </li>
-                                            {{-- <li class="onhover-div mobile-setting">
+                                            <li class="onhover-div mobile-setting">
                                                 <div>
-                                                    <i class="ri-equalizer-2-line"></i>
+                                                    <i class="ri-money-dollar-circle-line"></i>
                                                 </div>
-                                            </li> --}}
+                                            </li>
                                             <li class="onhover-div mobile-cart">
                                                 <div>
                                                     <i class="ri-shopping-cart-line"></i>

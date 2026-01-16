@@ -11,6 +11,7 @@ use App\Mail\sendContactMail;
 use App\Models\Categorie;
 use App\Models\Commande;
 use App\Models\Commander;
+use App\Models\Currency;
 use App\Models\Pays;
 use App\Models\Produit;
 use App\Models\SousCategorie;
@@ -293,14 +294,84 @@ class SumbaawaController extends Controller
         return view('front.pages.checkout', compact('cart', 'totalWeight', 'totalCart'));
     }
 
-    // Créer une commande PayPal
+    /**
+     * Convertir un montant d'une devise vers USD
+     *
+     * @param float $amount Montant à convertir
+     * @param string $fromCurrency Code de la devise source
+     * @return float Montant en USD
+     */
+    private function convertToUSD($amount, $fromCurrency = 'XOF')
+    {
+        // Si déjà en USD, retourner le montant
+        if ($fromCurrency === 'USD') {
+            return round($amount, 2);
+        }
+
+        // Récupérer le taux de change USD depuis la BD
+        $usdCurrency = Currency::where('code', 'USD')->first();
+
+        if (!$usdCurrency) {
+            // Fallback sur un taux par défaut si non trouvé
+            Log::warning('Devise USD non trouvée dans la BD, utilisation du taux par défaut');
+            return round($amount / 600, 2); // Taux par défaut XOF -> USD
+        }
+
+        $usdRate = $usdCurrency->exchange_rate;
+
+        if ($fromCurrency === 'XOF') {
+            // Conversion directe XOF vers USD
+            // Formule : montant_xof / taux_usd
+            // Car les taux sont basés sur XOF (1 XOF = X unités de devise)
+            return round($amount / $usdRate, 2);
+        } else {
+            // Pour les autres devises (EUR, GBP, etc.), passer d'abord par XOF
+            $fromCurrencyObj = Currency::where('code', $fromCurrency)->first();
+
+            if (!$fromCurrencyObj) {
+                Log::warning("Devise {$fromCurrency} non trouvée, conversion directe");
+                return round($amount / $usdRate, 2);
+            }
+
+            $fromRate = $fromCurrencyObj->exchange_rate;
+
+            // Étape 1: Convertir vers XOF
+            // Formule : montant_devise * taux_devise = montant_xof
+            $amountInXOF = $amount * $fromRate;
+
+            // Étape 2: Convertir XOF vers USD
+            // Formule : montant_xof / taux_usd = montant_usd
+            return round($amountInXOF / $usdRate, 2);
+        }
+    }
+
+    /**
+     * Convertir USD vers XOF (pour vérification)
+     *
+     * @param float $amountUSD Montant en USD
+     * @return float Montant en XOF
+     */
+    private function convertUSDToXOF($amountUSD)
+    {
+        $usdCurrency = Currency::where('code', 'USD')->first();
+
+        if (!$usdCurrency) {
+            return round($amountUSD * 600, 2); // Taux par défaut
+        }
+
+        // Formule : montant_usd * taux_usd = montant_xof
+        return round($amountUSD * $usdCurrency->exchange_rate, 2);
+    }
+
     public function createPayPalOrder(Request $request)
     {
         try {
             Log::info('Création commande PayPal', $request->all());
 
             $request->validate([
-                'amount' => 'required|numeric|min:0.01',
+                'amount' => 'required|numeric|min:0.01', // Montant en USD
+                'currency' => 'nullable|string', // Code de la devise utilisée par le client
+                'amountInXOF' => 'nullable|numeric', // Montant en XOF (devise de base)
                 'requiresDelivery' => 'required|boolean',
                 'deliveryInfo' => 'required_if:requiresDelivery,true'
             ]);
@@ -329,7 +400,55 @@ class SumbaawaController extends Controller
             $provider->setApiCredentials($config);
             $token = $provider->getAccessToken();
 
-            $amountUSD = round($request->amount, 2);
+            // Récupérer ou calculer le montant en USD
+            $amountUSD = $request->amount;
+            $currency = $request->currency ?? 'XOF';
+            $amountInXOF = $request->amountInXOF;
+
+            // Si le montant en XOF est fourni, vérifier la conversion
+            if ($amountInXOF) {
+                // Recalculer le montant USD depuis XOF pour vérification
+                $calculatedUSD = $this->convertToUSD($amountInXOF, 'XOF');
+
+                // Tolérance de 0.5% pour les différences d'arrondi
+                $tolerance = $calculatedUSD * 0.005;
+
+                if (abs($calculatedUSD - $amountUSD) > $tolerance) {
+                    Log::warning('Écart de conversion détecté', [
+                        'montant_fourni_usd' => $amountUSD,
+                        'montant_calcule_usd' => $calculatedUSD,
+                        'montant_xof' => $amountInXOF,
+                        'devise' => $currency
+                    ]);
+
+                    // Utiliser le montant recalculé pour plus de sécurité
+                    $amountUSD = $calculatedUSD;
+                }
+            } else {
+                // Si pas de montant XOF fourni, calculer depuis le panier
+                $cart = session('cart', []);
+                $totalCart = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+                $amountInXOF = $totalCart;
+
+                // Convertir XOF vers USD
+                $amountUSD = $this->convertToUSD($totalCart, 'XOF');
+            }
+
+            // Arrondir à 2 décimales
+            $amountUSD = round($amountUSD, 2);
+
+            // Vérifier le montant minimum
+            if ($amountUSD < 0.01) {
+                return response()->json([
+                    'error' => 'Le montant est trop faible pour être traité par PayPal (minimum $0.01)'
+                ], 400);
+            }
+
+            Log::info('Montants de la commande', [
+                'montant_xof' => $amountInXOF,
+                'montant_usd' => $amountUSD,
+                'devise_client' => $currency
+            ]);
 
             $order = $provider->createOrder([
                 "intent" => "CAPTURE",
@@ -337,9 +456,14 @@ class SumbaawaController extends Controller
                     [
                         "amount" => [
                             "currency_code" => "USD",
-                            "value" => $amountUSD
+                            "value" => number_format($amountUSD, 2, '.', '')
                         ],
-                        "description" => "Achat sur " . config('app.name')
+                        "description" => "Achat sur " . config('app.name'),
+                        "custom_id" => json_encode([
+                            'amount_xof' => $amountInXOF,
+                            'currency' => $currency,
+                            'user_id' => Auth::id()
+                        ])
                     ]
                 ],
                 "application_context" => [
@@ -349,22 +473,40 @@ class SumbaawaController extends Controller
             ]);
 
             if (isset($order['id']) && $order['id'] != null) {
-                // Stocker temporairement les infos de livraison
-                if ($request->deliveryInfo) {
-                    session(['pending_delivery_info' => $request->deliveryInfo]);
-                }
+                // Stocker les informations dans la session
+                session([
+                    'paypal_order_id' => $order['id'],
+                    'paypal_amount_usd' => $amountUSD,
+                    'paypal_amount_xof' => $amountInXOF,
+                    'paypal_currency' => $currency,
+                    'pending_delivery_info' => $request->deliveryInfo,
+                    'requires_delivery' => $request->requiresDelivery
+                ]);
 
-                session(['paypal_order_id' => $order['id']]);
+                Log::info('Commande PayPal créée avec succès', [
+                    'order_id' => $order['id'],
+                    'amount_usd' => $amountUSD,
+                    'amount_xof' => $amountInXOF
+                ]);
 
-                return response()->json(['orderID' => $order['id']]);
+                return response()->json([
+                    'success' => true,
+                    'orderID' => $order['id']
+                ]);
             }
 
             Log::error('Erreur création commande PayPal', $order);
-            return response()->json(['error' => 'Erreur lors de la création de la commande'], 500);
+            return response()->json([
+                'error' => 'Erreur lors de la création de la commande'
+            ], 500);
 
         } catch (\Exception $e) {
-            Log::error('Exception createPayPalOrder: ' . $e->getMessage());
-            return response()->json(['error' => 'Erreur serveur: ' . $e->getMessage()], 500);
+            Log::error('Exception createPayPalOrder: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'error' => 'Erreur serveur: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -375,6 +517,8 @@ class SumbaawaController extends Controller
 
             $request->validate([
                 'orderID' => 'required',
+                'currency' => 'nullable|string',
+                'amountInXOF' => 'nullable|numeric',
                 'requiresDelivery' => 'required|boolean',
                 'deliveryInfo' => 'required_if:requiresDelivery,true'
             ]);
@@ -405,8 +549,45 @@ class SumbaawaController extends Controller
 
             $result = $provider->capturePaymentOrder($request->orderID);
 
+            Log::info('Résultat capture PayPal', $result);
+
             if (isset($result['status']) && $result['status'] == 'COMPLETED') {
-                return $this->createOrderAfterPayment($result, $request);
+                // Récupérer les infos de la session
+                $amountInXOF = $request->amountInXOF ?? session('paypal_amount_xof');
+                $amountUSD = session('paypal_amount_usd');
+                $currency = $request->currency ?? session('paypal_currency', 'XOF');
+
+                // Vérification de sécurité : comparer avec le montant PayPal
+                $paypalAmountUSD = floatval($result['purchase_units'][0]['payments']['captures'][0]['amount']['value'] ?? 0);
+
+                if ($paypalAmountUSD > 0 && abs($paypalAmountUSD - $amountUSD) > 0.02) {
+                    Log::warning('Écart entre montant session et PayPal', [
+                        'session_usd' => $amountUSD,
+                        'paypal_usd' => $paypalAmountUSD
+                    ]);
+
+                    // Recalculer le montant XOF depuis le montant PayPal
+                    $amountInXOF = $this->convertUSDToXOF($paypalAmountUSD);
+                    $amountUSD = $paypalAmountUSD;
+                }
+
+                // Si pas de montant XOF, le calculer
+                if (!$amountInXOF) {
+                    $amountInXOF = $this->convertUSDToXOF($amountUSD);
+                }
+
+                Log::info('Montants finaux pour la commande', [
+                    'amount_xof' => $amountInXOF,
+                    'amount_usd' => $amountUSD,
+                    'currency' => $currency,
+                    'paypal_amount' => $paypalAmountUSD
+                ]);
+
+                return $this->createOrderAfterPayment($result, $request, [
+                    'amount_xof' => $amountInXOF,
+                    'amount_usd' => $amountUSD,
+                    'currency' => $currency
+                ]);
             } else {
                 Log::error('Capture PayPal échouée', $result);
                 return response()->json([
@@ -415,7 +596,9 @@ class SumbaawaController extends Controller
                 ], 400);
             }
         } catch (\Exception $e) {
-            Log::error('Exception capturePayPalOrder: ' . $e->getMessage());
+            Log::error('Exception capturePayPalOrder: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'error' => 'Erreur lors du traitement: ' . $e->getMessage()
@@ -423,7 +606,7 @@ class SumbaawaController extends Controller
         }
     }
 
-    private function createOrderAfterPayment($paypalResult, $request)
+    private function createOrderAfterPayment($paypalResult, $request, $amounts = [])
     {
         $userId = Auth::id();
         if (!$userId) {
@@ -435,7 +618,27 @@ class SumbaawaController extends Controller
             return response()->json(['error' => 'Le panier est vide'], 400);
         }
 
+        // Calculer le total du panier (toujours en XOF dans la session)
         $totalCart = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+
+        // Utiliser le montant fourni ou celui calculé depuis le panier
+        $amountInXOF = $amounts['amount_xof'] ?? $totalCart;
+        $amountUSD = $amounts['amount_usd'] ?? null;
+        $currency = $amounts['currency'] ?? 'XOF';
+
+        // Vérification de cohérence
+        $tolerance = $totalCart * 0.01; // 1% de tolérance
+        if (abs($amountInXOF - $totalCart) > $tolerance) {
+            Log::warning('Écart entre total panier et montant payé', [
+                'total_panier' => $totalCart,
+                'montant_paye_xof' => $amountInXOF,
+                'difference' => abs($amountInXOF - $totalCart)
+            ]);
+
+            // Utiliser le montant du panier pour plus de sécurité
+            $amountInXOF = $totalCart;
+        }
+
         $code = 'CMD-' . strtoupper(Str::random(8));
         $address = null;
         $typeId = null;
@@ -452,7 +655,7 @@ class SumbaawaController extends Controller
             if ($deliveryMethod === 'tinda_awa') {
                 $pays = Pays::find($deliveryData['country']);
                 $address = "Livraison Tinda Awa - " .
-                          "Pays: {$pays->name}, " .
+                          "Pays: " . ($pays ? $pays->name : 'N/A') . ", " .
                           "Ville: {$deliveryData['city']}, " .
                           "Adresse: {$deliveryData['address']}, " .
                           "Destinataire: {$deliveryData['recipientName']}, " .
@@ -468,7 +671,7 @@ class SumbaawaController extends Controller
             $deliveryInfo = json_encode($deliveryData);
         }
 
-        // Créer la commande
+        // Créer la commande avec les informations de devise
         $commande = Commande::create([
             'user_id' => $userId,
             'code' => $code,
@@ -481,36 +684,63 @@ class SumbaawaController extends Controller
             'status' => 'pending',
             'payment_id' => $paypalResult['id'],
             'payment_email' => $paypalResult['payer']['email_address'] ?? null,
-            'total_amount' => $totalCart,
+            'total_amount' => $amountInXOF, // Toujours en XOF (devise de base)
+            'amount_usd' => $amountUSD, // Montant en USD pour référence
+            'currency' => $currency, // Devise utilisée par le client
+        ]);
+
+        Log::info('Commande créée', [
+            'id' => $commande->id,
+            'code' => $code,
+            'total_xof' => $amountInXOF,
+            'amount_usd' => $amountUSD,
+            'currency' => $currency
         ]);
 
         // Ajouter les produits
         foreach ($cart as $item) {
-            $description = "Couleur: {$item['color']}, Niveau confort: {$item['niveau_confort']}, Poids: {$item['poids']} kg";
+            $description = "Couleur: " . ($item['color'] ?? 'N/A') .
+                          ", Niveau confort: " . ($item['niveau_confort'] ?? 'N/A') .
+                          ", Poids: " . ($item['poids'] ?? 0) . " kg";
 
             Commander::create([
                 'commande_id' => $commande->id,
                 'produit_id' => $item['id'],
                 'quantity' => $item['quantity'],
                 'description_produit' => $description,
-                'unit_price' => $item['price'],
-                'total_price' => $item['price'] * $item['quantity'],
+                'unit_price' => $item['price'], // Prix unitaire en XOF
+                'total_price' => $item['price'] * $item['quantity'], // Total en XOF
             ]);
         }
 
         // Envoyer les emails
-        $this->sendOrderEmails($commande, $deliveryData);
+        try {
+            $this->sendOrderEmails($commande, $deliveryData);
+        } catch (\Exception $e) {
+            Log::error('Erreur envoi email commande: ' . $e->getMessage());
+            // Ne pas bloquer la création de commande si l'email échoue
+        }
 
         // Nettoyer la session
-        session()->forget('cart');
-        session()->forget('pending_delivery_info');
-        session()->forget('delivery_info');
+        session()->forget([
+            'cart',
+            'pending_delivery_info',
+            'delivery_info',
+            'paypal_order_id',
+            'paypal_amount_usd',
+            'paypal_amount_xof',
+            'paypal_currency',
+            'requires_delivery'
+        ]);
 
         return response()->json([
             'success' => true,
             'order_id' => $commande->id,
             'order_code' => $code,
             'transaction_id' => $paypalResult['id'],
+            'amount_xof' => $amountInXOF,
+            'amount_usd' => $amountUSD,
+            'currency' => $currency,
             'message' => 'Commande enregistrée avec succès'
         ]);
     }
@@ -741,6 +971,58 @@ class SumbaawaController extends Controller
 
         Mail::to($data['email'])->send(new receiveContactMail($data));
         return back()->with('contact_success', 'Message envoyé avec succès!');
+    }
+
+    public function switch(Request $request)
+    {
+        $request->validate([
+            'currency_code' => 'required|exists:currencies,code'
+        ]);
+
+        $currency = Currency::where('code', $request->currency_code)
+                           ->where('is_active', true)
+                           ->firstOrFail();
+
+        // 1. Définir le cookie (1 an de validité)
+        cookie()->queue('currency_code', $currency->code, 525600);
+
+        // 2. Si l'utilisateur est connecté, sauvegarder en BD
+        if (auth()->check()) {
+            auth()->user()->update([
+                'preferred_currency_id' => $currency->id
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'currency' => $currency,
+            'message' => 'Devise changée avec succès'
+        ]);
+    }
+
+    public function available()
+    {
+        return Currency::where('is_active', true)->get();
+    }
+
+    public function formatAmount($amount)
+    {
+        return response()->json([
+            'formatted' => FrontHelper::format_currency($amount),
+            'raw' => FrontHelper::convert_currency($amount),
+            'currency' => FrontHelper::current_currency()
+        ]);
+    }
+
+    public function getCurrentCurrency()
+    {
+        $currency = FrontHelper::current_currency();
+        return response()->json([
+            'code' => $currency->code,
+            'symbol' => $currency->symbol,
+            'exchange_rate' => $currency->exchange_rate,
+            'decimals' => $currency->code === 'XOF' ? 0 : 2
+        ]);
     }
 
 

@@ -390,7 +390,6 @@
                                     class="form-control"
                                     name="shipping_fee"
                                     min="0"
-                                    step="100"
                                     required>
                             </div>
 

@@ -3,7 +3,7 @@
 @section('styles')
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
-        /* Styles inchangés */
+        /* Styles identiques - pas de changement */
         :root {
             --primary-dark: #1a1a1a;
             --primary-light: #f8f8f8;
@@ -398,7 +398,11 @@
             <div class="stat-label">Poids Total</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">{{ number_format($totalCart, 0, '.', '') }} <span style="font-size: 0.9em; color: gray;">XOF</span></div>
+            <div class="stat-value"
+                 data-total-xof="{{ $totalCart }}"
+                 id="total-display">
+                {{ FrontHelper::format_currency($totalCart) }}
+            </div>
             <div class="stat-label">Total</div>
         </div>
     </div>
@@ -411,7 +415,10 @@
                     <img src="{{ $item['image_main'] }}" alt="{{ $item['name'] }}" class="product-image">
                     <h3 class="product-name">{{ $item['name'] }}</h3>
                 </div>
-                <div class="product-price">{{ number_format($item['price'] * $item['quantity'], 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span></div>
+                <div class="product-price"
+                     data-price="{{ $item['price'] * $item['quantity'] }}">
+                    {{ FrontHelper::format_currency($item['price'] * $item['quantity']) }}
+                </div>
                 <i class="ri-arrow-down-s-line accordion-icon"></i>
             </div>
 
@@ -422,7 +429,9 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Prix unitaire:</span>
-                    <span class="detail-value">{{ number_format($item['price'], 0, '.', ' ') }}</span> <span style="font-size: 0.9em; color: gray;">XOF</span>
+                    <span class="detail-value" data-price="{{ $item['price'] }}">
+                        {{ FrontHelper::format_currency($item['price']) }}
+                    </span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Quantité:</span>
@@ -449,7 +458,11 @@
     <div class="order-totals">
         <div class="total-row grand-total">
             <span class="total-label">Total à payer:</span>
-            <span class="total-value">{{ number_format($totalCart, 0, '.', ' ') }}</span> <span style="font-size: 0.9em; color: gray;">XOF</span>
+            <span class="total-value"
+                  data-total-xof="{{ $totalCart }}"
+                  id="grand-total-display">
+                {{ FrontHelper::format_currency($totalCart) }}
+            </span>
         </div>
 
         <button class="checkout-btn" id="openPaymentModal">
@@ -463,12 +476,95 @@
 @php
     $mode = config('services.paypal.mode');
     $clientId = config("services.paypal.{$mode}.client_id");
+
+    // Obtenir la devise courante et ses informations
+    $currentCurrency = FrontHelper::current_currency();
 @endphp
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/currency.js') }}"></script>
 <!-- PayPal SDK -->
 <script src="https://www.paypal.com/sdk/js?client-id={{ $clientId }}&currency=USD&intent=capture"></script>
 
 <script>
+    // Configuration de la devise et des taux de change
+    const CURRENCY_CONFIG = {
+        currentCode: '{{ $currentCurrency->code }}',
+        currentSymbol: '{{ $currentCurrency->symbol }}',
+        currentRate: {{ $currentCurrency->exchange_rate }},
+        totalInXOF: {{ $totalCart }}, // Montant total en XOF (devise de base)
+
+        // Taux de change de référence (tous basés sur XOF)
+        rates: {
+            'XOF': 1,
+            'EUR': {{ \App\Models\Currency::where('code', 'EUR')->value('exchange_rate') ?? 655.957 }},
+            'USD': {{ \App\Models\Currency::where('code', 'USD')->value('exchange_rate') ?? 600 }},
+            'GBP': {{ \App\Models\Currency::where('code', 'GBP')->value('exchange_rate') ?? 750 }}
+        }
+    };
+
+    /**
+     * Convertir un montant d'une devise vers une autre
+     * @param {number} amount - Montant à convertir
+     * @param {string} fromCurrency - Devise source
+     * @param {string} toCurrency - Devise cible
+     * @returns {number}
+     */
+    function convertCurrency(amount, fromCurrency, toCurrency) {
+        if (fromCurrency === toCurrency) {
+            return amount;
+        }
+
+        // Étape 1: Convertir vers XOF (devise de base)
+        let amountInXOF = amount;
+        if (fromCurrency !== 'XOF') {
+            // Pour convertir vers XOF: montant * taux de la devise source
+            amountInXOF = amount * CURRENCY_CONFIG.rates[fromCurrency];
+        }
+
+        // Étape 2: Convertir de XOF vers la devise cible
+        if (toCurrency === 'XOF') {
+            return amountInXOF;
+        }
+
+        // Pour convertir de XOF vers autre devise: montant / taux de la devise cible
+        return amountInXOF / CURRENCY_CONFIG.rates[toCurrency];
+    }
+
+    /**
+     * Convertir le total du panier vers USD pour PayPal
+     * @returns {number}
+     */
+    function getTotalInUSD() {
+        // Le total est toujours stocké en XOF dans la session
+        const totalInXOF = CURRENCY_CONFIG.totalInXOF;
+
+        // Convertir XOF vers USD
+        const totalInUSD = convertCurrency(totalInXOF, 'XOF', 'USD');
+
+        // Arrondir à 2 décimales
+        return parseFloat(totalInUSD.toFixed(2));
+    }
+
+    /**
+     * Formater un montant dans la devise courante
+     * @param {number} amountInXOF - Montant en XOF
+     * @returns {string}
+     */
+    function formatAmount(amountInXOF) {
+        if (typeof CurrencyHelper !== 'undefined') {
+            return CurrencyHelper.format(amountInXOF);
+        }
+
+        // Fallback si CurrencyHelper n'est pas disponible
+        const converted = convertCurrency(amountInXOF, 'XOF', CURRENCY_CONFIG.currentCode);
+        const decimals = CURRENCY_CONFIG.currentCode === 'XOF' ? 0 : 2;
+        const formatted = converted.toLocaleString('fr-FR', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+        return `${formatted} ${CURRENCY_CONFIG.currentSymbol}`;
+    }
+
     // Fonction pour afficher/masquer les détails du produit
     function toggleProductDetails(element) {
         const accordion = element.closest('.product-accordion');
@@ -484,6 +580,15 @@
 
     // Attendre que le DOM soit chargé
     document.addEventListener('DOMContentLoaded', function() {
+        // Charger la config de devise et mettre à jour les prix
+        if (typeof CurrencyHelper !== 'undefined') {
+            CurrencyHelper.load().then(() => {
+                updateAllPrices();
+            });
+        } else {
+            updateAllPrices();
+        }
+
         const paymentButton = document.getElementById('openPaymentModal');
         if (paymentButton) {
             paymentButton.addEventListener('click', function() {
@@ -491,6 +596,25 @@
             });
         }
     });
+
+    // Fonction pour mettre à jour tous les prix affichés
+    function updateAllPrices() {
+        // Mettre à jour tous les prix des produits
+        document.querySelectorAll('[data-price]').forEach(function(element) {
+            const priceInXOF = parseFloat(element.dataset.price);
+            if (!isNaN(priceInXOF)) {
+                element.textContent = formatAmount(priceInXOF);
+            }
+        });
+
+        // Mettre à jour les totaux
+        document.querySelectorAll('[data-total-xof]').forEach(function(element) {
+            const totalInXOF = parseFloat(element.dataset.totalXof);
+            if (!isNaN(totalInXOF)) {
+                element.innerHTML = formatAmount(totalInXOF);
+            }
+        });
+    }
 
     // Fonction pour afficher les options de livraison
     function showDeliveryOptions() {
@@ -696,9 +820,8 @@
 
     // Fonction pour afficher la sélection du mode de paiement
     function showPaymentMethodSelection() {
-        const totalAmount = {{ $totalCart }};
-        const formattedAmount = '{{ number_format($totalCart, 0, '.', ' ') }}';
-        const amountInUSD = {{ number_format($totalCart / 600, 2) }};
+        const totalInUSD = getTotalInUSD();
+        const formattedTotalInCurrentCurrency = formatAmount(CURRENCY_CONFIG.totalInXOF);
 
         Swal.fire({
             title: 'Mode de paiement',
@@ -707,9 +830,9 @@
                     <p style="margin-bottom: 1.5rem;">Choisissez votre mode de paiement</p>
                     <div style="margin-bottom: 1.5rem; font-size: 1.1rem;">
                         <strong>Montant à payer:</strong><br>
-                        ${formattedAmount} <span style="font-size: 0.9em; color: gray;">XOF</span><br>
+                        ${formattedTotalInCurrentCurrency}<br>
                         <span style="font-size: 0.9em; color: var(--text-muted);">
-                            (≈ ${amountInUSD} USD)
+                            (≈ $${totalInUSD.toFixed(2)} USD)
                         </span>
                     </div>
                     <div class="payment-methods">
@@ -739,7 +862,7 @@
 
     // Fonction pour initialiser le bouton PayPal
     function renderPayPalButton() {
-        const totalAmountUSD = {{ $totalCart / 600 }};
+        const totalAmountUSD = getTotalInUSD();
 
         paypal.Buttons({
             style: {
@@ -758,13 +881,26 @@
                     },
                     body: JSON.stringify({
                         amount: totalAmountUSD,
+                        currency: CURRENCY_CONFIG.currentCode,
+                        amountInXOF: CURRENCY_CONFIG.totalInXOF,
                         requiresDelivery: requiresDelivery,
                         deliveryInfo: deliveryFormData
                     })
                 }).then(function(res) {
                     return res.json();
                 }).then(function(data) {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
                     return data.orderID;
+                }).catch(function(error) {
+                    console.error('Erreur lors de la création de la commande:', error);
+                    Swal.fire({
+                        title: 'Erreur',
+                        text: 'Impossible de créer la commande PayPal. Veuillez réessayer.',
+                        icon: 'error',
+                        confirmButtonColor: '#b78d65'
+                    });
                 });
             },
 
@@ -777,6 +913,8 @@
                     },
                     body: JSON.stringify({
                         orderID: data.orderID,
+                        currency: CURRENCY_CONFIG.currentCode,
+                        amountInXOF: CURRENCY_CONFIG.totalInXOF,
                         requiresDelivery: requiresDelivery,
                         deliveryInfo: deliveryFormData
                     })
@@ -815,10 +953,19 @@
                             confirmButtonColor: '#b78d65'
                         });
                     }
+                }).catch(function(error) {
+                    console.error('Erreur lors de la capture du paiement:', error);
+                    Swal.fire({
+                        title: 'Erreur',
+                        text: 'Une erreur est survenue lors du traitement du paiement.',
+                        icon: 'error',
+                        confirmButtonColor: '#b78d65'
+                    });
                 });
             },
 
             onError: function(err) {
+                console.error('Erreur PayPal:', err);
                 Swal.fire({
                     title: 'Erreur',
                     text: 'Une erreur est survenue lors du traitement du paiement. Veuillez réessayer.',

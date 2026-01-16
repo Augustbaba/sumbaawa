@@ -8,6 +8,7 @@ use App\Http\Controllers\SumbaawaController;
 use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\CommandeController;
+use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\SousCategorieController;
 use App\Http\Controllers\ImageController;
@@ -140,6 +141,33 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::post('/{id}/shipping-fees', [CommandeController::class, 'saveShippingFees'])->name('saveShippingFees');
     });
 });
+
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    // Gestion des devises
+    Route::prefix('currencies')->name('currencies.')->group(function () {
+        Route::get('/', [CurrencyController::class, 'index'])->name('index');
+        Route::get('/create', [CurrencyController::class, 'create'])->name('create');
+        Route::post('/', [CurrencyController::class, 'store'])->name('store');
+        Route::get('/{currency}', [CurrencyController::class, 'show'])->name('show');
+        Route::get('/{currency}/edit', [CurrencyController::class, 'edit'])->name('edit');
+        Route::put('/{currency}', [CurrencyController::class, 'update'])->name('update');
+        Route::delete('/{currency}', [CurrencyController::class, 'destroy'])->name('destroy');
+
+        // Actions supplémentaires
+        Route::post('/{currency}/toggle-active', [CurrencyController::class, 'toggleActive'])->name('toggleActive');
+        Route::post('/{currency}/set-default', [CurrencyController::class, 'setAsDefault'])->name('setDefault');
+        Route::post('/update-positions', [CurrencyController::class, 'updatePositions'])->name('updatePositions');
+        Route::get('/update-rates/form', [CurrencyController::class, 'showUpdateRatesForm'])->name('updateRatesForm');
+        Route::post('/update-rates/manual', [CurrencyController::class, 'updateRatesManual'])->name('updateRatesManual');
+        Route::post('/update-rates/auto', [CurrencyController::class, 'updateRates'])->name('updateRates');
+    });
+});
+
+// routes/web.php
+Route::get('/api/format-currency/{amount}', [SumbaawaController::class, 'formatAmount'])->name('api.format.currency');
+Route::get('/api/current-currency', [SumbaawaController::class, 'getCurrentCurrency'])->name('api.current.currency');
+Route::post('/currency/switch', [SumbaawaController::class, 'switch'])->name('currency.switch');
+Route::get('/currency/available', [SumbaawaController::class, 'available'])->name('currency.available');
 Route::get('/import-alibaba', [AlibabaImportController::class, 'showForm'])->name('alibaba.form');
 Route::post('/import-alibaba', [AlibabaImportController::class, 'import'])->name('alibaba.import');
 Route::post('/import-alibaba/save', [AlibabaImportController::class, 'save'])->name('alibaba.save');

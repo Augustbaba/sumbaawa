@@ -38,7 +38,7 @@
                 <table class="details-table">
                     <tr>
                         <td>Montant payé :</td>
-                        <td>{{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</td>
+                        <td>{{ FrontHelper::format_currency($commande->shipping_fee) }} </td>
                     </tr>
                     <tr>
                         <td>Type de livraison :</td>

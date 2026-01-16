@@ -180,9 +180,10 @@
                                             </a>
                                         </div>
                                         <h6>{{ $produit->sousCategorie->label }}</h6>
-                                        <h4 class="price"> {{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span>
+                                        <h4 class="price" data-price="{{ $produit->price }}">
+                                            {{ FrontHelper::format_currency($produit->price) }}
                                             @if ($produit->original_price)
-                                                <del>$ {{ number_format($produit->original_price, 0, '.', ' ') }}</del>
+                                                <del>{{ FrontHelper::format_currency($produit->original_price) }}</del>
                                                 <span class="discounted-price">
                                                     {{ round((($produit->original_price - $produit->price) / $produit->original_price) * 100) }}% Off
                                                 </span>
@@ -295,9 +296,10 @@
                                                                 </a>
                                                             </div>
                                                             <h6>{{ $produit->sousCategorie->label }}</h6>
-                                                            <h4 class="price">{{ number_format($produit->price, 0, '.', ' ') }} <span style="font-size: 0.9em; color: gray;">XOF</span>
+                                                            <h4 class="price" data-price="{{ $produit->price }}">
+                                                                {{ FrontHelper::format_currency($produit->price) }}
                                                                 @if ($produit->original_price)
-                                                                    <del>$ {{ number_format($produit->original_price, 0, '.', ' ') }}</del>
+                                                                    <del>{{ FrontHelper::format_currency($produit->original_price) }}</del>
                                                                     <span class="discounted-price">
                                                                         {{ round((($produit->original_price - $produit->price) / $produit->original_price) * 100) }}% Off
                                                                     </span>
@@ -534,6 +536,7 @@
 @endsection
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/currency.js') }}"></script>
     <script src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/js/cart.js') }}"></script>
     <script>
         // Charger jQuery 3.6.0 si nécessaire
@@ -542,11 +545,32 @@
     <script>
         (function($) {
             $(document).ready(function () {
-                // Initialiser le compteur du panier
-                cartUtils.initializeCartCount();
+                // Attendre que la config de devise soit chargée
+                CurrencyHelper.load().then(() => {
+                    // Mettre à jour tous les prix sur la page
+                    updateAllPrices();
 
-                // Initialiser les événements du panier (pour delete-button et clear-cart dans l'offcanvas)
-                cartUtils.attachCartEvents();
+                    // Initialiser le compteur du panier
+                    if (window.cartUtils) {
+                        cartUtils.initializeCartCount();
+                        cartUtils.attachCartEvents();
+                    }
+                });
+
+                // Fonction pour mettre à jour tous les prix affichés
+                function updateAllPrices() {
+                    // Mettre à jour tous les éléments avec data-price
+                    $('[data-price]').each(function() {
+                        const priceInXOF = parseFloat($(this).data('price'));
+                        const formattedPrice = CurrencyHelper.format(priceInXOF);
+
+                        // Chercher le span de prix dans l'élément
+                        const priceElement = $(this).find('.price');
+                        if (priceElement.length) {
+                            priceElement.html(formattedPrice);
+                        }
+                    });
+                }
 
                 // Gestion du bouton "Ajouter au panier" dans les sliders
                 $('.add-to-cart').on('click', function (e) {
@@ -556,17 +580,20 @@
                         id: $this.data('product-id'),
                         name: $this.data('product-name'),
                         image_main: $this.data('product-image'),
-                        price: parseFloat($this.data('product-price').toString().replace(/,/g, '')),
-                        original_price: $this.data('product-original-price') ? parseFloat($this.data('product-original-price').toString().replace(/,/g, '')) : null,
+                        price: parseFloat($this.data('product-price').toString().replace(/[,\s]/g, '')),
+                        original_price: $this.data('product-original-price') ? parseFloat($this.data('product-original-price').toString().replace(/[,\s]/g, '')) : null,
                         color: $this.data('product-color'),
                         niveau_confort: $this.data('product-confort'),
                         poids: $this.data('product-poids'),
-                        quantity: 1 // Quantité par défaut
+                        quantity: 1
                     };
 
                     $.ajax({
                         url: '{{ route('cart.add') }}',
                         method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
                         data: {
                             product: productData
                         },
@@ -580,11 +607,11 @@
                                 icon: "success",
                                 title: "Votre produit a été ajouté au panier"
                             });
-                            cartUtils.updateCartOffcanvas(response.cart);
+                            if (window.cartUtils) {
+                                cartUtils.updateCartOffcanvas(response.cart);
+                            }
                             if ($('#cartOffcanvas').length) {
                                 $('#cartOffcanvas').offcanvas('show');
-                            } else {
-                                console.error('L\'élément #cartOffcanvas n\'existe pas dans le DOM.');
                             }
                         },
                         error: function (xhr) {
@@ -602,171 +629,40 @@
                     });
                 });
 
-                // Gestion du modal d'aperçu rapide
-                $('.quick-view-btn').on('click', function () {
-                    const produit = JSON.parse($(this).attr('data-produit'));
-                    const modal = $('#quickView');
-
-                    // Mettre à jour le nom du produit
-                    modal.find('.name').text(produit.name);
-                    modal.find('.name').attr('href', `/produits/details/${produit.slug}`);
-
-                    // Mettre à jour le prix
-                    const priceText = modal.find('.price-text h3');
-                    priceText.html(`
-                        <span class="fw-normal">Prix :</span>
-                        $ ${produit.price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                        ${produit.original_price ? `<del>$ ${produit.original_price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</del> <span class="discounted-price">${Math.round(((produit.original_price - produit.price) / produit.original_price) * 100)}% de réduction</span>` : ''}
-                    `);
-
-                    // Mettre à jour la description (tronquée)
-                    modal.find('.description-text').text(produit.description ? produit.description.substring(0, 100) + '...' : '');
-
-                    // Mettre à jour le lien "Voir plus"
-                    modal.find('.see-more').attr('href', `/produits/details/${produit.slug}`);
-
-                    // Mettre à jour les données du bouton "Ajouter au panier" dans le modal
-                    const buyButton = modal.find('.add-to-cart');
-                    buyButton.data('product-id', produit.id || '');
-                    buyButton.data('product-name', produit.name || '');
-                    buyButton.data('product-image', produit.image_main || '');
-                    buyButton.data('product-price', produit.price || '');
-                    buyButton.data('product-original-price', produit.original_price || '');
-                    buyButton.data('product-color', produit.color || '');
-                    buyButton.data('product-confort', produit.niveau_confort || '');
-                    buyButton.data('product-poids', produit.poids || '');
-
-                    // Mettre à jour les images
-                    const images = produit.images || [{ url: produit.image_main }];
-                    const mainSlider = modal.find('.view-main-slider');
-                    const thumbnailSlider = modal.find('.view-thumbnail-slider');
-                    mainSlider.html('');
-                    thumbnailSlider.html('');
-                    images.forEach(image => {
-                        mainSlider.append(`
-                            <div>
-                                <img src="${image.url}" class="img-fluid" alt="${produit.name}">
-                            </div>
-                        `);
-                        thumbnailSlider.append(`
-                            <div>
-                                <div class="slider-image">
-                                    <img src="${image.url}" class="img-fluid" alt="${produit.name}">
-                                </div>
-                            </div>
-                        `);
+                // Success message with SweetAlert2
+                const status_wishlist_success = '{{ session('wishlist_success') }}';
+                const status_wishlist_info = '{{ session('wishlist_info') }}';
+                if (status_wishlist_success) {
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        showConfirmButton: false,
+                        timer: 5000,
+                        timerProgressBar: true,
+                        icon: "success",
+                        title: status_wishlist_success
+                    }).then(() => {
+                        window.history.pushState({}, document.title, window.location.pathname);
                     });
+                }
 
-                    // Réinitialiser la quantité
-                    modal.find('.input-qty').val(1);
-
-                    // Gestion des boutons de quantité dans le modal
-                    modal.find('.qty-btn-minus').off('click').on('click', function () {
-                        const qtyInput = $(this).closest('.qty-box').find('.input-qty');
-                        let qty = parseInt(qtyInput.val());
-                        if (qty > 1) {
-                            qtyInput.val(qty - 1);
-                        }
+                if (status_wishlist_info) {
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        showConfirmButton: false,
+                        timer: 5000,
+                        timerProgressBar: true,
+                        icon: "info",
+                        title: status_wishlist_info
+                    }).then(() => {
+                        window.history.pushState({}, document.title, window.location.pathname);
                     });
-
-                    modal.find('.qty-btn-plus').off('click').on('click', function () {
-                        const qtyInput = $(this).closest('.qty-box').find('.input-qty');
-                        let qty = parseInt(qtyInput.val());
-                        qtyInput.val(qty + 1);
-                    });
-                });
-
-                // Gestion du bouton "Ajouter au panier" dans le modal
-                $('#quickView .add-to-cart').on('click', function (e) {
-                    e.preventDefault();
-                    const $this = $(this);
-                    const qtyInput = $this.closest('.right-sidebar-modal').find('.input-qty');
-                    const productData = {
-                        id: $this.data('product-id'),
-                        name: $this.data('product-name'),
-                        image_main: $this.data('product-image'),
-                        price: parseFloat($this.data('product-price').toString().replace(/,/g, '')),
-                        original_price: $this.data('product-original-price') ? parseFloat($this.data('product-original-price').toString().replace(/,/g, '')) : null,
-                        color: $this.data('product-color'),
-                        niveau_confort: $this.data('product-confort'),
-                        poids: $this.data('product-poids'),
-                        quantity: parseInt(qtyInput.val()) || 1
-                    };
-
-                    $.ajax({
-                        url: '{{ route('cart.add') }}',
-                        method: 'POST',
-                        data: {
-                            product: productData
-                        },
-                        success: function (response) {
-                            Swal.fire({
-                                toast: true,
-                                position: "top-end",
-                                showConfirmButton: false,
-                                timer: 3000,
-                                timerProgressBar: true,
-                                icon: "success",
-                                title: "Votre produit a été ajouté au panier"
-                            });
-                            cartUtils.updateCartOffcanvas(response.cart);
-                            if ($('#cartOffcanvas').length) {
-                                $('#cartOffcanvas').offcanvas('show');
-                            } else {
-                                console.error('L\'élément #cartOffcanvas n\'existe pas dans le DOM.');
-                            }
-                            $('#quickView').modal('hide');
-                        },
-                        error: function (xhr) {
-                            console.error('Erreur lors de l\'ajout au panier:', xhr.responseText);
-                            Swal.fire({
-                                toast: true,
-                                position: "top-end",
-                                showConfirmButton: false,
-                                timer: 3000,
-                                timerProgressBar: true,
-                                icon: "error",
-                                title: "Erreur lors de l\'ajout au panier"
-                            });
-                        }
-                    });
-                });
+                }
             });
         })(jQuery);
 
-        // Success message with SweetAlert2
-        document.addEventListener('DOMContentLoaded', function() {
-            const status_wishlist_success = '{{ session('wishlist_success') }}';
-            const status_wishlist_info = '{{ session('wishlist_info') }}';
-            if (status_wishlist_success) {
-                Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    showConfirmButton: false,
-                    timer: 5000,
-                    timerProgressBar: true,
-                    icon: "success",
-                    title: status_wishlist_success
-                }).then(() => {
-                    window.history.pushState({}, document.title, window.location.pathname);
-                });
-            }
-
-            if (status_wishlist_info) {
-                Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    showConfirmButton: false,
-                    timer: 5000,
-                    timerProgressBar: true,
-                    icon: "info",
-                    title: status_wishlist_info
-                }).then(() => {
-                    window.history.pushState({}, document.title, window.location.pathname);
-                });
-            }
-        });
-
+        // Carousel code
         document.addEventListener('DOMContentLoaded', () => {
             const slides = document.querySelectorAll('.carousel-slide');
             const indicators = document.querySelectorAll('.carousel-indicators .indicator');
@@ -775,7 +671,6 @@
             let currentSlide = 0;
             const totalSlides = slides.length;
 
-            // Fonction pour afficher une slide spécifique
             function showSlide(index) {
                 slides.forEach((slide, i) => {
                     slide.classList.toggle('active', i === index);
@@ -783,24 +678,25 @@
                 });
             }
 
-            // Changer de slide automatiquement toutes les 5 secondes
             function autoSlide() {
                 currentSlide = (currentSlide + 1) % totalSlides;
                 showSlide(currentSlide);
             }
 
-            // Événements pour les boutons précédent/suivant
-            prevButton.addEventListener('click', () => {
-                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-                showSlide(currentSlide);
-            });
+            if (prevButton) {
+                prevButton.addEventListener('click', () => {
+                    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                    showSlide(currentSlide);
+                });
+            }
 
-            nextButton.addEventListener('click', () => {
-                currentSlide = (currentSlide + 1) % totalSlides;
-                showSlide(currentSlide);
-            });
+            if (nextButton) {
+                nextButton.addEventListener('click', () => {
+                    currentSlide = (currentSlide + 1) % totalSlides;
+                    showSlide(currentSlide);
+                });
+            }
 
-            // Événements pour les indicateurs
             indicators.forEach((indicator, index) => {
                 indicator.addEventListener('click', () => {
                     currentSlide = index;
@@ -808,14 +704,15 @@
                 });
             });
 
-            // Lancer le carrousel automatiquement
-            showSlide(currentSlide);
-            setInterval(autoSlide, 6000);
+            if (slides.length > 0) {
+                showSlide(currentSlide);
+                setInterval(autoSlide, 6000);
+            }
         });
 
-        // JavaScript pour le compte à rebours
+        // Countdown timer
         function startCountdown() {
-            const countdownDate = new Date().getTime() + 7 * 24 * 60 * 60 * 1000; // 7 jours à partir de maintenant
+            const countdownDate = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
 
             const updateCountdown = setInterval(() => {
                 const now = new Date().getTime();
@@ -823,7 +720,10 @@
 
                 if (distance < 0) {
                     clearInterval(updateCountdown);
-                    document.querySelector('.countdown-container').innerHTML = '<p>Offre expirée !</p>';
+                    const container = document.querySelector('.countdown-container');
+                    if (container) {
+                        container.innerHTML = '<p>Offre expirée !</p>';
+                    }
                     return;
                 }
 
@@ -832,10 +732,15 @@
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-                document.getElementById('days').textContent = String(days).padStart(2, '0');
-                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+                const daysEl = document.getElementById('days');
+                const hoursEl = document.getElementById('hours');
+                const minutesEl = document.getElementById('minutes');
+                const secondsEl = document.getElementById('seconds');
+
+                if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+                if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+                if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+                if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
             }, 1000);
         }
 

@@ -28,12 +28,18 @@ class User extends Authenticatable
         'avatar',
         'status',
         'google_id',
-        'deleted_at'
+        'deleted_at',
+        'preferred_currency_id',
     ];
 
     public function roles()
     {
         return $this->belongsToMany(Role::class)->withTimestamps();
+    }
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class, 'preferred_currency_id', 'id');
     }
 
     public function wishlists()

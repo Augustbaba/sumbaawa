@@ -18,7 +18,7 @@
             <div style="text-align: left; display: inline-block;">
                 <p><strong>Numéro de commande:</strong> {{ $order->code }}</p>
                 <p><strong>Date:</strong> {{ $order->created_at->format('d/m/Y H:i') }}</p>
-                <p><strong>Total:</strong> {{ number_format($order->total_amount, 0, '.', ' ') }} XOF</p>
+                <p><strong>Total:</strong> {{ FrontHelper::format_currency($order->total_amount) }} </p>
                 <p><strong>Méthode de paiement:</strong> {{ $order->payment_method }}</p>
                 <p><strong>Statut:</strong>
                     @if($order->payment_status == 'paid')
@@ -50,9 +50,9 @@
                         </div>
                     </div>
                     <div style="text-align: right;">
-                        <div>{{ number_format($item->unit_price, 0, '.', ' ') }} XOF</div>
+                        <div>{{ FrontHelper::format_currency($item->unit_price) }} </div>
                         <div style="font-weight: bold; color: #b78d65;">
-                            {{ number_format($item->total_price, 0, '.', ' ') }} XOF
+                            {{ FrontHelper::format_currency($item->total_price) }}
                         </div>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
                 <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-top: 2px solid #eee; margin-top: 1rem;">
                     <div style="font-weight: bold;">Total</div>
                     <div style="font-weight: bold; color: #b78d65; font-size: 1.2rem;">
-                        {{ number_format($order->total_amount, 0, '.', ' ') }} XOF
+                        {{ FrontHelper::format_currency($order->total_amount) }}
                     </div>
                 </div>
             </div>

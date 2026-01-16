@@ -23,14 +23,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
-            
+
             @if($commande->shipping_status == 'fee_pending' && $commande->status == 'ready_pickup')
             <div class="alert alert-info alert-dismissible fade show" role="alert">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <i class="ri-money-dollar-circle-line me-2"></i>
                         <strong>Frais de livraison en attente</strong><br>
-                        Des frais de livraison de <strong>{{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</strong>
+                        Des frais de livraison de <strong>{{ FrontHelper::format_currency($commande->shipping_fee) }} </strong>
                         doivent être payés pour finaliser votre commande.
                     </div>
                     <a href="{{ route('shipping.payment.show', $commande->code) }}"
@@ -78,7 +78,7 @@
                                 <div class="card-body text-center">
                                     <i class="ri-money-dollar-circle-line display-6 text-success mb-2"></i>
                                     <h6 class="text-muted">Total</h6>
-                                    <p class="mb-0">{{ number_format($commande->total_amount + ($commande->shipping_fee ?? 0), 0, '.', ' ') }} XOF</p>
+                                    <p class="mb-0">{{ FrontHelper::format_currency($commande->total_amount + ($commande->shipping_fee ?? 0)) }} </p>
                                 </div>
                             </div>
                         </div>
@@ -210,25 +210,25 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{{ number_format($item->unit_price, 0, '.', ' ') }} XOF</td>
+                                            <td>{{ FrontHelper::format_currency($item->unit_price) }} </td>
                                             <td>{{ $item->quantity }}</td>
-                                            <td>{{ number_format($item->total_price, 0, '.', ' ') }} XOF</td>
+                                            <td>{{ FrontHelper::format_currency($item->total_price) }} </td>
                                         </tr>
                                         @endforeach
                                     </tbody>
                                     <tfoot>
                                         <tr>
                                             <td colspan="3" class="text-end"><strong>Sous-total :</strong></td>
-                                            <td><strong>{{ number_format($commande->total_amount, 0, '.', ' ') }} XOF</strong></td>
+                                            <td><strong>{{ FrontHelper::format_currency($commande->total_amount) }} </strong></td>
                                         </tr>
                                         @if($commande->shipping_fee)
                                         <tr>
                                             <td colspan="3" class="text-end"><strong>Frais de livraison :</strong></td>
-                                            <td><strong>{{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</strong></td>
+                                            <td><strong>{{ FrontHelper::format_currency($commande->shipping_fee) }} </strong></td>
                                         </tr>
                                         <tr class="table-primary">
                                             <td colspan="3" class="text-end"><strong>Total général :</strong></td>
-                                            <td><strong>{{ number_format($commande->total_amount + $commande->shipping_fee, 0, '.', ' ') }} XOF</strong></td>
+                                            <td><strong>{{ FrontHelper::format_currency($commande->total_amount + $commande->shipping_fee) }} </strong></td>
                                         </tr>
                                         @endif
                                     </tfoot>
@@ -353,7 +353,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <p><strong>Montant :</strong><br>
-                                        {{ number_format($commande->shipping_fee, 0, '.', ' ') }} XOF</p>
+                                        {{ FrontHelper::format_currency($commande->shipping_fee) }} </p>
 
                                         <!-- AJOUTER CE BOUTON SI LES FRAIS SONT EN ATTENTE -->
                                         @if($commande->shipping_status == 'fee_pending' && $commande->status == 'ready_pickup')

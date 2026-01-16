@@ -128,7 +128,25 @@
                     </li>
                 </ul>
             </li>
-            @endhasrole
+            <li>
+                <a href="#" class="{{ Route::currentRouteName() == 'admin.currencies.index' ? 'active' : '' }} {{ Route::currentRouteName() == 'admin.currencies.create' ? 'active' : '' }}">
+                    <span class="nav-link-icon">
+                        <i class="bi bi-currency-dollar"></i>
+                    </span>
+                    <span>Devises</span>
+                </a>
+                <ul>
+                    <li>
+                        <a href="{{ route('admin.currencies.index') }}"
+                           >Listes</a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.currencies.create') }}"
+                           >Ajouter</a>
+                    </li>
+                </ul>
+            </li>
+            @endhasanyrole
 
         </ul>
     </div>

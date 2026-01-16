@@ -23,7 +23,7 @@ return new class extends Migration
         });
 
         Schema::table('users', function (Blueprint $table) {
-            $table->string('preferred_currency_id')->after('email');
+            $table->foreignId('preferred_currency_id')->nullable()->constrained('currencies')->nullOnDelete();
         });
     }
 
