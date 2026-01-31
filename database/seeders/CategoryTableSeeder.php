@@ -50,5 +50,17 @@ class CategoryTableSeeder extends Seeder
             'slug' => Str::slug('angements et accessoires'),
             'image' => FrontHelper::getEnvFolder() .'categories/c6.jpg',
         ]);
+
+        Categorie::create([
+            'label' => 'Le Bazar de l\'Electronique',
+            'slug' => Str::slug('Le Bazar de l\'Electronique'),
+            'image' => FrontHelper::getEnvFolder() .'categories/c7.png',
+        ]);
+
+        Categorie::create([
+            'label' => 'C\'est Ma Voiture',
+            'slug' => Str::slug('C\'est Ma Voiture'),
+            'image' => FrontHelper::getEnvFolder() .'categories/c8.png',
+        ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Notification;
 use App\Models\Commande;
+use App\Helpers\FrontHelper;
 
 class NotificationService
 {
@@ -32,7 +33,7 @@ class NotificationService
         $message = "Le statut de votre commande a changé de \"{$oldStatusLabel}\" à \"{$newStatusLabel}\"";
 
         // Message personnalisé selon le statut
-        $additionalMessage = $this->getStatusMessage($commande);
+        $additionalMessage = $this->getStatusMessage($commande, $user);
         if ($additionalMessage) {
             $message .= "\n\n" . $additionalMessage;
         }
@@ -46,11 +47,12 @@ class NotificationService
             'new_status_label' => $newStatusLabel,
             'delivery_method' => $commande->delivery_method,
             'shipping_fee' => $commande->shipping_fee,
+            'shipping_fee_formatted' => FrontHelper::format_amount_for_user($commande->shipping_fee, $user),
             'estimated_delivery' => $commande->estimated_delivery,
-            'url' => route('user.orders.show', $commande->id)
+            'url' => route('user.orders.show', $commande->code)
         ];
 
-        return $user->notify('order_status_update', $title, $message, $data);
+        return $user->notifie('order_status_update', $title, $message, $data);
     }
 
     /**
@@ -61,7 +63,8 @@ class NotificationService
         $user = $commande->user;
 
         $title = "Frais de livraison - Commande #{$commande->code}";
-        $message = "Des frais de livraison de " . number_format($commande->shipping_fee, 0, '.', ' ') . " XOF ont été définis pour votre commande.";
+        $shippingFeeFormatted = FrontHelper::format_amount_for_user($commande->shipping_fee, $user);
+        $message = "Des frais de livraison de {$shippingFeeFormatted} ont été définis pour votre commande.";
 
         if ($commande->delivery_method == 'tinda_awa') {
             $message .= "\n\nVotre commande sera livrée via Tinda Awa.";
@@ -78,13 +81,14 @@ class NotificationService
             'commande_id' => $commande->id,
             'commande_code' => $commande->code,
             'shipping_fee' => $commande->shipping_fee,
+            'shipping_fee_formatted' => $shippingFeeFormatted,
             'delivery_method' => $commande->delivery_method,
             'estimated_delivery' => $commande->estimated_delivery,
-            'payment_url' => route('shipping.payment.show', $commande->id),
-            'url' => route('user.orders.show', $commande->id)
+            'payment_url' => route('shipping.payment.show', $commande->code),
+            'url' => route('user.orders.show', $commande->code)
         ];
 
-        return $user->notify('shipping_fee', $title, $message, $data);
+        return $user->notifie('shipping_fee', $title, $message, $data);
     }
 
     /**
@@ -95,7 +99,8 @@ class NotificationService
         $user = $commande->user;
 
         $title = "Paiement confirmé - Frais de livraison #{$commande->code}";
-        $message = "Votre paiement de " . number_format($commande->shipping_fee, 0, '.', ' ') . " XOF pour les frais de livraison a été confirmé.";
+        $shippingFeeFormatted = FrontHelper::format_amount_for_user($commande->shipping_fee, $user);
+        $message = "Votre paiement de {$shippingFeeFormatted} pour les frais de livraison a été confirmé.";
 
         if ($commande->delivery_method == 'tinda_awa') {
             $message .= "\n\nVotre commande va maintenant être expédiée via Tinda Awa.";
@@ -110,13 +115,14 @@ class NotificationService
             'commande_id' => $commande->id,
             'commande_code' => $commande->code,
             'shipping_fee' => $commande->shipping_fee,
+            'shipping_fee_formatted' => $shippingFeeFormatted,
             'shipping_payment_id' => $commande->shipping_payment_id,
             'delivery_method' => $commande->delivery_method,
             'estimated_delivery' => $commande->estimated_delivery,
-            'url' => route('user.orders.show', $commande->id)
+            'url' => route('user.orders.show', $commande->code)
         ];
 
-        return $user->notify('shipping_payment_success', $title, $message, $data);
+        return $user->notifie('shipping_payment_success', $title, $message, $data);
     }
 
     /**
@@ -134,23 +140,27 @@ class NotificationService
             'commande_id' => $commande->id,
             'commande_code' => $commande->code,
             'received_at' => $commande->received_at,
-            'url' => route('user.orders.show', $commande->id)
+            'url' => route('user.orders.show', $commande->code)
         ];
 
-        return $user->notify('order_received', $title, $message, $data);
+        return $user->notifie('order_received', $title, $message, $data);
     }
 
     /**
      * Message personnalisé selon le statut
      */
-    private function getStatusMessage(Commande $commande)
+    private function getStatusMessage(Commande $commande, User $user)
     {
+        $shippingFeeFormatted = $commande->shipping_fee
+            ? FrontHelper::format_amount_for_user($commande->shipping_fee, $user)
+            : null;
+
         $messages = [
             'ready_pickup' => [
                 'cargo' => "Votre commande est disponible chez nous. Vous pouvez la faire récupérer par votre cargo." .
-                          ($commande->shipping_fee ? "\nLes frais de livraison sont de " . number_format($commande->shipping_fee, 0, '.', ' ') . " XOF." : ""),
+                          ($shippingFeeFormatted ? "\nLes frais de livraison sont de {$shippingFeeFormatted}." : ""),
                 'tinda_awa' => "Votre commande est prête pour l'expédition via Tinda Awa." .
-                              ($commande->shipping_fee ? "\nLes frais de livraison sont de " . number_format($commande->shipping_fee, 0, '.', ' ') . " XOF." :
+                              ($shippingFeeFormatted ? "\nLes frais de livraison sont de {$shippingFeeFormatted}." :
                                "\nLes frais de livraison vous seront communiqués sous peu.")
             ],
             'in_transit' => "Votre commande a été expédiée et est en cours de livraison via Tinda Awa." .

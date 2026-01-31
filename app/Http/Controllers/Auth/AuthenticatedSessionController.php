@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,13 +24,30 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $request->authenticate();
+        $credentials = $request->validate([
+            'email' => ['required', 'email', 'exists:users,email'],
+            'password' => ['required'],
+        ]);
 
-        $request->session()->regenerate();
+        $user = User::where('email', $request->email)->first();
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+
+        if ($user->email_verified != null) {
+            return back()->with('warning', 'Veuillez activer votre compte en consultant votre boîte mail.');
+        }
+
+        if ($user->status == false) {
+            return back()->with('danger', 'Compte désactivé! Veuillez contacter le support.');
+        }
+
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect()->intended(RouteServiceProvider::HOME);
+        } else {
+            return back()->with('danger', 'Mot de passe incorrect');
+        }
     }
 
     /**

@@ -357,6 +357,78 @@
             });
         })(jQuery);
     </script>
+
+    <script>
+        // Charger les notifications dans le dropdown
+        function loadNotificationDropdown() {
+            @auth
+            $.ajax({
+                url: '{{ route("notifications.unread") }}',
+                method: 'GET',
+                success: function(response) {
+                    const $dropdown = $('#notification-dropdown');
+
+                    if (response.notifications.length > 0) {
+                        let html = '';
+                        response.notifications.forEach(notification => {
+                            const url = notification.data && notification.data.url ? notification.data.url : '#';
+                            const message = notification.message.length > 50 ?
+                                notification.message.substring(0, 25) + '...' :
+                                notification.message;
+
+                            html += `
+                                <li class="p-2 border-bottom notification-item" data-id="${notification.id}">
+                                    <a href="${url}" class="d-block text-dark" target="_blank" onclick="markNotificationRead(${notification.id})">
+                                        <div class="d-flex align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1" style="font-size: 0.9rem;">${notification.title}</h6>
+                                                <p class="mb-0 text-muted" style="font-size: 0.8rem;">${message}</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            `;
+                        });
+                        $dropdown.html(html);
+                    } else {
+                        $dropdown.html('<li class="p-3 text-center text-muted">Aucune notification</li>');
+                    }
+                }
+            });
+            @endauth
+        }
+
+        // Marquer une notification comme lue
+        function markNotificationRead(notificationId) {
+            $.ajax({
+                url: `/notifications/${notificationId}/read`,
+                method: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+        }
+
+        // Charger les notifications au chargement
+        $(document).ready(function() {
+            loadNotificationDropdown();
+
+            // Recharger toutes les 30 secondes
+            setInterval(loadNotificationDropdown, 30000);
+        });
+    </script>
+    <script>
+        // Animation d'entrée améliorée
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctaSection = document.querySelector('.nihao-mini-cta');
+            ctaSection.style.opacity = '0';
+
+            setTimeout(() => {
+                ctaSection.style.transition = 'opacity 0.8s ease';
+                ctaSection.style.opacity = '1';
+            }, 200);
+        });
+    </script>
     @yield('scripts')
 
 

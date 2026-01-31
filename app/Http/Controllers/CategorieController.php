@@ -55,6 +55,10 @@ class CategorieController extends Controller
 
 public function edit(Categorie $categorie)
     {
+        if ($categorie->slug == 'le-bazar-de-lelectronique' || $categorie->slug == 'cest-ma-voiture') {
+            return redirect()->route('categories.index')
+                             ->with('error', 'Pas de modification possible pour cette catégorie.');
+        }
         return view('back.pages.categories.edit', compact('categorie'));
     }
 

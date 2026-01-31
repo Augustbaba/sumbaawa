@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\ShippingPaymentConfirmationEmail;
 use App\Models\Commande;
 use App\Models\Currency;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,13 @@ use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class ShippingPaymentController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     /**
      * Afficher la page de paiement des frais de livraison
      */
@@ -346,7 +354,8 @@ class ShippingPaymentController extends Controller
 
                 // Envoyer email de confirmation
                 try {
-                    $this->sendShippingPaymentConfirmation($commande);
+                    // $this->sendShippingPaymentConfirmation($commande);
+                    $this->notificationService->notifyShippingPaymentSuccess($commande);
                 } catch (\Exception $e) {
                     Log::error('Erreur envoi email confirmation frais de livraison: ' . $e->getMessage());
                 }

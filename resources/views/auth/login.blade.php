@@ -62,18 +62,11 @@
                                         @enderror
                                     </div>
                                     <div class="text-center text-lg-start">
-                                        <p class="small"><a href="#">Mot de passe oublié?</a></p>
+                                        <p class="small"><a href="{{ route('password.request') }}">Mot de passe oublié?</a></p>
                                         <button class="btn btn-primary">Se Connecter</button>
                                     </div>
                                 </form>
-                                <div class="social-links justify-content-center">
-                                    <a href="#">
-                                        <i class="ti-google bg-google"></i> Se Connecter avec Google
-                                    </a>
-                                    <a href="#">
-                                        <i class="ti-facebook bg-facebook"></i> Se Connecter avec Facebook
-                                    </a>
-                                </div>
+
                                 <p class="text-center d-block d-lg-none mt-5 mt-lg-0">
                                     Nouveau sur {{ FrontHelper::getAppName() }}? <a href="{{ route('register') }}">S'inscrire</a>.
                                 </p>

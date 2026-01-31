@@ -24,6 +24,7 @@ return new class extends Migration
 
         Schema::table('users', function (Blueprint $table) {
             $table->foreignId('preferred_currency_id')->nullable()->constrained('currencies')->nullOnDelete();
+            $table->string('email_verified')->nullable();
         });
     }
 
@@ -35,6 +36,7 @@ return new class extends Migration
         Schema::dropIfExists('currencies');
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('preferred_currency_id');
+            $table->dropColumn('email_verified');
         });
     }
 };

@@ -4,62 +4,87 @@ namespace App\Http\Controllers;
 
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Afficher les notifications de l'utilisateur
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $user = Auth::user();
+        $notifications = $user->notifications()
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('back.pages.notifications.index', compact('notifications'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Marquer une notification comme lue
      */
-    public function create()
+    public function markAsRead($id)
     {
-        //
+        $notification = Notification::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $notification->markAsRead();
+
+        return response()->json([
+            'success' => true,
+            'unread_count' => Auth::user()->unreadNotificationsCount()
+        ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Marquer toutes les notifications comme lues
      */
-    public function store(Request $request)
+    public function markAllAsRead()
     {
-        //
+        $user = Auth::user();
+        $user->notifications()
+            ->unread()
+            ->update([
+                'is_read' => true,
+                'read_at' => now()
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'unread_count' => 0
+        ]);
     }
 
     /**
-     * Display the specified resource.
+     * Récupérer les notifications non lues (pour AJAX)
      */
-    public function show(Notification $notification)
+    public function unread(Request $request)
     {
-        //
+        $user = Auth::user();
+        $notifications = $user->unreadNotifications()
+            ->orderBy('created_at', 'desc')
+            ->take(3)
+            ->get();
+
+        return response()->json([
+            'notifications' => $notifications,
+            'unread_count' => $user->unreadNotificationsCount()
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Supprimer une notification
      */
-    public function edit(Notification $notification)
+    public function destroy($id)
     {
-        //
-    }
+        $notification = Notification::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Notification $notification)
-    {
-        //
-    }
+        $notification->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Notification $notification)
-    {
-        //
+        return response()->json(['success' => true]);
     }
 }

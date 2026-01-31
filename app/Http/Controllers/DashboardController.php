@@ -3,11 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Commande;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function dashboard()
     {
         $user = Auth::user();
@@ -52,6 +60,8 @@ class DashboardController extends Controller
             'is_received' => true,
             'received_at' => now()
         ]);
+
+        $this->notificationService->notifyOrderReceived($commande);
 
         return redirect()->back()->with('success', 'Commande marquée comme récupérée avec succès.');
     }

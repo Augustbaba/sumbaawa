@@ -7,8 +7,24 @@
                     <div class="col-lg-6">
                         <div class="header-contact">
                             <ul>
-                                <li>Bienvenue sur {{ FrontHelper::getAppName() }}</li>
-                                <li><i class="ri-phone-fill"></i>Contactez-nous: +242044724102</li>
+                                <li>
+                                    Bienvenue sur
+                                    @if (Route::currentRouteName() == 'categories.single' && in_array(request()->segment(2), ['le-bazar-de-lelectronique', 'cest-ma-voiture']))
+                                        @if (request()->segment(2) == 'le-bazar-de-lelectronique')
+                                            <span>Le Bazar de l'Electronique</span>
+                                        @else
+                                            <span>C'est Ma Voiture</span>
+                                        @endif
+
+                                    @else
+                                        @if (Route::currentRouteName() != 'nihao.travel')
+                                            {{ FrontHelper::getAppName() }}
+                                        @else
+                                            <span>Nihao Travel</span>
+                                        @endif
+                                    @endif
+                                </li>
+                                <li><i class="ri-phone-fill"></i> +242044724102</li>
                             </ul>
                         </div>
                     </div>
@@ -16,6 +32,33 @@
                         <ul class="header-dropdown">
                             <li class="mobile-wishlist"><a href="{{ route('wishlist.my') }}"><i class="ri-heart-fill"></i></a>
                             </li>
+
+                            <!-- NOTIFICATIONS -->
+                            @auth
+                            <li class="onhover-dropdown mobile-notifications hide-on-mobile">
+                                <i class="ri-notification-line"></i>
+                                @if(auth()->user()->unreadNotificationsCount() > 0)
+                                    <span class="badge bg-danger position-absolute  start-100 translate-middle"
+                                        style="font-size: 10px; padding: 2px 5px;">
+                                        {{ auth()->user()->unreadNotificationsCount() > 9 ? '9+' : auth()->user()->unreadNotificationsCount() }}
+                                    </span>
+                                @endif
+                                <ul class="onhover-show-div" style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+                                    <li class="p-2 border-bottom">
+                                        <h6 class="mb-0">Notifications</h6>
+                                    </li>
+                                    <div id="notification-dropdown">
+                                        <!-- Les notifications seront chargées en AJAX -->
+                                    </div>
+                                    <li class="p-2 text-center">
+                                        <a href="{{ route('notifications.index') }}" target="_blank" class="text-primary">
+                                            Voir toutes les notifications
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            @endauth
+
                             <li class="onhover-dropdown mobile-account"> <i class="ri-user-fill"></i>
                                 Mon Compte
                                 <ul class="onhover-show-div">
@@ -214,9 +257,28 @@
                                 </div>
                             </div> --}}
                             <div class="brand-logo">
-                                <a href="{{ route('index') }}">
-                                    <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="">
-                                </a>
+                                @if (Route::currentRouteName() == 'categories.single' && in_array(request()->segment(2), ['le-bazar-de-lelectronique', 'cest-ma-voiture']))
+                                    @if (request()->segment(2) == 'le-bazar-de-lelectronique')
+                                        <a href="#">
+                                            <img src="{{ asset(FrontHelper::getImageBySlug('le-bazar-de-lelectronique')) }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="Le Bazar de l'Electronique">
+                                        </a>
+                                    @else
+                                        <a href="#">
+                                            <img src="{{ asset(FrontHelper::getImageBySlug('cest-ma-voiture')) }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="C'est Ma Voiture">
+                                        </a>
+                                    @endif
+
+                                @else
+                                    @if (Route::currentRouteName() != 'nihao.travel')
+                                        <a href="{{ route('index') }}">
+                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="">
+                                        </a>
+                                    @else
+                                        <a href="#">
+                                            <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/nihao.png') }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="">
+                                        </a>
+                                    @endif
+                                @endif
                             </div>
                         </div>
                         <div class="menu-right pull-right">
@@ -229,6 +291,22 @@
                                             <div class="mobile-back text-end">Menu<i class="ri-close-line"></i></div>
                                         </li>
                                         <li><a href="{{ route('index') }}">Accueil</a></li>
+                                        <li>
+                                            <a href="{{ route('categories.single', 'le-bazar-de-lelectronique') }}">
+                                                <img src="{{ asset(FrontHelper::getImageBySlug('le-bazar-de-lelectronique')) }}"
+                                                    class="menu-logo hide-on-mobile"
+                                                    alt="Le Bazar de l'Electronique">
+                                                Le Bazar de l'Electronique
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('categories.single', 'cest-ma-voiture') }}">
+                                                <img src="{{ asset(FrontHelper::getImageBySlug('cest-ma-voiture')) }}"
+                                                    class="menu-logo hide-on-mobile"
+                                                    alt="C'est Ma Voiture">
+                                                C'est Ma Voiture
+                                            </a>
+                                        </li>
                                         @if (Route::currentRouteName() == 'index')
                                             <li class="mega hover-cls">
                                                 <a href="#!">Catégories <div class="lable-nav">Nouveau</div></a>
@@ -553,8 +631,8 @@
                                                 </li>
                                             </ul>
                                         </li> --}}
-                                        <li><a href="{{ route('wishlist.my') }}">Favoris</a></li>
-                                        <li><a href="{{ route('contact') }}">Contactez-nous</a></li>
+                                        {{-- <li><a href="{{ route('wishlist.my') }}">Favoris</a></li> --}}
+                                        {{-- <li><a href="{{ route('contact') }}">Contactez-nous</a></li> --}}
                                     </ul>
                                 </nav>
                             </div>

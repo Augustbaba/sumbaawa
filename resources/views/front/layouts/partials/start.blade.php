@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="description" content="Découvrez les dernières tendances en meubles et accessoires. Collections exclusives pour aménager et sublimer vos espaces avec style et confort.">
+    <meta name="description" content="Explorez les tendances incontournables en meubles, accessoires, électronique et automobiles ! Aménagez vos espaces avec style, découvrez les gadgets high-tech et trouvez votre voiture idéale pour confort et modernité. Collections exclusives à ne pas manquer !">
     <meta name="keywords" content="meubles, mobilier, tendances meubles, décoration intérieure, chaises, fauteuils, bureaux, tables, rangements, cabines, accessoires maison, mobilier moderne, design intérieur, sumbaawa, sumba awa, sumbaawa.com, sumbaawa.fr, sumbaawa.org, furniture, home decor, interior design, living room furniture, bedroom furniture, office furniture, véhicules, ameublement, décoration, mobilier contemporain, voiture, moto, utilitaire, SUV, berline, camionnette, 4x4, pick-up, véhicule d'occasion, achat voiture, vente voiture, concessionnaire auto, auto neuf, auto occasion, entretien auto, réparation auto, c'est ma voiture, cestmavoiture, bijoux, montres, accessoires mode, bagues, colliers, bracelets, boucles d'oreilles, montres homme, montres femme, bijouterie en ligne, achat bijoux, vente bijoux, bijou pas cher, bijou de luxe, bijoux tendance, bijoux personnalisés, le bazar électronique, électronique, gadgets, accessoires tech, smartphones, tablettes, ordinateurs portables, casques audio, enceintes Bluetooth, montres connectées, accessoires gaming, achat électronique, vente électronique, high-tech pas cher, tech tendance">
 
     @if (Route::currentRouteName() != 'cart.view' && Route::currentRouteName() != 'checkout')
@@ -15,12 +15,29 @@
         <meta name="robots" content="noindex, nofollow">
     @endif
 
-    <meta name="author" content="{{ FrontHelper::getAppName() }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/favicon-16x16.png') }}">
-    <link rel="manifest" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/site.webmanifest') }}">
+    @if (Route::currentRouteName() == 'categories.single' && in_array(request()->segment(2), ['le-bazar-de-lelectronique', 'cest-ma-voiture']))
+        @if (request()->segment(2) == 'le-bazar-de-lelectronique')
+            <meta name="author" content="Le Bazar de l'Electronique">
+            <link rel="apple-touch-icon" sizes="180x180" href="{{ asset(FrontHelper::getEnvFolder() . 'lbz/apple-touch-icon.png') }}">
+            <link rel="icon" type="image/png" sizes="32x32" href="{{ asset(FrontHelper::getEnvFolder() . 'lbz/favicon-32x32.png') }}">
+            <link rel="icon" type="image/png" sizes="16x16" href="{{ asset(FrontHelper::getEnvFolder() . 'lbz/favicon-16x16.png') }}">
+            <link rel="manifest" href="{{ asset(FrontHelper::getEnvFolder() . 'lbz/site.webmanifest') }}">
+        @else
+            <meta name="author" content="C'est Ma Voiture">
+            <link rel="apple-touch-icon" sizes="180x180" href="{{ asset(FrontHelper::getEnvFolder() . 'cmv/apple-touch-icon.png') }}">
+            <link rel="icon" type="image/png" sizes="32x32" href="{{ asset(FrontHelper::getEnvFolder() . 'cmv/favicon-32x32.png') }}">
+            <link rel="icon" type="image/png" sizes="16x16" href="{{ asset(FrontHelper::getEnvFolder() . 'cmv/favicon-16x16.png') }}">
+            <link rel="manifest" href="{{ asset(FrontHelper::getEnvFolder() . 'cmv/site.webmanifest') }}">
+        @endif
+
+    @else
+        <meta name="author" content="{{ FrontHelper::getAppName() }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/apple-touch-icon.png') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/favicon-32x32.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/favicon-16x16.png') }}">
+        <link rel="manifest" href="{{ asset(FrontHelper::getEnvFolder() . 'favicon_io/site.webmanifest') }}">
+    @endif
     <title>{{ FrontHelper::getAppName() }} - @yield('title')</title>
 
     <!--Google font-->
@@ -241,6 +258,201 @@
             text-decoration: none !important; /* Supprime le soulignement */
         }
 
+        .menu-logo {
+            width: 30px;
+            height: auto;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        /* Cacher sur tablette et mobile */
+        @media (max-width: 991.98px) {
+            .hide-on-mobile {
+                display: none !important;
+            }
+        }
+
+        .container-nihao {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+
+        /* Section Nihao Travel améliorée */
+        .nihao-mini-cta {
+            background: linear-gradient(135deg, #f7f9fc 0%, #ffffff 100%);
+            border-top: 1px solid #e6e9ef;
+            border-left: 4px solid #2563eb;
+            padding: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nihao-mini-cta::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background-color: rgba(37, 99, 235, 0.05);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .nihao-mini-cta::after {
+            content: "";
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            width: 100px;
+            height: 100px;
+            background-color: rgba(37, 99, 235, 0.05);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .nihao-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nihao-text {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .nihao-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(37, 99, 235, 0.1);
+            color: #2563eb;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .nihao-badge i {
+            margin-right: 6px;
+            font-size: 12px;
+        }
+
+        .nihao-text h6 {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.3;
+        }
+
+        .nihao-text p {
+            margin: 0;
+            font-size: 15px;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .nihao-text strong {
+            color: #2563eb;
+            font-weight: 700;
+        }
+
+        .nihao-highlight {
+            display: inline-flex;
+            align-items: center;
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .nihao-highlight i {
+            margin-right: 5px;
+            font-size: 12px;
+        }
+
+        .btn-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Animation subtile au chargement */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nihao-content {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nihao-content {
+                text-align: center;
+                justify-content: center;
+            }
+
+            .nihao-text {
+                text-align: center;
+            }
+
+            .btn-container {
+                width: 100%;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .nihao-mini-cta::before,
+            .nihao-mini-cta::after {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nihao-mini-cta {
+                padding: 20px 0;
+            }
+
+            .nihao-text h6 {
+                font-size: 16px;
+            }
+
+            .nihao-text p {
+                font-size: 14px;
+            }
+
+            .btn-solid {
+                padding: 10px 20px;
+                font-size: 14px;
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+
+
+
+
 
     </style>
     @yield('styles')
@@ -257,8 +469,24 @@
                     <div class="col-lg-6">
                         <div class="header-contact">
                             <ul>
-                                <li>Bienvenue sur {{ FrontHelper::getAppName() }}</li>
-                                <li><i class="ri-phone-fill"></i>Contactez-nous: +242044724102</li>
+                                <li>
+                                    Bienvenue sur
+                                    @if (Route::currentRouteName() == 'categories.single' && in_array(request()->segment(2), ['le-bazar-de-lelectronique', 'cest-ma-voiture']))
+                                        @if (request()->segment(2) == 'le-bazar-de-lelectronique')
+                                            <span>Le Bazar de l'Electronique</span>
+                                        @else
+                                            <span>C'est Ma Voiture</span>
+                                        @endif
+
+                                    @else
+                                        @if (Route::currentRouteName() != 'nihao.travel')
+                                            {{ FrontHelper::getAppName() }}
+                                        @else
+                                            <span>Nihao Travel</span>
+                                        @endif
+                                    @endif
+                                </li>
+                                <li><i class="ri-phone-fill"></i> +242044724102</li>
                             </ul>
                         </div>
                     </div>
@@ -292,9 +520,28 @@
                                     </a>
                                 </div> --}}
                                 <div class="brand-logo">
-                                    <a href="{{ route('index') }}">
-                                        <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="">
-                                    </a>
+                                    @if (Route::currentRouteName() == 'categories.single' && in_array(request()->segment(2), ['le-bazar-de-lelectronique', 'cest-ma-voiture']))
+                                        @if (request()->segment(2) == 'le-bazar-de-lelectronique')
+                                            <a href="#">
+                                                <img src="{{ asset(FrontHelper::getImageBySlug('le-bazar-de-lelectronique')) }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="Le Bazar de l'Electronique">
+                                            </a>
+                                        @else
+                                            <a href="#">
+                                                <img src="{{ asset(FrontHelper::getImageBySlug('cest-ma-voiture')) }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="C'est Ma Voiture">
+                                            </a>
+                                        @endif
+
+                                    @else
+                                        @if (Route::currentRouteName() != 'nihao.travel')
+                                            <a href="{{ route('index') }}">
+                                                <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/logo.png') }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="">
+                                            </a>
+                                        @else
+                                            <a href="#">
+                                                <img src="{{ asset(FrontHelper::getEnvFolder() . 'storage/front/assets/images/nihao.png') }}" style="width: 150px; height: auto;" class="img-fluid blur-up lazyload" alt="">
+                                            </a>
+                                        @endif
+                                    @endif
                                 </div>
                             </div>
                             <div class="menu-right pull-right">
@@ -311,13 +558,29 @@
                                                 <a href="{{ route('index') }}">Accueil</a>
                                             </li>
                                             <li>
-                                                <a href="{{ route('categories.page') }}">Catégories<div class="lable-nav">Nouveau</div></a>
+                                                <a href="{{ route('categories.single', 'le-bazar-de-lelectronique') }}">
+                                                    <img src="{{ asset(FrontHelper::getImageBySlug('le-bazar-de-lelectronique')) }}"
+                                                        class="menu-logo hide-on-mobile"
+                                                        alt="Le Bazar de l'Electronique">
+                                                    Le Bazar de l'Electronique
+                                                </a>
                                             </li>
                                             <li>
+                                                <a href="{{ route('categories.single', 'cest-ma-voiture') }}">
+                                                    <img src="{{ asset(FrontHelper::getImageBySlug('cest-ma-voiture')) }}"
+                                                        class="menu-logo hide-on-mobile"
+                                                        alt="C'est Ma Voiture">
+                                                    C'est Ma Voiture
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ route('categories.page') }}">Catégories<div class="lable-nav">Nouveau</div></a>
+                                            </li>
+                                            {{-- <li>
                                                 <a href="{{ route('wishlist.my') }}">Favoris</a>
                                             </li>
                                             <li><a href="{{ route('contact') }}">Contactez-nous</a>
-                                            </li>
+                                            </li> --}}
                                         </ul>
                                     </nav>
                                 </div>

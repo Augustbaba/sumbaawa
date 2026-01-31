@@ -18,7 +18,7 @@
     <div class="header-bar ms-auto">
         <ul class="navbar-nav justify-content-end">
             <li class="nav-item">
-                <a href="#" class="nav-link nav-link-notify" data-count="2" data-sidebar-target="#notifications">
+                <a href="{{ route('notifications.index') }}" class="nav-link nav-link-notify" data-count="{{ auth()->user()->unreadNotificationsCount() }}">
                     <i class="bi bi-bell icon-lg"></i>
                 </a>
             </li>

@@ -59,20 +59,22 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('categories.edit', $category) }}"
-                                       class="btn btn-sm btn-primary">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form action="{{ route('categories.destroy', $category) }}"
-                                          method="POST"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Voulez-vous vraiment supprimer cette catégorie ?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    @if ($category->slug !== 'le-bazar-de-lelectronique' && $category->slug !== 'cest-ma-voiture')
+                                        <a href="{{ route('categories.edit', $category) }}"
+                                        class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ route('categories.destroy', $category) }}"
+                                            method="POST"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Voulez-vous vraiment supprimer cette catégorie ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

@@ -1,3 +1,38 @@
+@if (Route::currentRouteName() != 'nihao.travel')
+    <section class="nihao-mini-cta">
+        <div class="container-nihao">
+            <div class="nihao-content">
+                <div class="nihao-text">
+                    <div class="nihao-badge">
+                        <i class="fas fa-crown"></i>
+                        Filiale Groupe Sumbaawa
+                    </div>
+
+                    <h6>Voyage d'affaires en Chine ? Nous simplifions tout.</h6>
+
+                    <p>
+                        <strong>Nihao Travel</strong> vous accompagne pour la Foire de Canton et vos déplacements en Chine.
+                        De la demande de visa à l'hébergement sur place, notre équipe gère tous les détails.
+                    </p>
+
+                    <div class="nihao-highlight">
+                        <i class="fas fa-check-circle"></i>
+                        Visa, hébergement, assistance complète
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <a href="{{ route('nihao.travel') }}" target="_blank" class="btn btn-solid">
+                        Découvrir nos services
+                        <i class="fas fa-arrow-right" style="margin-left: 8px; font-size: 14px;"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+@endif
+
+
 <!-- Footer Section Start -->
 <footer class="footer-style-1">
     <section class="section-b-space darken-layout">

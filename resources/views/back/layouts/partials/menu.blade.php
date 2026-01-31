@@ -12,8 +12,13 @@
         <div class="dropdown">
             <a href="#" class="d-flex align-items-center" data-bs-toggle="dropdown">
                 <div class="avatar me-3">
-                    <img src="{{ Str::startsWith(auth()->user()->avatar, 'http') ? auth()->user()->avatar : asset(auth()->user()->avatar) }}"
-                         class="rounded-circle" alt="image">
+                    @if (auth()->user()->avatar == FrontHelper::getEnvFolder() .'images/avatars/user-avatar-placeholder.png')
+                        <img src="{{ Str::startsWith(auth()->user()->avatar, 'http') ? auth()->user()->avatar : asset(auth()->user()->avatar) }}"
+                            class="rounded-circle" alt="image">
+                    @else
+                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}"
+                            class="rounded-circle" alt="image">
+                    @endif
                 </div>
                 <div>
                     <div class="fw-bold">{{ auth()->user()->name?? auth()->user()->email }}</div>
@@ -21,7 +26,7 @@
                 </div>
             </a>
             <div class="dropdown-menu dropdown-menu-end">
-                <a href="{{ route('profile.edit') }}" class="dropdown-item d-flex align-items-center">
+                <a href="{{ route('profile.show') }}" class="dropdown-item d-flex align-items-center">
                     <i class="bi bi-person dropdown-item-icon"></i> Profil
                 </a>
 
@@ -115,7 +120,7 @@
                 </ul>
             </li>
             <li>
-                <a href="#" class="{{ Route::currentRouteName() == 'users.index' ? 'active' : '' }}">
+                <a href="#" class="{{ Route::currentRouteName() == 'users.index' ? 'active' : '' }} {{ Route::currentRouteName() == 'admin.nihao-travel.index' ? 'active' : '' }}">
                     <span class="nav-link-icon">
                         <i class="bi bi-receipt"></i>
                     </span>
@@ -125,6 +130,10 @@
                     <li>
                         <a href="{{ route('users.index') }}"
                            >Utilisateurs</a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.nihao-travel.index') }}"
+                           >Nihao Travel</a>
                     </li>
                 </ul>
             </li>

@@ -7,6 +7,7 @@ use App\Mail\ShippingFeeEmail;
 use App\Models\Commande;
 use App\Models\Type;
 use App\Models\User;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,13 @@ use Illuminate\Support\Facades\Mail;
 
 class CommandeController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     /**
      * Afficher la liste des commandes
      */
@@ -60,7 +68,8 @@ class CommandeController extends Controller
         $commande->save();
 
         // Envoyer un email de notification de changement de statut
-        $this->sendStatusUpdateEmail($commande, $oldStatus);
+        // $this->sendStatusUpdateEmail($commande, $oldStatus);
+        $this->notificationService->notifyOrderStatusUpdate($commande, $oldStatus);
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -106,6 +115,7 @@ class CommandeController extends Controller
 
         // Envoyer l'email avec les frais de livraison
         $this->sendShippingFeeEmail($commande);
+        $this->notificationService->notifyShippingFee($commande);
 
         return response()->json([
             'success' => true,

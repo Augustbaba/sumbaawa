@@ -199,6 +199,62 @@ class FrontHelper
         return self::convert_currency($amount, 'XOF', $currencyCode);
     }
 
+    /**
+     * Formater un montant selon la devise préférée de l'utilisateur
+     *
+     * @param float $amount - Montant en XOF (devise de base en BD)
+     * @param User|null $user - L'utilisateur destinataire (si null, utilise la devise courante)
+     * @return string
+     */
+    public static function format_amount_for_user($amount, $user = null)
+    {
+        // Si pas d'utilisateur fourni, utiliser le format classique
+        if (!$user) {
+            return self::format_currency($amount);
+        }
+
+        // Déterminer la devise de l'utilisateur
+        $currencyCode = 'XOF'; // Devise par défaut
+
+        if ($user->preferred_currency_id) {
+            $preferredCurrency = Currency::find($user->preferred_currency_id);
+            if ($preferredCurrency && $preferredCurrency->is_active) {
+                $currencyCode = $preferredCurrency->code;
+            }
+        }
+
+        // Utiliser la fonction existante pour formatter
+        return self::format_currency($amount, $currencyCode);
+    }
+
+    /**
+     * Obtenir le montant converti pour un utilisateur spécifique
+     *
+     * @param float $amount - Montant en XOF
+     * @param User|null $user - L'utilisateur destinataire
+     * @return float
+     */
+    public static function get_amount_for_user($amount, $user = null)
+    {
+        // Si pas d'utilisateur fourni, retourner le montant en XOF
+        if (!$user) {
+            return $amount;
+        }
+
+        // Déterminer la devise de l'utilisateur
+        $currencyCode = 'XOF'; // Devise par défaut
+
+        if ($user->preferred_currency_id) {
+            $preferredCurrency = Currency::find($user->preferred_currency_id);
+            if ($preferredCurrency && $preferredCurrency->is_active) {
+                $currencyCode = $preferredCurrency->code;
+            }
+        }
+
+        // Convertir le montant
+        return self::convert_currency($amount, 'XOF', $currencyCode);
+    }
+
     public static function allCategories()
     {
 
@@ -209,21 +265,46 @@ class FrontHelper
     public static function fiveCategories()
     {
 
-        $categories = Categorie::orderBy('label', 'asc')->take(5)->get();
+        $categories = Categorie::whereNotIn('slug', [
+                'le-bazar-de-lelectronique',
+                'cest-ma-voiture'
+            ])
+            ->orderBy('label', 'asc')
+            ->take(5)
+            ->get();
         return $categories;
     }
 
     public static function fiveCategoriesForFooter()
     {
 
-        $categories = Categorie::orderBy('label', 'desc')->take(5)->get();
+        $categories = Categorie::whereNotIn('slug', [
+                'le-bazar-de-lelectronique',
+                'cest-ma-voiture'
+            ])
+            ->orderBy('label', 'desc')
+            ->take(5)
+            ->get();
         return $categories;
+    }
+
+    public static function getImageBySlug(string $slug)
+    {
+        $categorie = Categorie::where('slug', $slug)->first();
+
+        return $categorie->image;
+
     }
 
     public static function fourCategories()
     {
-
-        $categories = Categorie::orderBy('label', 'desc')->take(4)->get();
+        $categories = Categorie::whereNotIn('slug', [
+                'le-bazar-de-lelectronique',
+                'cest-ma-voiture'
+            ])
+            ->orderBy('label', 'desc')
+            ->take(4)
+            ->get();
         return $categories;
     }
 
@@ -232,11 +313,78 @@ class FrontHelper
         return Produit::orderBy('created_at', 'desc')->take(4)->get();
     }
 
+    // public static function fourProductsPopulars()
+    // {
+    //     try {
+    //         // Compter le nombre de fois où chaque produit apparaît dans les commandes
+    //         $popularProducts = DB::table('commanders')
+    //             ->join('commandes', 'commanders.commande_id', '=', 'commandes.id')
+    //             ->join('produits', 'commanders.produit_id', '=', 'produits.id')
+    //             ->select(
+    //                 'commanders.produit_id',
+    //                 DB::raw('SUM(commanders.quantity) as total_quantity'),
+    //                 DB::raw('COUNT(DISTINCT commanders.commande_id) as order_count')
+    //             )
+    //             ->where('commandes.payment_status', 'paid')
+    //             ->where('commandes.status', '!=', 'cancelled')
+    //             ->groupBy('commanders.produit_id')
+    //             ->orderByDesc('total_quantity')
+    //             ->orderByDesc('order_count')
+    //             ->orderByDesc(DB::raw('total_quantity * produits.price'))
+    //             ->limit(4)
+    //             ->pluck('produit_id')
+    //             ->toArray();
+
+
+    //         // Si on a trouvé des produits populaires, les récupérer avec leurs informations
+    //         if (!empty($popularProducts)) {
+    //             return Produit::whereIn('id', $popularProducts)
+    //                 // ->where('is_active', true)
+    //                 ->orderByRaw('FIELD(id, ' . implode(',', $popularProducts) . ')')
+    //                 ->get();
+    //         }
+
+    //         // Fallback: produits les plus récents avec des ventes
+    //         $fallbackProducts = DB::table('commanders')
+    //             ->select('produit_id')
+    //             ->join('produits', 'commanders.produit_id', '=', 'produits.id')
+    //             // ->where('produits.is_active', true)
+    //             ->groupBy('produit_id')
+    //             ->havingRaw('SUM(quantity) > 0')
+    //             ->orderByDesc('produits.created_at')
+    //             ->take(4)
+    //             ->get()
+    //             ->pluck('produit_id')
+    //             ->toArray();
+
+    //         if (!empty($fallbackProducts)) {
+    //             return Produit::whereIn('id', $fallbackProducts)
+    //                 // ->where('is_active', true)
+    //                 ->orderByRaw('FIELD(id, ' . implode(',', $fallbackProducts) . ')')
+    //                 ->get();
+    //         }
+
+    //         // Dernier fallback: 4 derniers produits actifs
+    //         return Produit::orderBy('created_at', 'desc')
+    //             ->take(4)
+    //             ->get();
+
+    //     } catch (\Exception $e) {
+    //         // En cas d'erreur, retourner les 4 derniers produits actifs
+    //         Log::error('Erreur dans fourProductsPopulars: ' . $e->getMessage());
+
+    //         return Produit::orderBy('created_at', 'desc')
+    //             ->take(4)
+    //             ->get();
+    //     }
+    // }
+
     public static function fourProductsPopulars()
     {
         try {
-            // Compter le nombre de fois où chaque produit apparaît dans les commandes
-            $popularProducts = DB::table('commanders')
+
+            // 1️⃣ Récupération des produits populaires (IDs)
+            $popularProductIds = DB::table('commanders')
                 ->join('commandes', 'commanders.commande_id', '=', 'commandes.id')
                 ->join('produits', 'commanders.produit_id', '=', 'produits.id')
                 ->select(
@@ -254,49 +402,39 @@ class FrontHelper
                 ->pluck('produit_id')
                 ->toArray();
 
+            // 2️⃣ Récupération des produits populaires
+            $products = collect();
 
-            // Si on a trouvé des produits populaires, les récupérer avec leurs informations
-            if (!empty($popularProducts)) {
-                return Produit::whereIn('id', $popularProducts)
-                    // ->where('is_active', true)
-                    ->orderByRaw('FIELD(id, ' . implode(',', $popularProducts) . ')')
+            if (!empty($popularProductIds)) {
+                $products = Produit::whereIn('id', $popularProductIds)
+                    ->orderByRaw('FIELD(id, ' . implode(',', $popularProductIds) . ')')
                     ->get();
             }
 
-            // Fallback: produits les plus récents avec des ventes
-            $fallbackProducts = DB::table('commanders')
-                ->select('produit_id')
-                ->join('produits', 'commanders.produit_id', '=', 'produits.id')
-                // ->where('produits.is_active', true)
-                ->groupBy('produit_id')
-                ->havingRaw('SUM(quantity) > 0')
-                ->orderByDesc('produits.created_at')
-                ->take(4)
-                ->get()
-                ->pluck('produit_id')
-                ->toArray();
+            // 3️⃣ Compléter si moins de 4 produits
+            $missing = 4 - $products->count();
 
-            if (!empty($fallbackProducts)) {
-                return Produit::whereIn('id', $fallbackProducts)
-                    // ->where('is_active', true)
-                    ->orderByRaw('FIELD(id, ' . implode(',', $fallbackProducts) . ')')
+            if ($missing > 0) {
+                $additionalProducts = Produit::whereNotIn('id', $products->pluck('id'))
+                    ->orderBy('created_at', 'desc')
+                    ->limit($missing)
                     ->get();
+
+                $products = $products->merge($additionalProducts);
             }
 
-            // Dernier fallback: 4 derniers produits actifs
-            return Produit::orderBy('created_at', 'desc')
-                ->take(4)
-                ->get();
+            return $products;
 
         } catch (\Exception $e) {
-            // En cas d'erreur, retourner les 4 derniers produits actifs
+
             Log::error('Erreur dans fourProductsPopulars: ' . $e->getMessage());
 
             return Produit::orderBy('created_at', 'desc')
-                ->take(4)
+                ->limit(4)
                 ->get();
         }
     }
+
 
     public static function randomProjectsInProgress()
     {

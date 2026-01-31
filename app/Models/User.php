@@ -30,7 +30,20 @@ class User extends Authenticatable
         'google_id',
         'deleted_at',
         'preferred_currency_id',
+        'email_verified',
     ];
+
+    public function pays()
+    {
+        return $this->belongsTo(Pays::class);
+    }
+
+    public function getStatusLabelAttribute()
+    {
+        return $this->status ?
+            '<span class="badge bg-success">Actif</span>' :
+            '<span class="badge bg-danger">Inactif</span>';
+    }
 
     public function roles()
     {
@@ -87,7 +100,7 @@ class User extends Authenticatable
     /**
      * Créer une notification
      */
-    public function notify($type, $title, $message, $data = null)
+    public function notifie($type, $title, $message, $data = null)
     {
         return $this->notifications()->create([
             'type' => $type,

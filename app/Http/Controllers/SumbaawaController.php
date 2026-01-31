@@ -44,7 +44,12 @@ class SumbaawaController extends Controller
 
     public function categoriesPage()
     {
-        $categories = Categorie::orderBy('label', 'asc')->paginate(12);
+        $categories = Categorie::whereNotIn('slug', [
+                'le-bazar-de-lelectronique',
+                'cest-ma-voiture'
+            ])
+            ->orderBy('label', 'asc')
+            ->paginate(12);
         return view('front.pages.categories.index', compact('categories'));
     }
 
@@ -1024,6 +1029,7 @@ class SumbaawaController extends Controller
             'decimals' => $currency->code === 'XOF' ? 0 : 2
         ]);
     }
+
 
 
 
