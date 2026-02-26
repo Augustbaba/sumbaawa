@@ -188,7 +188,20 @@
                                                     {{ round((($produit->original_price - $produit->price) / $produit->original_price) * 100) }}% Off
                                                 </span>
                                             @endif
-                                        </h4>
+                                        </h4> <br>
+                                        <button class="btn btn-solid btn-sm w-100 mt-2 add-to-cart"
+                                            data-redirect="{{ route('checkout') }}"
+                                            data-product-id="{{ $produit->id }}"
+                                            data-product-name="{{ $produit->name }}"
+                                            data-product-image="{{ asset($produit->image_main) }}"
+                                            data-product-price="{{ $produit->price }}"
+                                            data-product-original-price="{{ $produit->original_price ?? '' }}"
+                                            data-product-color="{{ $produit->color ?? '' }}"
+                                            data-product-confort="{{ $produit->niveau_confort ?? '' }}"
+                                            data-product-poids="{{ $produit->poids }}"
+                                            title="Commander">
+                                        <i class="ri-shopping-bag-line me-1"></i> Commander
+                                    </button>
                                     </div>
                                     <ul class="offer-panel">
                                         <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
@@ -304,7 +317,20 @@
                                                                         {{ round((($produit->original_price - $produit->price) / $produit->original_price) * 100) }}% Off
                                                                     </span>
                                                                 @endif
-                                                            </h4>
+                                                            </h4> <br>
+                                                            <button class="btn btn-solid btn-sm w-100 mt-2 add-to-cart"
+                                                                    data-redirect="{{ route('checkout') }}"
+                                                                    data-product-id="{{ $produit->id }}"
+                                                                    data-product-name="{{ $produit->name }}"
+                                                                    data-product-image="{{ asset($produit->image_main) }}"
+                                                                    data-product-price="{{ $produit->price }}"
+                                                                    data-product-original-price="{{ $produit->original_price ?? '' }}"
+                                                                    data-product-color="{{ $produit->color ?? '' }}"
+                                                                    data-product-confort="{{ $produit->niveau_confort ?? '' }}"
+                                                                    data-product-poids="{{ $produit->poids }}"
+                                                                    title="Commander">
+                                                                <i class="ri-shopping-bag-line me-1"></i> Commander
+                                                            </button>
                                                         </div>
                                                         <ul class="offer-panel">
                                                             <li><span class="offer-icon"><i class="ri-discount-percent-fill"></i></span>
@@ -598,20 +624,26 @@
                             product: productData
                         },
                         success: function (response) {
-                            Swal.fire({
-                                toast: true,
-                                position: "top-end",
-                                showConfirmButton: false,
-                                timer: 3000,
-                                timerProgressBar: true,
-                                icon: "success",
-                                title: "Votre produit a été ajouté au panier"
-                            });
-                            if (window.cartUtils) {
-                                cartUtils.updateCartOffcanvas(response.cart);
-                            }
-                            if ($('#cartOffcanvas').length) {
-                                $('#cartOffcanvas').offcanvas('show');
+                            const redirectUrl = $this.data('redirect');
+                            if (redirectUrl) {
+                                // Commander direct → redirection checkout
+                                window.location.href = redirectUrl;
+                            } else {
+                                Swal.fire({
+                                    toast: true,
+                                    position: "top-end",
+                                    showConfirmButton: false,
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                    icon: "success",
+                                    title: "Votre produit a été ajouté au panier"
+                                });
+                                if (window.cartUtils) {
+                                    cartUtils.updateCartOffcanvas(response.cart);
+                                }
+                                if ($('#cartOffcanvas').length) {
+                                    $('#cartOffcanvas').offcanvas('show');
+                                }
                             }
                         },
                         error: function (xhr) {

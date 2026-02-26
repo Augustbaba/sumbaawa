@@ -187,6 +187,16 @@
                                             data-product-price="{{ $produit->price }}">
                                         <i class="ri-shopping-cart-line me-1"></i> Ajouter au panier
                                     </button>
+                                    <button class="btn btn-animation btn-outline-solid hover-solid scroll-button add-to-cart"
+                                            data-redirect="{{ route('checkout') }}"
+                                            data-product-id="{{ $produit->id }}"
+                                            data-product-name="{{ $produit->name }}"
+                                            data-product-image="{{ asset($produit->image_main) }}"
+                                            data-product-confort="{{ $produit->niveau_confort ?? '' }}"
+                                            data-product-poids="{{ $produit->poids }}"
+                                            data-product-price="{{ $produit->price }}">
+                                        <i class="ri-shopping-bag-line me-1"></i> Commander
+                                    </button>
                                 </div>
                             </div>
                             <div class="buy-box">
@@ -315,7 +325,20 @@
                                                         {{ round((($related->original_price - $related->price) / $related->original_price) * 100) }}% Off
                                                     </span>
                                                 @endif
-                                            </h4>
+                                            </h4> <br>
+                                            <button class="btn btn-solid btn-sm w-100 mt-2 add-to-cart"
+                                                    data-redirect="{{ route('checkout') }}"
+                                                    data-product-id="{{ $related->id }}"
+                                                    data-product-name="{{ $related->name }}"
+                                                    data-product-image="{{ asset($related->image_main) }}"
+                                                    data-product-price="{{ $related->price }}"
+                                                    data-product-original-price="{{ $related->original_price ?? '' }}"
+                                                    data-product-color="{{ $related->color ?? '' }}"
+                                                    data-product-confort="{{ $related->niveau_confort ?? '' }}"
+                                                    data-product-poids="{{ $related->poids }}"
+                                                    title="Commander">
+                                                <i class="ri-shopping-bag-line me-1"></i> Commander
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -464,22 +487,26 @@
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
                         success: function (response) {
-                            Swal.fire({
-                                toast: true,
-                                position: "top-end",
-                                showConfirmButton: false,
-                                timer: 3000,
-                                timerProgressBar: true,
-                                icon: "success",
-                                title: "Votre produit a été ajouté au panier"
-                            });
-                            if (window.cartUtils) {
-                                cartUtils.updateCartOffcanvas(response.cart);
-                            }
-                            if ($('#cartOffcanvas').length) {
-                                $('#cartOffcanvas').offcanvas('show');
+                            const redirectUrl = $this.data('redirect');
+                            if (redirectUrl) {
+                                // Commander direct → redirection checkout
+                                window.location.href = redirectUrl;
                             } else {
-                                console.error('L\'élément #cartOffcanvas n\'existe pas dans le DOM.');
+                                Swal.fire({
+                                    toast: true,
+                                    position: "top-end",
+                                    showConfirmButton: false,
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                    icon: "success",
+                                    title: "Votre produit a été ajouté au panier"
+                                });
+                                if (window.cartUtils) {
+                                    cartUtils.updateCartOffcanvas(response.cart);
+                                }
+                                if ($('#cartOffcanvas').length) {
+                                    $('#cartOffcanvas').offcanvas('show');
+                                }
                             }
                         },
                         error: function (xhr) {

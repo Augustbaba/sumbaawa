@@ -16,7 +16,7 @@ class NihaoTravelController extends Controller
     public function index()
     {
         // Montant par défaut (facilement modifiable)
-        $nihaoAmountXOF = 500000;
+        $nihaoAmountXOF = 3500000;
 
         return view('front.pages.nihao-travel', compact('nihaoAmountXOF'));
     }
@@ -239,7 +239,7 @@ class NihaoTravelController extends Controller
         try {
             // Récupérer les données de la session
             $formData = session('nihao_travel_form_data') ?? $request->formData;
-            $amountXOF = session('nihao_travel_amount_xof') ?? 500000;
+            $amountXOF = session('nihao_travel_amount_xof') ?? 3500000;
             $amountUSD = session('nihao_travel_amount_usd');
             $orderID = session('nihao_travel_order_id') ?? $request->orderID;
 

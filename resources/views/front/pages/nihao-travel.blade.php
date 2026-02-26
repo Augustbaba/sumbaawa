@@ -249,7 +249,7 @@
             </p>
 
             <div class="price-box" id="price-display">
-                {{ FrontHelper::format_currency(500000) }}
+                {{ FrontHelper::format_currency(3500000) }}
             </div>
 
             {{-- FORMULAIRE --}}
@@ -383,12 +383,12 @@
 
                     <div class="summary-row">
                         <span>Forfait d'accompagnement complet :</span>
-                        <span id="package-price" data-xof="500000">{{ FrontHelper::format_currency(500000) }}</span>
+                        <span id="package-price" data-xof="3500000">{{ FrontHelper::format_currency(3500000) }}</span>
                     </div>
 
                     <div class="summary-row">
                         <span>Total à payer :</span>
-                        <span id="total-price" data-total-xof="500000">{{ FrontHelper::format_currency(500000) }}</span>
+                        <span id="total-price" data-total-xof="3500000">{{ FrontHelper::format_currency(3500000) }}</span>
                     </div>
 
                     <div class="summary-row">
@@ -412,7 +412,7 @@
     $clientId = config("services.paypal.{$mode}.client_id");
 
     // Configuration du montant (facilement modifiable)
-    $nihaoAmountXOF = 500000;
+    $nihaoAmountXOF = 3500000;
 
     // Obtenir le taux de change USD depuis la base de données
     $usdRate = \App\Models\Currency::where('code', 'USD')->value('exchange_rate') ?? 600;

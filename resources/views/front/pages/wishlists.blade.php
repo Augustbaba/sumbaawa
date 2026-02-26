@@ -170,7 +170,20 @@
                                                                                         {{ round((($wishlist->produit->original_price - $wishlist->produit->price) / $wishlist->produit->original_price) * 100) }}% Off
                                                                                     </span>
                                                                                 @endif
-                                                                            </h4>
+                                                                            </h4> <br>
+                                                                            <button class="btn btn-solid btn-sm w-100 mt-2 add-to-cart"
+                                                                                    data-redirect="{{ route('checkout') }}"
+                                                                                    data-product-id="{{ $wishlist->produit->id }}"
+                                                                                    data-product-name="{{ $wishlist->produit->name }}"
+                                                                                    data-product-image="{{ asset($wishlist->produit->image_main) }}"
+                                                                                    data-product-price="{{ $wishlist->produit->price }}"
+                                                                                    data-product-original-price="{{ $wishlist->produit->original_price ?? '' }}"
+                                                                                    data-product-color="{{ $wishlist->produit->color ?? '' }}"
+                                                                                    data-product-confort="{{ $wishlist->produit->niveau_confort ?? '' }}"
+                                                                                    data-product-poids="{{ $wishlist->produit->poids }}"
+                                                                                    title="Commander">
+                                                                                <i class="ri-shopping-bag-line me-1"></i> Commander
+                                                                            </button>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -286,22 +299,26 @@
                                 product: productData
                             },
                             success: function (response) {
-                                Swal.fire({
-                                    toast: true,
-                                    position: "top-end",
-                                    showConfirmButton: false,
-                                    timer: 3000,
-                                    timerProgressBar: true,
-                                    icon: "success",
-                                    title: "Votre produit a été ajouté au panier"
-                                });
-                                if (window.cartUtils) {
-                                    cartUtils.updateCartOffcanvas(response.cart);
-                                }
-                                if ($('#cartOffcanvas').length) {
-                                    $('#cartOffcanvas').offcanvas('show');
+                                const redirectUrl = $this.data('redirect');
+                                if (redirectUrl) {
+                                    // Commander direct → redirection checkout
+                                    window.location.href = redirectUrl;
                                 } else {
-                                    console.error('L\'élément #cartOffcanvas n\'existe pas dans le DOM.');
+                                    Swal.fire({
+                                        toast: true,
+                                        position: "top-end",
+                                        showConfirmButton: false,
+                                        timer: 3000,
+                                        timerProgressBar: true,
+                                        icon: "success",
+                                        title: "Votre produit a été ajouté au panier"
+                                    });
+                                    if (window.cartUtils) {
+                                        cartUtils.updateCartOffcanvas(response.cart);
+                                    }
+                                    if ($('#cartOffcanvas').length) {
+                                        $('#cartOffcanvas').offcanvas('show');
+                                    }
                                 }
                             },
                             error: function (xhr) {

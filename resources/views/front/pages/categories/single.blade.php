@@ -200,22 +200,26 @@
                                 product: productData
                             },
                             success: function (response) {
-                                Swal.fire({
-                                    toast: true,
-                                    position: "top-end",
-                                    showConfirmButton: false,
-                                    timer: 3000,
-                                    timerProgressBar: true,
-                                    icon: "success",
-                                    title: "Votre produit a été ajouté au panier"
-                                });
-                                if (window.cartUtils) {
-                                    cartUtils.updateCartOffcanvas(response.cart);
-                                }
-                                if ($('#cartOffcanvas').length) {
-                                    $('#cartOffcanvas').offcanvas('show');
+                                const redirectUrl = $this.data('redirect');
+                                if (redirectUrl) {
+                                    // Commander direct → redirection checkout
+                                    window.location.href = redirectUrl;
                                 } else {
-                                    console.error('L\'élément #cartOffcanvas n\'existe pas dans le DOM.');
+                                    Swal.fire({
+                                        toast: true,
+                                        position: "top-end",
+                                        showConfirmButton: false,
+                                        timer: 3000,
+                                        timerProgressBar: true,
+                                        icon: "success",
+                                        title: "Votre produit a été ajouté au panier"
+                                    });
+                                    if (window.cartUtils) {
+                                        cartUtils.updateCartOffcanvas(response.cart);
+                                    }
+                                    if ($('#cartOffcanvas').length) {
+                                        $('#cartOffcanvas').offcanvas('show');
+                                    }
                                 }
                             },
                             error: function (xhr) {

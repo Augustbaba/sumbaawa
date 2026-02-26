@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             SousCategoryTableSeeder::class,
             ProduitTableSeeder::class,
             PartnerTableSeeder::class,
+            CurrencySeeder::class,
         ]);
     }
 }

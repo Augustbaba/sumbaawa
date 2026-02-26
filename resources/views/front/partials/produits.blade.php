@@ -55,7 +55,20 @@
                                             {{ round((($produit->original_price - $produit->price) / $produit->original_price) * 100) }}% Off
                                         </span>
                                     @endif
-                                </h4>
+                                </h4> <br>
+                                <button class="btn btn-solid btn-sm w-100 mt-2 add-to-cart"
+                                        data-redirect="{{ route('checkout') }}"
+                                        data-product-id="{{ $produit->id }}"
+                                        data-product-name="{{ $produit->name }}"
+                                        data-product-image="{{ asset($produit->image_main) }}"
+                                        data-product-price="{{ $produit->price }}"
+                                        data-product-original-price="{{ $produit->original_price ?? '' }}"
+                                        data-product-color="{{ $produit->color ?? '' }}"
+                                        data-product-confort="{{ $produit->niveau_confort ?? '' }}"
+                                        data-product-poids="{{ $produit->poids }}"
+                                        title="Commander">
+                                    <i class="ri-shopping-bag-line me-1"></i> Commander
+                                </button>
                             </div>
                         </div>
                     </div>
