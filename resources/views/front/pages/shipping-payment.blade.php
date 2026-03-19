@@ -120,15 +120,10 @@
 
     <div class="payment-content">
         @if(session('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
+            <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
-
         @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
+            <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
         <div class="order-summary">
@@ -168,15 +163,37 @@
             Les articles de votre commande ont déjà été payés.
         </div>
 
+        <!-- Choix du mode de paiement -->
         <div class="payment-methods">
-            <div class="payment-method selected" id="paypalMethod">
+            <div class="payment-method selected" id="paypalMethod"
+                 onclick="selectShippingPayment('paypal')">
                 <i class="ri-paypal-line"></i>
                 <div>PayPal</div>
-                <small style="color: var(--text-muted);">Carte bancaire, PayPal</small>
+                <small style="color: #777;">Carte bancaire</small>
+            </div>
+            <div class="payment-method" id="elongoMethod"
+                 onclick="selectShippingPayment('elongopay')">
+                <i class="ri-wallet-3-line" style="color: #b78d65;"></i>
+                <div style="font-weight:600; color:#b78d65;">ElongoPay</div>
+                <small style="color: #777;">Portefeuille digital</small>
             </div>
         </div>
 
-        <div id="paypal-button-container"></div>
+        <!-- Zone PayPal -->
+        <div id="paypal-section">
+            <div id="paypal-button-container"></div>
+        </div>
+
+        <!-- Zone ElongoPay -->
+        <div id="elongopay-section" style="display:none; margin-top:1rem;">
+            <button onclick="openShippingElongoPayWindow()"
+                style="width:100%; padding:1rem;
+                       background:linear-gradient(135deg,#007AFF,#8A2BE2);
+                       color:white; border:none; border-radius:8px;
+                       font-size:1rem; font-weight:700; cursor:pointer;">
+                <i class="ri-wallet-3-line"></i> Payer avec ElongoPay
+            </button>
+        </div>
 
         <div class="mt-4 text-center">
             <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
@@ -189,7 +206,7 @@
 
 @section('scripts')
 @php
-    $mode = config('services.paypal.mode');
+    $mode     = config('services.paypal.mode');
     $clientId = config("services.paypal.{$mode}.client_id");
     $currentCurrency = FrontHelper::current_currency();
 @endphp
@@ -198,14 +215,11 @@
 <script src="https://www.paypal.com/sdk/js?client-id={{ $clientId }}&currency=USD&intent=capture"></script>
 
 <script>
-    // Configuration de la devise
     const CURRENCY_CONFIG = {
-        currentCode: '{{ $currentCurrency->code }}',
-        currentSymbol: '{{ $currentCurrency->symbol }}',
-        currentRate: {{ $currentCurrency->exchange_rate }},
+        currentCode:    '{{ $currentCurrency->code }}',
+        currentSymbol:  '{{ $currentCurrency->symbol }}',
+        currentRate:    {{ $currentCurrency->exchange_rate }},
         shippingFeeXOF: {{ $commande->shipping_fee }},
-
-        // Taux de change (tous basés sur XOF)
         rates: {
             'XOF': 1,
             'EUR': {{ \App\Models\Currency::where('code', 'EUR')->value('exchange_rate') ?? 655.957 }},
@@ -214,33 +228,219 @@
         }
     };
 
-    /**
-     * Convertir XOF vers USD
-     */
+    const COMMANDE_ID = {{ $commande->id }};
+    const ELONGOPAY_BASE = '{{ config("services.elongopay.base_url", "http://localhost:8001") }}';
+
+    // ─── UTILITAIRES ──────────────────────────────────────────────────────────
+
     function convertToUSD(amountXOF) {
         return parseFloat((amountXOF / CURRENCY_CONFIG.rates.USD).toFixed(2));
     }
 
-    /**
-     * Formater un montant
-     */
     function formatAmount(amountInXOF) {
         if (typeof CurrencyHelper !== 'undefined') {
             return CurrencyHelper.format(amountInXOF);
         }
-
-        // Fallback
         const converted = amountInXOF / CURRENCY_CONFIG.currentRate;
-        const decimals = CURRENCY_CONFIG.currentCode === 'XOF' ? 0 : 2;
-        const formatted = converted.toLocaleString('fr-FR', {
+        const decimals  = CURRENCY_CONFIG.currentCode === 'XOF' ? 0 : 2;
+        return converted.toLocaleString('fr-FR', {
             minimumFractionDigits: decimals,
             maximumFractionDigits: decimals
-        });
-        return `${formatted} ${CURRENCY_CONFIG.currentSymbol}`;
+        }) + ' ' + CURRENCY_CONFIG.currentSymbol;
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Charger la config de devise et mettre à jour l'affichage
+    function updatePriceDisplay() {
+        const amountUSD = convertToUSD(CURRENCY_CONFIG.shippingFeeXOF);
+        document.querySelectorAll('[data-amount-xof]').forEach(el => {
+            el.textContent = formatAmount(parseFloat(el.dataset.amountXof));
+        });
+        document.getElementById('usd-equivalent').textContent =
+            `≈ $${amountUSD.toFixed(2)} USD`;
+    }
+
+    // ─── SÉLECTION MODE PAIEMENT ──────────────────────────────────────────────
+
+    let selectedShippingPayment = 'paypal';
+
+    function selectShippingPayment(method) {
+        selectedShippingPayment = method;
+        document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+
+        if (method === 'paypal') {
+            document.getElementById('paypalMethod').classList.add('selected');
+            document.getElementById('paypal-section').style.display = 'block';
+            document.getElementById('elongopay-section').style.display = 'none';
+        } else {
+            document.getElementById('elongoMethod').classList.add('selected');
+            document.getElementById('paypal-section').style.display = 'none';
+            document.getElementById('elongopay-section').style.display = 'block';
+        }
+    }
+
+    // ─── PAYPAL ───────────────────────────────────────────────────────────────
+
+    function renderPayPalButton() {
+        const shippingFeeXOF = CURRENCY_CONFIG.shippingFeeXOF;
+        const amountUSD      = convertToUSD(shippingFeeXOF);
+
+        paypal.Buttons({
+            style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' },
+
+            createOrder: function() {
+                return fetch("{{ route('shipping.paypal.create') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        commande_id: COMMANDE_ID,
+                        amount:      amountUSD,
+                        currency:    CURRENCY_CONFIG.currentCode,
+                        amountInXOF: shippingFeeXOF
+                    })
+                }).then(r => r.json()).then(data => {
+                    if (data.success && data.orderID) return data.orderID;
+                    throw new Error(data.error || 'Erreur création commande PayPal');
+                }).catch(err => {
+                    Swal.fire({ title: 'Erreur', text: err.message, icon: 'error', confirmButtonColor: '#b78d65' });
+                });
+            },
+
+            onApprove: function(data) {
+                return fetch("{{ route('shipping.paypal.capture') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        orderID:     data.orderID,
+                        currency:    CURRENCY_CONFIG.currentCode,
+                        amountInXOF: shippingFeeXOF
+                    })
+                }).then(r => r.json()).then(details => {
+                    if (details.success) {
+                        showShippingSuccess();
+                    } else {
+                        Swal.fire({ title: 'Erreur', text: details.error || 'Paiement non traité', icon: 'error', confirmButtonColor: '#b78d65' });
+                    }
+                }).catch(() => {
+                    Swal.fire({ title: 'Erreur', text: 'Erreur lors du traitement', icon: 'error', confirmButtonColor: '#b78d65' });
+                });
+            },
+
+            onError: function(err) {
+                console.error('Erreur PayPal:', err);
+                Swal.fire({ title: 'Erreur', text: 'Erreur PayPal. Réessayez.', icon: 'error', confirmButtonColor: '#b78d65' });
+            },
+
+            onCancel: function() {
+                Swal.fire({ title: 'Annulé', text: 'Paiement annulé.', icon: 'info', confirmButtonColor: '#b78d65' });
+            }
+        }).render('#paypal-button-container');
+    }
+
+    // ─── ELONGOPAY WINDOW ─────────────────────────────────────────────────────
+
+    let shippingElongoWindow = null;
+
+    function openShippingElongoPayWindow() {
+        const amount = CURRENCY_CONFIG.shippingFeeXOF;
+        const origin = encodeURIComponent(window.location.origin);
+        // On passe le commande_id en paramètre pour le retrouver au capture
+        const ref    = 'SHIP-' + COMMANDE_ID + '-' + Date.now();
+        const url    = `${ELONGOPAY_BASE}/payment?amount=${amount}&origin=${origin}&ref=${ref}`;
+
+        const w    = 500, h = 680;
+        const left = (screen.width  / 2) - (w / 2);
+        const top  = (screen.height / 2) - (h / 2);
+
+        shippingElongoWindow = window.open(
+            url,
+            'elongopay_shipping',
+            `width=${w},height=${h},left=${left},top=${top},resizable=no,scrollbars=yes,toolbar=no,menubar=no,location=no`
+        );
+
+        window.addEventListener('message', handleShippingElongoMessage);
+    }
+
+    function handleShippingElongoMessage(event) {
+        if (!event.data || event.data.type !== 'ELONGOPAY_SUCCESS') return;
+
+        window.removeEventListener('message', handleShippingElongoMessage);
+
+        if (shippingElongoWindow && !shippingElongoWindow.closed) {
+            shippingElongoWindow.close();
+        }
+
+        const { transaction_id, amount_xof } = event.data;
+
+        Swal.fire({
+            title: 'Traitement en cours...',
+            text: 'Enregistrement du paiement',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        fetch("{{ route('shipping.elongopay.capture') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                transaction_id: transaction_id,
+                amount_xof:     amount_xof,
+                commande_id:    COMMANDE_ID,
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showShippingSuccess();
+            } else {
+                Swal.fire({
+                    title: 'Erreur',
+                    text: data.error || 'Erreur lors de l\'enregistrement',
+                    icon: 'error',
+                    confirmButtonColor: '#b78d65'
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({ title: 'Erreur', text: 'Erreur réseau', icon: 'error', confirmButtonColor: '#b78d65' });
+        });
+    }
+
+    // ─── SUCCÈS COMMUN ────────────────────────────────────────────────────────
+
+    function showShippingSuccess() {
+        Swal.fire({
+            title: 'Paiement réussi !',
+            html: `
+                <div style="text-align:center;">
+                    <i class="ri-checkbox-circle-fill" style="font-size:4rem; color:#4CAF50;"></i>
+                    <p style="margin-top:1rem;">
+                        Vos frais de livraison ont été payés avec succès.
+                    </p>
+                </div>
+            `,
+            icon: 'success',
+            confirmButtonText: 'Voir ma commande',
+            confirmButtonColor: '#b78d65',
+            allowOutsideClick: false
+        }).then(result => {
+            if (result.isConfirmed) {
+                window.location.href = "{{ route('shipping.payment.success') }}";
+            }
+        });
+    }
+
+    // ─── INIT ─────────────────────────────────────────────────────────────────
+
+    document.addEventListener('DOMContentLoaded', function () {
         if (typeof CurrencyHelper !== 'undefined') {
             CurrencyHelper.load().then(() => {
                 updatePriceDisplay();
@@ -251,145 +451,5 @@
             renderPayPalButton();
         }
     });
-
-    /**
-     * Mettre à jour l'affichage des prix
-     */
-    function updatePriceDisplay() {
-        const shippingFeeXOF = CURRENCY_CONFIG.shippingFeeXOF;
-        const amountUSD = convertToUSD(shippingFeeXOF);
-
-        // Mettre à jour les montants affichés
-        document.querySelectorAll('[data-amount-xof]').forEach(element => {
-            const amountXOF = parseFloat(element.dataset.amountXof);
-            element.textContent = formatAmount(amountXOF);
-        });
-
-        // Afficher l'équivalent en USD
-        document.getElementById('usd-equivalent').textContent =
-            `≈ $${amountUSD.toFixed(2)} USD`;
-    }
-
-    /**
-     * Initialiser le bouton PayPal
-     */
-    function renderPayPalButton() {
-        const shippingFeeXOF = CURRENCY_CONFIG.shippingFeeXOF;
-        const amountUSD = convertToUSD(shippingFeeXOF);
-
-        paypal.Buttons({
-            style: {
-                layout: 'vertical',
-                color:  'gold',
-                shape:  'rect',
-                label:  'paypal'
-            },
-
-            createOrder: function(data, actions) {
-                return fetch("{{ route('shipping.paypal.create') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        commande_id: {{ $commande->id }},
-                        amount: amountUSD,
-                        currency: CURRENCY_CONFIG.currentCode,
-                        amountInXOF: shippingFeeXOF
-                    })
-                }).then(function(res) {
-                    return res.json();
-                }).then(function(data) {
-                    if (data.success && data.orderID) {
-                        return data.orderID;
-                    } else {
-                        throw new Error(data.error || 'Erreur lors de la création du paiement');
-                    }
-                }).catch(function(error) {
-                    console.error('Erreur création commande:', error);
-                    Swal.fire({
-                        title: 'Erreur',
-                        text: error.message || 'Impossible de créer la commande PayPal',
-                        icon: 'error',
-                        confirmButtonColor: '#b78d65'
-                    });
-                });
-            },
-
-            onApprove: function(data, actions) {
-                return fetch("{{ route('shipping.paypal.capture') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        orderID: data.orderID,
-                        currency: CURRENCY_CONFIG.currentCode,
-                        amountInXOF: shippingFeeXOF
-                    })
-                }).then(function(res) {
-                    return res.json();
-                }).then(function(details) {
-                    if (details.success) {
-                        Swal.fire({
-                            title: 'Paiement réussi!',
-                            html: `
-                                <div style="text-align: center;">
-                                    <i class="ri-checkbox-circle-fill" style="font-size: 4rem; color: #4CAF50;"></i>
-                                    <p style="margin-top: 1rem;">
-                                        Votre paiement des frais de livraison a été effectué avec succès.
-                                    </p>
-                                </div>
-                            `,
-                            icon: 'success',
-                            confirmButtonText: 'Voir ma commande',
-                            confirmButtonColor: '#b78d65',
-                            allowOutsideClick: false
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = "{{ route('shipping.payment.success') }}";
-                            }
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Erreur de paiement',
-                            text: details.error || 'Le paiement n\'a pas pu être traité.',
-                            icon: 'error',
-                            confirmButtonColor: '#b78d65'
-                        });
-                    }
-                }).catch(function(error) {
-                    console.error('Erreur capture paiement:', error);
-                    Swal.fire({
-                        title: 'Erreur',
-                        text: 'Une erreur est survenue lors du traitement du paiement.',
-                        icon: 'error',
-                        confirmButtonColor: '#b78d65'
-                    });
-                });
-            },
-
-            onError: function(err) {
-                console.error('Erreur PayPal:', err);
-                Swal.fire({
-                    title: 'Erreur',
-                    text: 'Une erreur est survenue lors du traitement du paiement. Veuillez réessayer.',
-                    icon: 'error',
-                    confirmButtonColor: '#b78d65'
-                });
-            },
-
-            onCancel: function(data) {
-                Swal.fire({
-                    title: 'Paiement annulé',
-                    text: 'Vous avez annulé le processus de paiement.',
-                    icon: 'info',
-                    confirmButtonColor: '#b78d65'
-                });
-            }
-        }).render('#paypal-button-container');
-    }
 </script>
 @endsection

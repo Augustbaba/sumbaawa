@@ -27,6 +27,7 @@ return new class extends Migration
             $table->text('observations')->nullable()->after('estimated_delivery');
             $table->string('shipping_payment_id')->nullable()->after('shipping_status');
             $table->timestamp('shipping_payment_date')->nullable()->after('shipping_payment_id');
+            $table->string('shipping_payment_method')->nullable()->after('shipping_payment_date');
             $table->boolean('is_received')->default(false)->after('shipping_payment_date');
             $table->timestamp('received_at')->nullable()->after('is_received');
         });
@@ -59,7 +60,8 @@ return new class extends Migration
                 'shipping_payment_id',
                 'shipping_payment_date',
                 'is_received',
-                'received_at'
+                'received_at',
+                'shipping_payment_method',
             ]);
         });
         Schema::table('commander', function (Blueprint $table) {

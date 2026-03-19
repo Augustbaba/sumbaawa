@@ -820,29 +820,40 @@
 
     // Fonction pour afficher la sélection du mode de paiement
     function showPaymentMethodSelection() {
-        const totalInUSD = getTotalInUSD();
-        const formattedTotalInCurrentCurrency = formatAmount(CURRENCY_CONFIG.totalInXOF);
+        const formattedTotal = formatAmount(CURRENCY_CONFIG.totalInXOF);
+        const totalInUSD     = getTotalInUSD();
 
         Swal.fire({
             title: 'Mode de paiement',
             html: `
                 <div style="text-align: center;">
-                    <p style="margin-bottom: 1.5rem;">Choisissez votre mode de paiement</p>
                     <div style="margin-bottom: 1.5rem; font-size: 1.1rem;">
                         <strong>Montant à payer:</strong><br>
-                        ${formattedTotalInCurrentCurrency}<br>
-                        <span style="font-size: 0.9em; color: var(--text-muted);">
-                            (≈ $${totalInUSD.toFixed(2)} USD)
+                        <span style="font-size:1.3rem; color:var(--accent-gold); font-weight:700;">
+                            ${formattedTotal}
                         </span>
                     </div>
                     <div class="payment-methods">
-                        <div class="payment-method" id="paypalMethod">
-                            <i class="ri-paypal-line"></i>
-                            <div>PayPal</div>
-                            <small style="color: var(--text-muted);">Carte bancaire, PayPal</small>
+                        <div class="payment-method" id="paypalMethod" onclick="selectPaymentMethod('paypal')">
+                            <i class="ri-paypal-line" style="font-size:2rem;"></i>
+                            <div style="font-weight:600;">PayPal</div>
+                            <small style="color:var(--text-muted);">Carte bancaire</small>
+                        </div>
+                        <div class="payment-method" id="elongoMethod" onclick="selectPaymentMethod('elongopay')">
+                            <i class="ri-wallet-3-line" style="font-size:2rem; color:var(--accent-gold);"></i>
+                            <div style="font-weight:600; color:var(--accent-gold);">ElongoPay</div>
+                            <small style="color:var(--text-muted);">Portefeuille digital</small>
                         </div>
                     </div>
-                    <div id="paypal-button-container" style="margin-top: 1.5rem;"></div>
+                    <div id="paypal-button-container" style="margin-top:1.5rem; display:none; max-width:400px; margin-left:auto; margin-right:auto;"></div>
+                    <div id="elongopay-section" style="margin-top:1.5rem; display:none;">
+                        <button onclick="openElongoPayWindow()"
+                            style="width:100%; padding:1rem; background:linear-gradient(135deg,#007AFF,#8A2BE2);
+                                color:white; border:none; border-radius:8px; font-size:1rem;
+                                font-weight:700; cursor:pointer; font-family:inherit;">
+                            <i class="ri-wallet-3-line"></i> Payer avec ElongoPay
+                        </button>
+                    </div>
                 </div>
             `,
             showConfirmButton: false,
@@ -851,12 +862,128 @@
             cancelButtonColor: '#777',
             width: '600px',
             allowOutsideClick: false,
-            didOpen: () => {
-                const paypalMethod = document.getElementById('paypalMethod');
-                selectedPaymentMethod = 'paypal';
-                paypalMethod.classList.add('selected');
-                renderPayPalButton();
+        });
+    }
+
+    function selectPaymentMethod(method) {
+        selectedPaymentMethod = method;
+
+        document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+
+        if (method === 'paypal') {
+            document.getElementById('paypalMethod').classList.add('selected');
+            document.getElementById('paypal-button-container').style.display = 'block';
+            document.getElementById('elongopay-section').style.display = 'none';
+            renderPayPalButton();
+        } else {
+            document.getElementById('elongoMethod').classList.add('selected');
+            document.getElementById('paypal-button-container').style.display = 'none';
+            document.getElementById('elongopay-section').style.display = 'block';
+        }
+    }
+
+    // ─── ELONGOPAY WINDOW ──────────────────────────────────────────────────────
+    let elongoPayWindow = null;
+
+    function openElongoPayWindow() {
+        const amount  = CURRENCY_CONFIG.totalInXOF;
+        const origin  = encodeURIComponent(window.location.origin);
+        const ref     = 'SUMB-' + Date.now();
+        const url     = `http://localhost:8001/payment?amount=${amount}&origin=${origin}&ref=${ref}`;
+
+        // Dimensions et centrage
+        const w = 500, h = 680;
+        const left = (screen.width  / 2) - (w / 2);
+        const top  = (screen.height / 2) - (h / 2);
+
+        elongoPayWindow = window.open(
+            url,
+            'elongopay_payment',
+            `width=${w},height=${h},left=${left},top=${top},resizable=no,scrollbars=yes,toolbar=no,menubar=no,location=no`
+        );
+
+        // Écouter la réponse de la popup
+        window.addEventListener('message', handleElongoPayMessage);
+    }
+
+    function handleElongoPayMessage(event) {
+        // Optionnel en local : vérifier l'origine
+        // if (event.origin !== 'http://localhost:8001') return;
+
+        if (!event.data || event.data.type !== 'ELONGOPAY_SUCCESS') return;
+
+        // Nettoyer le listener
+        window.removeEventListener('message', handleElongoPayMessage);
+
+        const { transaction_id, amount_xof } = event.data;
+
+        // Fermer la popup si pas encore fermée
+        if (elongoPayWindow && !elongoPayWindow.closed) {
+            elongoPayWindow.close();
+        }
+
+        // Fermer le modal SweetAlert
+        Swal.close();
+
+        // Créer la commande sur Sumbaawa
+        Swal.fire({
+            title: 'Traitement en cours...',
+            text: 'Enregistrement de votre commande',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        fetch("{{ route('elongopay.capture') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                transaction_id:    transaction_id,
+                amount_xof:        amount_xof,
+                requiresDelivery:  requiresDelivery,
+                deliveryInfo:      deliveryFormData
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: 'Paiement réussi !',
+                    html: `
+                        <div style="text-align:center;">
+                            <i class="ri-checkbox-circle-fill" style="font-size:4rem; color:#4CAF50;"></i>
+                            <p style="margin-top:1rem; font-size:1.1rem;">
+                                Paiement ElongoPay effectué avec succès.
+                            </p>
+                            <p style="font-size:0.9rem;">
+                                Code commande: <strong>${data.order_code}</strong><br>
+                                Vous recevrez un email de confirmation.
+                            </p>
+                        </div>
+                    `,
+                    icon: 'success',
+                    confirmButtonText: 'Voir ma commande',
+                    confirmButtonColor: '#b78d65',
+                    allowOutsideClick: false
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        window.location.href = "{{ route('order.confirmation') }}?order_id=" + data.order_id;
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Erreur',
+                    text: data.message || 'Erreur lors de l\'enregistrement de la commande',
+                    icon: 'error',
+                    confirmButtonColor: '#b78d65'
+                });
             }
+        })
+        .catch(() => {
+            Swal.fire({ title: 'Erreur', text: 'Erreur réseau', icon: 'error', confirmButtonColor: '#b78d65' });
         });
     }
 

@@ -135,6 +135,10 @@
                         <a href="{{ route('admin.nihao-travel.index') }}"
                            >Nihao Travel</a>
                     </li>
+                    <li>
+                        <a href="{{ route('admin.paypal-balance.index') }}"
+                           >Paypal Withdrawal</a>
+                    </li>
                 </ul>
             </li>
             <li>

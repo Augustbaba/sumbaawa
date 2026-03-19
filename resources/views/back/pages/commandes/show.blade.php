@@ -125,6 +125,13 @@
                                             <small>{{ \Carbon\Carbon::parse($commande->shipping_payment_date)->format('d/m/Y H:i') }}</small>
                                         </p>
                                         @endif
+
+                                        @if($commande->shipping_payment_method)
+                                        <p class="mb-0">
+                                            <strong>Méthode de paiement frais :</strong>
+                                            <small>{{ $commande->shipping_payment_method }}</small>
+                                        </p>
+                                        @endif
                                     </div>
                                     @endif
                                 </div>

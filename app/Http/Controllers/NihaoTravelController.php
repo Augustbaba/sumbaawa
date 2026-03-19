@@ -363,4 +363,75 @@ class NihaoTravelController extends Controller
 
         return view('front.pages.nihao-travel-cancel');
     }
+
+    /**
+     * Capturer le paiement ElongoPay pour Nihao Travel
+     */
+    public function captureElongoPay(Request $request)
+    {
+        try {
+            $request->validate([
+                'transaction_id' => 'required|string',
+                'amount_xof'     => 'required|numeric|min:1',
+                'form_data'      => 'required|array',
+                'form_data.first_name'      => 'required|string|max:100',
+                'form_data.last_name'       => 'required|string|max:100',
+                'form_data.email'           => 'required|email|max:100',
+                'form_data.phone'           => 'required|string|max:20',
+                'form_data.canton_edition'  => 'required|string',
+            ]);
+
+            $formData  = $request->form_data;
+            $amountXOF = 3500000; // toujours côté serveur, jamais celui du client
+
+            $code = 'TRAVEL-' . strtoupper(Str::random(8));
+
+            $travel = Travel::create([
+                'code'           => $code,
+                'first_name'     => $formData['first_name'],
+                'last_name'      => $formData['last_name'],
+                'email'          => $formData['email'],
+                'phone'          => $formData['phone'],
+                'company'        => $formData['company'] ?? null,
+                'canton_edition' => $formData['canton_edition'],
+                'additional_info'=> $formData['additional_info'] ?? null,
+                'amount_xof'     => $amountXOF,
+                'payment_method' => 'elongopay',
+                'payment_status' => 'paid',
+                'status'         => 'pending',
+                'paypal_order_id'       => null,
+                'paypal_transaction_id' => $request->transaction_id,
+                'paypal_details'        => null,
+            ]);
+
+            try {
+                Mail::to($travel->email)->send(new NihaoTravelConfirmation($travel));
+            } catch (\Exception $e) {
+                Log::error('Erreur email Travel ElongoPay: ' . $e->getMessage());
+            }
+
+            Log::info('Travel ElongoPay créé', [
+                'id'             => $travel->id,
+                'code'           => $code,
+                'transaction_id' => $request->transaction_id,
+                'amount_xof'     => $amountXOF,
+            ]);
+
+            return response()->json([
+                'success'     => true,
+                'travel_id'   => $travel->id,
+                'travel_code' => $code,
+                'message'     => 'Inscription Nihao Travel confirmée avec succès',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur captureElongoPay Travel: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'error'   => 'Erreur lors de la création de l\'inscription: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

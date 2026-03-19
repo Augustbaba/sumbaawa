@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Commande extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'type_id', 'code', 'address', 'status', 'payment_method', 'payment_status', 'payment_id', 'payment_email', 'total_amount', 'delivery_method', 'delivery_info', 'estimated_delivery', 'shipping_status', 'shipping_fee', 'observations', 'shipping_payment_id', 'shipping_payment_date', 'is_received', 'received_at'];
+    protected $fillable = ['user_id', 'type_id', 'code', 'address', 'status', 'payment_method', 'payment_status', 'payment_id', 'payment_email', 'total_amount', 'delivery_method', 'delivery_info', 'estimated_delivery', 'shipping_status', 'shipping_fee', 'observations', 'shipping_payment_id', 'shipping_payment_date', 'is_received', 'received_at', 'shipping_payment_method'];
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -398,8 +398,39 @@
                 </div>
             </form>
 
-            {{-- PAYPAL --}}
+            {{-- ZONE PAIEMENT : PayPal + ElongoPay --}}
+            <div class="payment-methods-selector" style="display:flex; gap:1rem; margin:20px 0;">
+                <div class="payment-opt selected" id="opt-paypal"
+                    onclick="selectNihaoPayment('paypal')"
+                    style="flex:1; text-align:center; padding:1rem; border:2px solid #b78d65;
+                            border-radius:8px; cursor:pointer; background:rgba(183,141,101,0.05);">
+                    <i class="ri-paypal-line" style="font-size:2rem; color:#b78d65;"></i>
+                    <div style="font-weight:600;">PayPal</div>
+                    <small style="color:#777;">Carte bancaire</small>
+                </div>
+                <div class="payment-opt" id="opt-elongopay"
+                    onclick="selectNihaoPayment('elongopay')"
+                    style="flex:1; text-align:center; padding:1rem; border:2px solid #ddd;
+                            border-radius:8px; cursor:pointer;">
+                    <i class="ri-wallet-3-line" style="font-size:2rem; color:#b78d65;"></i>
+                    <div style="font-weight:600; color:#b78d65;">ElongoPay</div>
+                    <small style="color:#777;">Portefeuille digital</small>
+                </div>
+            </div>
+
+            {{-- PayPal --}}
             <div id="paypal-button-container" class="paypal-container"></div>
+
+            {{-- ElongoPay --}}
+            <div id="elongopay-nihao-section" style="display:none; margin-top:1rem;">
+                <button onclick="openNihaoElongoPayWindow()"
+                    style="width:100%; padding:1rem;
+                        background:linear-gradient(135deg,#007AFF,#8A2BE2);
+                        color:white; border:none; border-radius:8px;
+                        font-size:1rem; font-weight:700; cursor:pointer;">
+                    <i class="ri-wallet-3-line"></i> Payer avec ElongoPay
+                </button>
+            </div>
         </div>
     </div>
 </section>
@@ -408,107 +439,94 @@
 
 @section('scripts')
 @php
-    $mode = config('services.paypal.mode');
-    $clientId = config("services.paypal.{$mode}.client_id");
-
-    // Configuration du montant (facilement modifiable)
+    $mode          = config('services.paypal.mode');
+    $clientId      = config("services.paypal.{$mode}.client_id");
     $nihaoAmountXOF = 3500000;
-
-    // Obtenir le taux de change USD depuis la base de données
-    $usdRate = \App\Models\Currency::where('code', 'USD')->value('exchange_rate') ?? 600;
-    $amountUSD = $nihaoAmountXOF / $usdRate;
+    $usdRate       = \App\Models\Currency::where('code', 'USD')->value('exchange_rate') ?? 600;
+    $amountUSD     = $nihaoAmountXOF / $usdRate;
 @endphp
 
 <script src="https://www.paypal.com/sdk/js?client-id={{ $clientId }}&currency=USD&intent=capture"></script>
 
 <script>
-    /* ==========================
-       CONFIGURATION DU MONTANT
-    ========================== */
-    const NIHAO_AMOUNT_XOF = {{ $nihaoAmountXOF }};
+    const NIHAO_AMOUNT_XOF  = {{ $nihaoAmountXOF }};
+    const ELONGOPAY_BASE    = '{{ config("services.elongopay.base_url", "http://localhost:8001") }}';
 
-    // Configuration des devises
     const CURRENCY_CONFIG = {
-        currentCode: '{{ FrontHelper::current_currency()->code }}',
+        currentCode:   '{{ FrontHelper::current_currency()->code }}',
         currentSymbol: '{{ FrontHelper::current_currency()->symbol }}',
-        currentRate: {{ FrontHelper::current_currency()->exchange_rate }},
-        usdRate: {{ $usdRate }},
-
-        // Convertir XOF vers USD
-        convertToUSD: function(amountXOF) {
-            const amountUSD = amountXOF / this.usdRate;
-            return parseFloat(amountUSD.toFixed(2));
-        },
-
-        // Formater un montant
-        formatAmount: function(amountXOF) {
-            // L'affichage est géré par le backend via FrontHelper::format_currency
-            return amountXOF.toLocaleString('fr-FR') + ' XOF';
-        }
+        usdRate:       {{ $usdRate }},
+        convertToUSD:  (xof) => parseFloat((xof / {{ $usdRate }}).toFixed(2)),
     };
 
-    // Calculer le montant en USD
     const amountUSD = CURRENCY_CONFIG.convertToUSD(NIHAO_AMOUNT_XOF);
 
-    // Mettre à jour l'affichage de l'équivalent USD
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('total-usd').textContent = amountUSD.toFixed(2) + ' USD';
     });
 
-    // Fonction pour récupérer les données du formulaire
-    function getFormData() {
-        const form = document.getElementById('nihaoRegistrationForm');
-        const formData = new FormData(form);
-        const data = {};
+    // ─── FORMULAIRE ───────────────────────────────────────────────────────────
 
+    function getFormData() {
+        const form     = document.getElementById('nihaoRegistrationForm');
+        const formData = new FormData(form);
+        const data     = {};
         for (let [key, value] of formData.entries()) {
             data[key] = value;
         }
-
-        // Ajouter les informations de prix
         data.total_amount_xof = NIHAO_AMOUNT_XOF;
         data.total_amount_usd = amountUSD;
-
         return data;
     }
 
-    // Valider le formulaire
     function validateForm() {
-        const requiredFields = ['first_name', 'last_name', 'email', 'phone', 'canton_edition'];
-        let isValid = true;
-
-        requiredFields.forEach(fieldName => {
-            const field = document.querySelector(`[name="${fieldName}"]`);
+        const required = ['first_name', 'last_name', 'email', 'phone', 'canton_edition'];
+        let valid = true;
+        required.forEach(name => {
+            const field = document.querySelector(`[name="${name}"]`);
             if (!field.value.trim()) {
-                isValid = false;
+                valid = false;
                 field.style.borderColor = '#dc3545';
             } else {
                 field.style.borderColor = '#ddd';
             }
         });
-
-        if (!isValid) {
-            alert('Veuillez remplir tous les champs obligatoires (*)');
-            return false;
-        }
-
-        return true;
+        if (!valid) alert('Veuillez remplir tous les champs obligatoires (*)');
+        return valid;
     }
 
-    // Initialiser PayPal
-    paypal.Buttons({
-        style: {
-            layout: 'vertical',
-            color: 'gold',
-            shape: 'rect',
-            label: 'paypal'
-        },
+    // ─── SÉLECTION MODE PAIEMENT ──────────────────────────────────────────────
 
-        createOrder: function(data, actions) {
-            // Valider le formulaire avant de créer la commande
-            if (!validateForm()) {
-                return false;
-            }
+    let selectedNihaoPayment = 'paypal';
+
+    function selectNihaoPayment(method) {
+        selectedNihaoPayment = method;
+
+        document.querySelectorAll('.payment-opt').forEach(el => {
+            el.style.borderColor      = '#ddd';
+            el.style.backgroundColor  = 'transparent';
+        });
+
+        const active = document.getElementById('opt-' + method);
+        active.style.borderColor     = '#b78d65';
+        active.style.backgroundColor = 'rgba(183,141,101,0.05)';
+
+        if (method === 'paypal') {
+            document.getElementById('paypal-button-container').style.display   = 'block';
+            document.getElementById('elongopay-nihao-section').style.display   = 'none';
+        } else {
+            document.getElementById('paypal-button-container').style.display   = 'none';
+            document.getElementById('elongopay-nihao-section').style.display   = 'block';
+        }
+    }
+
+    // ─── PAYPAL ───────────────────────────────────────────────────────────────
+
+    paypal.Buttons({
+        style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' },
+
+        createOrder: function() {
+            if (!validateForm()) return false;
 
             return fetch("{{ route('nihao.travel.create-order') }}", {
                 method: 'POST',
@@ -517,57 +535,109 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({
-                    amount: amountUSD,
+                    amount:    amountUSD,
                     amountXOF: NIHAO_AMOUNT_XOF,
-                    formData: getFormData()
+                    formData:  getFormData()
                 })
-            }).then(function(res) {
-                return res.json();
-            }).then(function(data) {
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+            }).then(r => r.json()).then(data => {
+                if (data.error) throw new Error(data.error);
                 return data.orderID;
-            }).catch(function(error) {
-                console.error('Erreur lors de la création de la commande:', error);
+            }).catch(err => {
+                console.error(err);
                 alert('Impossible de créer la commande. Veuillez réessayer.');
             });
         },
 
-        onApprove: function(data, actions) {
+        onApprove: function(data) {
             return fetch("{{ route('nihao.travel.capture-order') }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({
-                    orderID: data.orderID,
-                    formData: getFormData()
-                })
-            }).then(function(res) {
-                return res.json();
-            }).then(function(details) {
+                body: JSON.stringify({ orderID: data.orderID, formData: getFormData() })
+            }).then(r => r.json()).then(details => {
                 if (details.success) {
-                    // Redirection vers la page de confirmation
-                    window.location.href = "{{ route('nihao.travel.confirmation') }}?order_id=" + details.travel_id + "&code=" + details.travel_code;
+                    window.location.href = "{{ route('nihao.travel.confirmation') }}?order_id="
+                        + details.travel_id + "&code=" + details.travel_code;
                 } else {
                     alert('Erreur lors du paiement: ' + (details.error || 'Erreur inconnue'));
                 }
-            }).catch(function(error) {
-                console.error('Erreur lors de la capture du paiement:', error);
-                alert('Une erreur est survenue lors du traitement du paiement.');
-            });
+            }).catch(() => alert('Une erreur est survenue lors du traitement du paiement.'));
         },
 
-        onError: function(err) {
-            console.error('Erreur PayPal:', err);
-            alert('Une erreur est survenue lors du traitement du paiement. Veuillez réessayer.');
-        },
-
-        onCancel: function(data) {
-            alert('Vous avez annulé le processus de paiement.');
-        }
+        onError:  (err) => { console.error(err); alert('Erreur PayPal. Veuillez réessayer.'); },
+        onCancel: ()    => { alert('Paiement annulé.'); }
     }).render('#paypal-button-container');
+
+    // ─── ELONGOPAY WINDOW ─────────────────────────────────────────────────────
+
+    let nihaoElongoWindow = null;
+
+    function openNihaoElongoPayWindow() {
+        if (!validateForm()) return;
+
+        const origin = encodeURIComponent(window.location.origin);
+        const ref    = 'NIHAO-' + Date.now();
+        const url    = `${ELONGOPAY_BASE}/payment?amount=${NIHAO_AMOUNT_XOF}&origin=${origin}&ref=${ref}`;
+
+        const w    = 500, h = 680;
+        const left = (screen.width  / 2) - (w / 2);
+        const top  = (screen.height / 2) - (h / 2);
+
+        nihaoElongoWindow = window.open(
+            url,
+            'elongopay_nihao',
+            `width=${w},height=${h},left=${left},top=${top},resizable=no,scrollbars=yes,toolbar=no,menubar=no,location=no`
+        );
+
+        window.addEventListener('message', handleNihaoElongoMessage);
+    }
+
+    function handleNihaoElongoMessage(event) {
+        if (!event.data || event.data.type !== 'ELONGOPAY_SUCCESS') return;
+
+        window.removeEventListener('message', handleNihaoElongoMessage);
+
+        if (nihaoElongoWindow && !nihaoElongoWindow.closed) {
+            nihaoElongoWindow.close();
+        }
+
+        const { transaction_id, amount_xof } = event.data;
+
+        // Indicateur de chargement
+        const btn = document.querySelector('#elongopay-nihao-section button');
+        btn.disabled    = true;
+        btn.textContent = 'Traitement en cours...';
+
+        fetch("{{ route('nihao.travel.elongopay.capture') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                transaction_id: transaction_id,
+                amount_xof:     amount_xof,
+                form_data:      getFormData(),
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = "{{ route('nihao.travel.confirmation') }}?order_id="
+                    + data.travel_id + "&code=" + data.travel_code;
+            } else {
+                alert('Erreur: ' + (data.error || 'Erreur inconnue'));
+                btn.disabled    = false;
+                btn.innerHTML   = '<i class="ri-wallet-3-line"></i> Payer avec ElongoPay';
+            }
+        })
+        .catch(() => {
+            alert('Erreur réseau. Veuillez réessayer.');
+            btn.disabled  = false;
+            btn.innerHTML = '<i class="ri-wallet-3-line"></i> Payer avec ElongoPay';
+        });
+    }
 </script>
 @endsection

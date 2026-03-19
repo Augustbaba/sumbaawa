@@ -58,4 +58,8 @@ return [
         'validate_ssl'   => env('PAYPAL_VALIDATE_SSL', true), // Validate SSL when creating api client.
     ],
 
+    'elongopay' => [
+        'base_url' => env('ELONGOPAY_BASE_URL', 'http://localhost:8001'),
+    ],
+
 ];

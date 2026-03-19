@@ -126,7 +126,7 @@
                 <i class="ri-dashboard-line me-2"></i>Tableau de bord
             </a>
 
-            <a href="{{ route('user.orders.show', $commande) }}" class="btn btn-outline-primary">
+            <a href="{{ route('user.orders.show', $commande->code) }}" class="btn btn-outline-primary">
                 <i class="ri-truck-line me-2"></i>Suivre ma commande
             </a>
 

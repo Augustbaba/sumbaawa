@@ -4,45 +4,41 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Confirmation paiement frais de livraison</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #28a745; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-        .content { padding: 30px; background: #f9f9f9; border-radius: 0 0 8px 8px; }
-        .success-icon { font-size: 3rem; color: #28a745; text-align: center; margin-bottom: 20px; }
-        .details-box { background: white; border: 2px solid #28a745; border-radius: 8px; padding: 20px; margin: 20px 0; }
-        .details-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-        .details-table td { padding: 8px; border-bottom: 1px solid #eee; }
-        .details-table td:first-child { font-weight: bold; width: 40%; }
-        .next-steps { background: #e8f4fd; padding: 15px; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; padding: 20px; color: #777; font-size: 12px; }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Paiement confirmé</h1>
-            <p>Frais de livraison - Commande #{{ $commande->code }}</p>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4;">
+    <div style="max-width: 600px; margin: 20px auto; padding: 0; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+
+        <!-- Header -->
+        <div style="background: #28a745; color: white; padding: 20px; text-align: center;">
+            <h1 style="margin: 0 0 10px 0; font-size: 24px;">Paiement confirmé</h1>
+            <p style="margin: 0; font-size: 16px;">Frais de livraison - Commande #{{ $commande->code }}</p>
         </div>
 
-        <div class="content">
-            <div class="success-icon">✓</div>
+        <!-- Content -->
+        <div style="padding: 30px; background: #f9f9f9;">
 
-            <p>Bonjour {{ $user->name }},</p>
+            <!-- Success Icon -->
+            <div style="font-size: 3rem; color: #28a745; text-align: center; margin-bottom: 20px;">✓</div>
 
-            <p>Nous vous confirmons le paiement des frais de livraison pour votre commande <strong>#{{ $commande->code }}</strong>.</p>
+            <p style="margin: 0 0 15px 0;">Bonjour {{ $user->name }},</p>
 
-            <div class="details-box">
-                <h3 style="margin-top: 0; color: #28a745;">Détails du paiement</h3>
+            <p style="margin: 0 0 15px 0;">
+                Nous vous confirmons le paiement des frais de livraison pour votre commande
+                <strong style="font-weight: bold;">#{{ $commande->code }}</strong>.
+            </p>
 
-                <table class="details-table">
+            <!-- Details Box -->
+            <div style="background: white; border: 2px solid #28a745; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h3 style="margin: 0 0 15px 0; color: #28a745; font-size: 18px;">Détails du paiement</h3>
+
+                <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
                     <tr>
-                        <td>Montant payé :</td>
-                        <td>{{ FrontHelper::format_currency($commande->shipping_fee) }} </td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; width: 40%;">Montant payé :</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">{{ FrontHelper::format_currency($commande->shipping_fee) }}</td>
                     </tr>
                     <tr>
-                        <td>Type de livraison :</td>
-                        <td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Type de livraison :</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">
                             @if($commande->delivery_method == 'tinda_awa')
                                 Tinda Awa
                             @else
@@ -51,47 +47,57 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Date du paiement :</td>
-                        <td>{{ now()->format('d/m/Y H:i') }}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Date du paiement :</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">{{ now()->format('d/m/Y H:i') }}</td>
                     </tr>
                 </table>
             </div>
 
-            <div class="next-steps">
-                <h4 style="margin-top: 0; color: #0d6efd;">Prochaines étapes :</h4>
+            <!-- Next Steps -->
+            <div style="background: #e8f4fd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #0d6efd; font-size: 16px;">Prochaines étapes :</h4>
 
                 @if($commande->delivery_method == 'tinda_awa')
-                    <p><strong>Livraison en cours :</strong><br>
-                    Votre commande va maintenant être expédiée via Tinda Awa.</p>
+                    <p style="margin: 0 0 10px 0;">
+                        <strong style="font-weight: bold;">Livraison en cours :</strong><br>
+                        Votre commande va maintenant être expédiée via Tinda Awa.
+                    </p>
 
                     @if($commande->estimated_delivery)
-                    <p><strong>📅 Date de livraison estimée :</strong><br>
-                    {{ \Carbon\Carbon::parse($commande->estimated_delivery)->format('d/m/Y') }}</p>
+                    <p style="margin: 0 0 10px 0;">
+                        <strong style="font-weight: bold;">📅 Date de livraison estimée :</strong><br>
+                        {{ \Carbon\Carbon::parse($commande->estimated_delivery)->format('d/m/Y') }}
+                    </p>
                     @endif
 
-                    <p>Vous recevrez une notification lorsque votre commande sera expédiée.</p>
+                    <p style="margin: 0;">Vous recevrez une notification lorsque votre commande sera expédiée.</p>
 
                 @else
-                    <p><strong>Prêt pour retrait :</strong><br>
-                    Votre commande est maintenant disponible pour être récupérée par votre cargo.</p>
+                    <p style="margin: 0 0 10px 0;">
+                        <strong style="font-weight: bold;">Prêt pour retrait :</strong><br>
+                        Votre commande est maintenant disponible pour être récupérée par votre cargo.
+                    </p>
 
-                    <p><strong>📍 Adresse de retrait :</strong><br>
-                    {{ $commande->address }}</p>
+                    <p style="margin: 0;">
+                        <strong style="font-weight: bold;">📍 Adresse de retrait :</strong><br>
+                        {{ $commande->address }}
+                    </p>
                 @endif
             </div>
 
-            <p>Vous pouvez suivre l'état de votre commande depuis votre espace client sur notre site.</p>
+            <p style="margin: 0 0 15px 0;">Vous pouvez suivre l'état de votre commande depuis votre espace client sur notre site.</p>
 
-            <p style="margin-top: 30px;">
+            <p style="margin: 30px 0 0 0;">
                 Cordialement,<br>
-                <strong>L'équipe {{ config('app.name') }}</strong>
+                <strong style="font-weight: bold;">L'équipe {{ config('app.name') }}</strong>
             </p>
         </div>
 
-        <div class="footer">
-            <p>
+        <!-- Footer -->
+        <div style="text-align: center; padding: 20px; color: #777; font-size: 12px; background: #ffffff; border-top: 1px solid #eee;">
+            <p style="margin: 0;">
                 Pour toute question, contactez-nous à support@sumbaawa.com<br>
-                <small>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</small>
+                <small style="font-size: 11px;">Cet email a été envoyé automatiquement, merci de ne pas y répondre.</small>
             </p>
         </div>
     </div>

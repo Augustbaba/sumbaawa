@@ -347,6 +347,7 @@ class ShippingPaymentController extends Controller
                 // Mettre à jour la commande avec les informations de devise
                 $commande->shipping_status = 'fee_paid';
                 $commande->shipping_payment_id = $result['id'];
+                $commande->shipping_payment_method = 'paypal';
                 $commande->shipping_payment_date = now();
                 // $commande->shipping_amount_usd = $amountUSD;
                 // $commande->shipping_currency = $currency;
@@ -458,6 +459,70 @@ class ShippingPaymentController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Erreur envoi email confirmation frais de livraison: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Capturer le paiement ElongoPay des frais de livraison
+     */
+    public function captureElongoPay(Request $request)
+    {
+        try {
+            $request->validate([
+                'transaction_id' => 'required|string',
+                'amount_xof'     => 'required|numeric|min:1',
+                'commande_id'    => 'required|exists:commandes,id',
+            ]);
+
+            $commande = Commande::where('id', $request->commande_id)
+                ->where('user_id', Auth::id())
+                ->where('status', 'ready_pickup')
+                ->whereNotNull('shipping_fee')
+                ->where('shipping_status', 'fee_pending')
+                ->firstOrFail();
+
+            // Vérification de cohérence vs frais enregistrés (2% tolérance)
+            $tolerance = $commande->shipping_fee * 0.02;
+            if (abs($request->amount_xof - $commande->shipping_fee) > $tolerance) {
+                Log::warning('Écart frais livraison ElongoPay', [
+                    'frais_commande' => $commande->shipping_fee,
+                    'montant_recu'   => $request->amount_xof,
+                ]);
+            }
+
+            $commande->shipping_status     = 'fee_paid';
+            $commande->shipping_payment_id = $request->transaction_id;
+            $commande->shipping_payment_method = 'elongopay';
+            $commande->shipping_payment_date = now();
+            $commande->save();
+
+            try {
+                $this->notificationService->notifyShippingPaymentSuccess($commande);
+            } catch (\Exception $e) {
+                Log::error('Erreur notif ElongoPay shipping: ' . $e->getMessage());
+            }
+
+            Log::info('Paiement frais livraison ElongoPay OK', [
+                'commande_id'    => $commande->id,
+                'transaction_id' => $request->transaction_id,
+                'amount_xof'     => $request->amount_xof,
+            ]);
+
+            return response()->json([
+                'success'     => true,
+                'message'     => 'Paiement des frais de livraison réussi',
+                'commande_id' => $commande->id,
+                'amount_xof'  => $commande->shipping_fee,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Exception captureElongoPayShipping: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'error'   => 'Erreur lors du traitement: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

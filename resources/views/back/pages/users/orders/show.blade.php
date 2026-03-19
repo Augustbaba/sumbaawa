@@ -385,6 +385,11 @@
                                         @if($commande->shipping_payment_date)
                                         <p><small>Payé le: {{ \Carbon\Carbon::parse($commande->shipping_payment_date)->format('d/m/Y H:i') }}</small></p>
                                         @endif
+
+                                        @if($commande->shipping_payment_method)
+                                        <p><small>Méthode de paiement: {{ $commande->shipping_payment_method }}</small></p>
+                                        @endif
+
                                     </div>
                                 </div>
                             </div>

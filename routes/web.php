@@ -10,11 +10,13 @@ use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\CurrencyController;
+use App\Http\Controllers\ElongoPayController;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\SousCategorieController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\NihaoTravelController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PaypalWithdrawalController;
 use App\Http\Controllers\ShippingPaymentController;
 use App\Http\Controllers\TravelController;
 use App\Http\Controllers\UserController;
@@ -33,6 +35,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('front.pages.index');
 })->name('index');
+
+// ElongoPay
+Route::post('/nihao-travel/elongopay/capture', [NihaoTravelController::class, 'captureElongoPay'])
+     ->name('nihao.travel.elongopay.capture');
+Route::post('/shipping/elongopay/capture', [ShippingPaymentController::class, 'captureElongoPay'])
+     ->name('shipping.elongopay.capture');
+Route::post('/elongopay/capture', [ElongoPayController::class, 'capture'])->name('elongopay.capture');
 
 Route::get('/categories/{categorie}/filter', [SumbaawaController::class, 'filter'])->name('categories.filter');
 Route::get('/categories/{categorie:slug}/details', [SumbaawaController::class, 'categoriesSingle'])->name('categories.single');
@@ -147,6 +156,14 @@ Route::middleware('auth')->group(function () {
 
         // Images
         Route::delete('/images/{image}', [ImageController::class, 'destroy'])->name('images.destroy');
+
+        // Dans routes/web.php, groupe admin
+        Route::get('/admin/paypal-balance', [PaypalWithdrawalController::class, 'index'])
+            ->name('admin.paypal-balance.index');
+        Route::post('/admin/paypal-balance/withdrawal', [PaypalWithdrawalController::class, 'store'])
+            ->name('admin.paypal-balance.store');
+        // Route::delete('/admin/paypal-balance/withdrawal/{id}', [PaypalWithdrawalController::class, 'destroy'])
+        //     ->name('admin.paypal-balance.destroy');
     });
 
     Route::prefix('mes-commandes')->name('user.orders.')->group(function () {
