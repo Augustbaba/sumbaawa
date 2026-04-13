@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SumbaawaController;
 use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\CategorieController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\ElongoPayController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\PaypalWithdrawalController;
 use App\Http\Controllers\ShippingPaymentController;
 use App\Http\Controllers\TravelController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -99,6 +101,13 @@ Route::middleware(['auth'])->prefix('profile')->name('profile.')->group(function
 Route::middleware('auth')->group(function () {
     // Dashboard & Profile
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
+    Route::post('/wallet/pay-order', [SumbaawaController::class, 'payWithWallet'])->name('wallet.pay-order');
+    Route::post('/shipping/wallet/pay', [ShippingPaymentController::class, 'payWithWallet'])->name('shipping.wallet.pay');
+
+    Route::get('/wallet',          [WalletController::class, 'index'])->name('wallet.index');
+    Route::get('/wallet/recharge', [WalletController::class, 'recharge'])->name('wallet.recharge');
+    Route::post('/wallet/paypal/create-order',  [WalletController::class, 'createPayPalOrder'])->name('wallet.paypal.create-order');
+    Route::post('/wallet/paypal/capture-order', [WalletController::class, 'capturePayPalOrder'])->name('wallet.paypal.capture-order');
 
 
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

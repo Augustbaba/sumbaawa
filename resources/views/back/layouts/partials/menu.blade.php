@@ -47,6 +47,20 @@
                     <span>Dashboard</span>
                 </a>
             </li>
+            <li>
+                <a href="#" class="{{ Route::currentRouteName() == 'wallet.index' ? 'active' : '' }}">
+                    <span class="nav-link-icon">
+                        <i class="bi bi-wallet"></i>
+                    </span>
+                    <span>Recharges</span>
+                </a>
+                <ul>
+                    <li>
+                        <a href="{{ route('wallet.index') }}"
+                           >Mes recharges</a>
+                    </li>
+                </ul>
+            </li>
             @hasanyrole('admin|dev')
             <li>
                 <a href="#" class="{{ Route::currentRouteName() == 'categories.index' || Route::currentRouteName() == 'categories.create' ? 'active' : '' }}">

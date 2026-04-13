@@ -9,8 +9,11 @@ return new class extends Migration {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->string('reference')->unique();
-            $table->foreignId('moyen_paiment_id')->constrained('moyen_paiments')->onDelete('cascade');
+            $table->string('transaction_id')->nullable();
             $table->decimal('amount', 12, 2);
+            $table->string('payment_method', 50)->nullable();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('admin_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

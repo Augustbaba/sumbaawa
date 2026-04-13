@@ -5,10 +5,12 @@ use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\CategoryProductsApiController;
 use App\Http\Controllers\Api\CurrencyApiController;
 use App\Http\Controllers\Api\DeliveryRefApiController;
+use App\Http\Controllers\Api\ElongoPayMobileApiController;
 use App\Http\Controllers\Api\OrderMobileApiController;
 use App\Http\Controllers\Api\PayPalMobileApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\ShippingPaymentMobileApiController;
+use App\Http\Controllers\Api\WalletMobileApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +42,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/products/recent',  [ProductApiController::class, 'recent']);   // fourProducts()
     Route::get('/products/popular', [ProductApiController::class, 'popular']);  // fourProductsPopulars()
     Route::get('/categories', [CategoryApiController::class, 'index']);
+    Route::get('/categories/slug/{slug}',  [CategoryApiController::class, 'showBySlug']);
     Route::get('/categories/{id}/products', [CategoryProductsApiController::class, 'index']);
 
     // ── Routes protégées (token Sanctum requis) ────────────────────────
@@ -61,6 +64,15 @@ Route::prefix('v1')->group(function () {
         Route::post('/paypal/create-order',  [PayPalMobileApiController::class, 'createOrder']);
         Route::post('/paypal/capture-order', [PayPalMobileApiController::class, 'captureOrder']);
 
+        Route::post('/elongopay/capture', [ElongoPayMobileApiController::class, 'capture']);
+        Route::post('/shipping/elongopay/capture', [ShippingPaymentMobileApiController::class, 'captureElongoPay']);
+
+        Route::prefix('wallet')->group(function () {
+            Route::get('balance',                    [WalletMobileApiController::class, 'balance']);
+            Route::get('transactions',               [WalletMobileApiController::class, 'transactions']);
+            Route::post('paypal/create-order',       [WalletMobileApiController::class, 'createPayPalOrder']);
+            Route::post('paypal/capture-order',      [WalletMobileApiController::class, 'capturePayPalOrder']);
+        });
 
         // Ajoutez ici vos futures routes protégées (produits, commandes, etc.)
         // Route::apiResource('products', ProductApiController::class);

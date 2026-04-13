@@ -31,6 +31,7 @@ class User extends Authenticatable
         'deleted_at',
         'preferred_currency_id',
         'email_verified',
+        'solde',
     ];
 
     public function pays()
@@ -87,6 +88,17 @@ class User extends Authenticatable
     public function readNotifications()
     {
         return $this->notifications()->read()->recent();
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'user_id');
+    }
+
+    // transactions traitées par l'admin
+    public function adminTransactions()
+    {
+        return $this->hasMany(Transaction::class, 'admin_id');
     }
 
     /**

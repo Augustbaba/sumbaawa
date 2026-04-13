@@ -1030,6 +1030,171 @@ class SumbaawaController extends Controller
         ]);
     }
 
+    /**
+     * POST /wallet/pay-order
+     * Payer une commande avec le solde du portefeuille
+     */
+    public function payWithWallet(Request $request)
+    {
+        try {
+            Log::info('Paiement portefeuille', $request->all());
+
+            $request->validate([
+                'amountInXOF'    => 'required|numeric|min:1',
+                'requiresDelivery' => 'required|boolean',
+                'deliveryInfo'   => 'required_if:requiresDelivery,true',
+            ]);
+
+            $user       = Auth::user();
+            $amountXOF  = (float) $request->amountInXOF;
+
+            // ── Vérifier le solde ───────────────────────────────────────────────
+            if ($user->solde < $amountXOF) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'Solde insuffisant. Veuillez recharger votre portefeuille ou utiliser autres moyens de paiement.',
+                ], 400);
+            }
+
+            // ── Vérifier le panier ──────────────────────────────────────────────
+            $cart = session('cart', []);
+            if (empty($cart)) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'Le panier est vide.',
+                ], 400);
+            }
+
+            // ── Vérifier la cohérence du montant ────────────────────────────────
+            $totalCart = array_sum(
+                array_map(fn($item) => $item['price'] * $item['quantity'], $cart)
+            );
+
+            $tolerance = $totalCart * 0.01; // tolérance 1%
+            if (abs($amountXOF - $totalCart) > $tolerance) {
+                Log::warning('Wallet pay: écart montant', [
+                    'total_panier' => $totalCart,
+                    'montant_recu' => $amountXOF,
+                ]);
+                // On utilise le total du panier (source de vérité côté serveur)
+                $amountXOF = $totalCart;
+            }
+
+            // ── Défalquer le solde ──────────────────────────────────────────────
+            // decrement() est atomique en SQL : UPDATE users SET solde = solde - X WHERE id = Y
+            $user->decrement('solde', $amountXOF);
+
+            // ── Construire les infos de livraison ───────────────────────────────
+            $deliveryData   = $request->deliveryInfo ?? session('pending_delivery_info');
+            $deliveryMethod = null;
+            $typeId         = null;
+            $address        = null;
+            $deliveryInfo   = null;
+
+            if ($deliveryData) {
+                $deliveryMethod = $deliveryData['deliveryMethod'] ?? null;
+                $typeId         = $deliveryData['deliveryType'] ?? null;
+
+                if ($deliveryMethod === 'tinda_awa') {
+                    $pays    = \App\Models\Pays::find($deliveryData['country']);
+                    $address = "Livraison Tinda Awa - "
+                            . "Pays: "         . ($pays ? $pays->name : 'N/A') . ", "
+                            . "Ville: "        . $deliveryData['city']          . ", "
+                            . "Adresse: "      . $deliveryData['address']       . ", "
+                            . "Destinataire: " . $deliveryData['recipientName'] . ", "
+                            . "Tél: "          . $deliveryData['recipientPhone'];
+                } else {
+                    $address = "Livraison Cargo - "
+                            . "Ville: "    . $deliveryData['city']         . ", "
+                            . "Adresse: "  . $deliveryData['address']      . ", "
+                            . "Contact: "  . $deliveryData['contactName']  . ", "
+                            . "Tél: "      . $deliveryData['contactPhone'];
+                }
+
+                $deliveryInfo = json_encode($deliveryData);
+            }
+
+            // ── Créer la commande ───────────────────────────────────────────────
+            $code = 'CMD-' . strtoupper(Str::random(8));
+
+            // Identifiant de transaction portefeuille (pas une vraie transaction bancaire)
+            $walletTransactionId = 'WALLET-' . $user->id . '-' . now()->format('YmdHis');
+
+            $commande = Commande::create([
+                'user_id'        => $user->id,
+                'code'           => $code,
+                'address'        => $address,
+                'type_id'        => $typeId,
+                'delivery_method'=> $deliveryMethod,
+                'delivery_info'  => $deliveryInfo,
+                'payment_method' => 'wallet',
+                'payment_status' => 'paid',
+                'status'         => 'pending',
+                'payment_id'     => $walletTransactionId,
+                'payment_email'  => $user->email,
+                'total_amount'   => $amountXOF,   // toujours en XOF
+                'amount_usd'     => null,          // pas de conversion USD pour le wallet
+                'currency'       => 'XOF',
+            ]);
+
+            Log::info('Commande wallet créée', [
+                'id'          => $commande->id,
+                'code'        => $code,
+                'amount_xof'  => $amountXOF,
+                'solde_avant' => $user->solde + $amountXOF,
+                'solde_apres' => $user->fresh()->solde,
+            ]);
+
+            // ── Ajouter les produits ────────────────────────────────────────────
+            foreach ($cart as $item) {
+                $description = "Couleur: "        . ($item['color']          ?? 'N/A') . ", "
+                            . "Niveau confort: " . ($item['niveau_confort'] ?? 'N/A') . ", "
+                            . "Poids: "          . ($item['poids']          ?? 0)     . " kg";
+
+                Commander::create([
+                    'commande_id'         => $commande->id,
+                    'produit_id'          => $item['id'],
+                    'quantity'            => $item['quantity'],
+                    'description_produit' => $description,
+                    'unit_price'          => $item['price'],
+                    'total_price'         => $item['price'] * $item['quantity'],
+                ]);
+            }
+
+            // ── Email ───────────────────────────────────────────────────────────
+            try {
+                $this->sendOrderEmails($commande, $deliveryData);
+            } catch (\Exception $e) {
+                Log::error('Wallet pay: erreur email: ' . $e->getMessage());
+            }
+
+            // ── Nettoyer la session ─────────────────────────────────────────────
+            session()->forget([
+                'cart',
+                'pending_delivery_info',
+                'delivery_info',
+            ]);
+
+            return response()->json([
+                'success'     => true,
+                'order_id'    => $commande->id,
+                'order_code'  => $code,
+                'amount_xof'  => $amountXOF,
+                'new_solde'   => $user->fresh()->solde,
+                'message'     => 'Commande enregistrée avec succès',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('payWithWallet exception: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'error'   => 'Erreur serveur : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
 
 
