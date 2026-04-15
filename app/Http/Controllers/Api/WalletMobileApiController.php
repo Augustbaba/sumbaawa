@@ -3,16 +3,29 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\DeliveryProcessingEmail;
+use App\Models\Commande;
+use App\Models\Commander;
 use App\Models\Currency;
+use App\Models\Pays;
 use App\Models\Transaction;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class WalletMobileApiController extends Controller
 {
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     // ─────────────────────────────────────────────────────────────────────────
     //  GET /api/v1/wallet/balance
     //  Retourne le solde courant de l'utilisateur connecté
@@ -292,6 +305,246 @@ class WalletMobileApiController extends Controller
             return response()->json([
                 'success' => false,
                 'error'   => 'Erreur lors du traitement : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  POST /api/wallet/checkout
+    //  Miroir exact de WalletController::payWithWallet() web
+    //  Flutter envoie : amount_xof, delivery_method, shipping (delivery_info),
+    //                   items (panier)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function checkout(Request $request)
+    {
+        $request->validate([
+            'amount_xof'      => 'required|numeric|min:1',
+            'delivery_method' => 'required|in:tinda_awa,cargo',
+            'shipping'        => 'required|array',
+            'items'           => 'required|array|min:1',
+        ]);
+
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Non authentifié'], 401);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $amountXOF      = (float) $request->amount_xof;
+            $shipping       = $request->shipping;
+            $deliveryMethod = $request->delivery_method;
+            $cartItems      = $request->items;
+
+            // ── Vérifier le solde ─────────────────────────────────────────
+            // Identique à WalletController web : solde insuffisant → 400
+            if ($user->solde < $amountXOF) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Solde insuffisant. Votre solde est de '
+                                 . number_format($user->solde, 0, ',', ' ') . ' XOF.',
+                ], 400);
+            }
+
+            // ── Construire adresse + type_id — miroir exact du web ────────
+            $code   = 'CMD-' . strtoupper(Str::random(8));
+            $typeId = $shipping['deliveryType'] ?? null;
+            $address = null;
+
+            if ($deliveryMethod === 'tinda_awa') {
+                $pays    = Pays::find($shipping['country'] ?? null);
+                $address = "Livraison Tinda Awa - " .
+                           "Pays: " . ($pays ? $pays->name : 'N/A') . ", " .
+                           "Ville: " . ($shipping['city'] ?? '') . ", " .
+                           "Adresse: " . ($shipping['address'] ?? '') . ", " .
+                           "Destinataire: " . ($shipping['recipientName'] ?? '') . ", " .
+                           "Tél: " . ($shipping['recipientPhone'] ?? '');
+            } else {
+                $address = "Livraison Cargo - " .
+                           "Ville: " . ($shipping['city'] ?? '') . ", " .
+                           "Adresse: " . ($shipping['address'] ?? '') . ", " .
+                           "Contact: " . ($shipping['contactName'] ?? '') . ", " .
+                           "Tél: " . ($shipping['contactPhone'] ?? '');
+            }
+
+            // ── Identifiant de transaction portefeuille ────────────────────
+            $walletTransactionId = 'WALLET-' . $user->id . '-' . now()->format('YmdHis');
+
+            // ── Créer la commande ─────────────────────────────────────────
+            $commande = Commande::create([
+                'user_id'         => $user->id,
+                'code'            => $code,
+                'address'         => $address,
+                'type_id'         => $typeId,
+                'delivery_method' => $deliveryMethod,
+                'delivery_info'   => json_encode($shipping), // identique au web
+                'payment_method'  => 'wallet',
+                'payment_status'  => 'paid',
+                'status'          => 'pending',
+                'payment_id'      => $walletTransactionId,
+                'payment_email'   => $user->email,
+                'total_amount'    => $amountXOF,
+                'amount_usd'      => null,
+                'currency'        => 'XOF',
+            ]);
+
+            // ── Ajouter les produits ──────────────────────────────────────
+            foreach ($cartItems as $item) {
+                $description = "Couleur: "        . ($item['color']          ?? 'N/A') . ", " .
+                               "Niveau confort: " . ($item['niveau_confort'] ?? 'N/A') . ", " .
+                               "Poids: "          . ($item['poids']          ?? 0)     . " kg";
+
+                Commander::create([
+                    'commande_id'         => $commande->id,
+                    'produit_id'          => $item['product_id'],
+                    'quantity'            => $item['quantity'],
+                    'description_produit' => $description,
+                    'unit_price'          => $item['price'],
+                    'total_price'         => $item['price'] * $item['quantity'],
+                ]);
+            }
+
+            // ── Défalquer le solde (atomique) ─────────────────────────────
+            // decrement() est atomique en SQL : UPDATE users SET solde = solde - X WHERE id = Y
+            $user->decrement('solde', $amountXOF);
+
+            DB::commit();
+
+            Log::info('WalletMobile checkout OK', [
+                'commande_id'    => $commande->id,
+                'code'           => $code,
+                'amount_xof'     => $amountXOF,
+                'new_solde'      => $user->fresh()->solde,
+                'delivery_method'=> $deliveryMethod,
+            ]);
+
+            // ── Email — même logique que le web ───────────────────────────
+            try {
+                $deliveryData = array_merge($shipping, ['deliveryMethod' => $deliveryMethod]);
+                Mail::to($user->email)
+                    ->send(new DeliveryProcessingEmail($commande, $deliveryData));
+            } catch (\Exception $e) {
+                Log::error('WalletMobile checkout email error: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'success'    => true,
+                'order_id'   => $commande->id,
+                'order_code' => $code,
+                'amount_xof' => $amountXOF,
+                'new_solde'  => $user->fresh()->solde,
+                'message'    => 'Commande enregistrée avec succès',
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('WalletMobile checkout exception: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur serveur: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  POST /api/shipping/wallet/capture
+    //  Miroir exact de ShippingPaymentController::payWithWallet() web
+    //  Flutter envoie : commande_id, amount_xof
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function captureShippingFee(Request $request)
+    {
+        $request->validate([
+            'commande_id' => 'required|exists:commandes,id',
+            'amount_xof'  => 'required|numeric|min:1',
+        ]);
+
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Non authentifié'], 401);
+        }
+
+        try {
+            // ── Récupérer et valider la commande ──────────────────────────
+            // Identique à getValidCommande() dans ShippingPaymentController web
+            $commande = Commande::where('id', $request->commande_id)
+                ->where('user_id', $user->id)
+                ->where('status', 'ready_pickup')
+                ->whereNotNull('shipping_fee')
+                ->where('shipping_status', 'fee_pending')
+                ->firstOrFail();
+
+            // ── Vérification cohérence montant vs frais enregistrés (1% tolérance) ──
+            $amountXOF = (float) $request->amount_xof;
+            $tolerance = $commande->shipping_fee * 0.01;
+            if (abs($amountXOF - $commande->shipping_fee) > $tolerance) {
+                Log::warning('WalletMobile shipping: écart montant', [
+                    'frais_enregistres' => $commande->shipping_fee,
+                    'montant_fourni'    => $amountXOF,
+                ]);
+                // Source de vérité = frais enregistrés côté serveur
+                $amountXOF = $commande->shipping_fee;
+            }
+
+            // ── Vérifier le solde ─────────────────────────────────────────
+            if ($user->solde < $amountXOF) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Solde insuffisant. Votre solde est de '
+                                 . number_format($user->solde, 0, ',', ' ') . ' XOF.',
+                ], 400);
+            }
+
+            // ── Défalquer le solde (atomique) ─────────────────────────────
+            $user->decrement('solde', $amountXOF);
+
+            // ── Identifiant de transaction portefeuille ────────────────────
+            $walletTransactionId = 'WALLET-SHIP-' . $user->id . '-' . now()->format('YmdHis');
+
+            // ── Marquer la commande comme payée ───────────────────────────
+            // Identique à markShippingPaid() dans ShippingPaymentController web
+            $commande->shipping_status         = 'fee_paid';
+            $commande->shipping_payment_id     = $walletTransactionId;
+            $commande->shipping_payment_method = 'wallet';
+            $commande->shipping_payment_date   = now();
+            $commande->save();
+
+            // ── Notification ─────────────────────────────────────────────
+            try {
+                $this->notificationService->notifyShippingPaymentSuccess($commande);
+            } catch (\Exception $e) {
+                Log::error('WalletMobile shipping notification error: ' . $e->getMessage());
+            }
+
+            Log::info('WalletMobile shipping fee paid', [
+                'commande_id'    => $commande->id,
+                'amount_xof'     => $amountXOF,
+                'user_id'        => $user->id,
+                'new_solde'      => $user->fresh()->solde,
+            ]);
+
+            return response()->json([
+                'success'     => true,
+                'message'     => 'Paiement des frais de livraison réussi',
+                'commande_id' => $commande->id,
+                'amount_xof'  => $amountXOF,
+                'new_solde'   => $user->fresh()->solde,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('WalletMobile shipping exception: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur serveur: ' . $e->getMessage(),
             ], 500);
         }
     }

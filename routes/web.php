@@ -18,6 +18,7 @@ use App\Http\Controllers\ImageController;
 use App\Http\Controllers\NihaoTravelController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaypalWithdrawalController;
+use App\Http\Controllers\PaysController;
 use App\Http\Controllers\ShippingPaymentController;
 use App\Http\Controllers\TravelController;
 use App\Http\Controllers\UserController;
@@ -173,6 +174,8 @@ Route::middleware('auth')->group(function () {
             ->name('admin.paypal-balance.store');
         // Route::delete('/admin/paypal-balance/withdrawal/{id}', [PaypalWithdrawalController::class, 'destroy'])
         //     ->name('admin.paypal-balance.destroy');
+
+        Route::resource('pays', PaysController::class);
     });
 
     Route::prefix('mes-commandes')->name('user.orders.')->group(function () {

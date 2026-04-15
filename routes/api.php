@@ -74,6 +74,12 @@ Route::prefix('v1')->group(function () {
             Route::post('paypal/capture-order',      [WalletMobileApiController::class, 'capturePayPalOrder']);
         });
 
+        // Checkout (payer une commande avec le solde)
+        Route::post('/wallet/checkout', [WalletMobileApiController::class, 'checkout']);
+
+        // ── Frais de livraison via Portefeuille ───────────────────────────────
+        Route::post('/shipping/wallet/capture', [WalletMobileApiController::class, 'captureShippingFee']);
+
         // Ajoutez ici vos futures routes protégées (produits, commandes, etc.)
         // Route::apiResource('products', ProductApiController::class);
     });

@@ -173,6 +173,25 @@
                     </li>
                 </ul>
             </li>
+            <li>
+                <a href="#" class="{{ Route::currentRouteName() == 'pays.index' ? 'active' : '' }} {{ Route::currentRouteName() == 'pays.create' ? 'active' : '' }}">
+                    <span class="nav-link-icon">
+                        <i class="bi bi-flag me-2"></i>
+                    </span>
+                    <span>Pays</span>
+                </a>
+                <ul>
+                    <li>
+                        <a href="{{ route('pays.index') }}"
+                           >Liste</a>
+                    </li>
+                    <li>
+                        <a href="{{ route('pays.create') }}"
+                           >Ajouter</a>
+                    </li>
+                </ul>
+            </li>
+
             @endhasanyrole
 
         </ul>

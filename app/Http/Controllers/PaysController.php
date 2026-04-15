@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pays;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PaysController extends Controller
 {
@@ -12,7 +13,8 @@ class PaysController extends Controller
      */
     public function index()
     {
-        //
+        $pays = Pays::orderBy('name')->get();
+        return view('back.pages.pays.index', compact('pays'));
     }
 
     /**
@@ -20,7 +22,7 @@ class PaysController extends Controller
      */
     public function create()
     {
-        //
+        return view('back.pages.pays.create');
     }
 
     /**
@@ -28,38 +30,53 @@ class PaysController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $request->validate([
+            'name' => 'required|string|max:255|unique:pays,name',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Pays $pays)
-    {
-        //
+        Pays::create([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name)
+        ]);
+
+        return redirect()->route('pays.index')
+            ->with('success', 'Pays ajouté avec succès');
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Pays $pays)
+    public function edit(Pays $pay)
     {
-        //
+        return view('back.pages.pays.edit', compact('pay'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Pays $pays)
+    public function update(Request $request, Pays $pay)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255|unique:pays,name,' . $pay->id,
+        ]);
+
+        $pay->update([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name)
+        ]);
+
+        return redirect()->route('pays.index')
+            ->with('success', 'Pays modifié avec succès');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Pays $pays)
+    public function destroy(Pays $pay)
     {
-        //
+        $pay->delete();
+
+        return redirect()->route('pays.index')
+            ->with('success', 'Pays supprimé avec succès');
     }
 }
