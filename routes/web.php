@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminCommandeController;
+use App\Http\Controllers\AdminWalletController;
 use App\Http\Controllers\AlibabaImportController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
@@ -247,6 +248,12 @@ Route::prefix('admin/nihao-travel')->name('admin.nihao-travel.')->middleware(['a
     Route::post('/{id}/update-payment-status', [TravelController::class, 'updatePaymentStatus'])->name('update-payment-status');
     Route::post('/{id}/add-note', [TravelController::class, 'addNote'])->name('add-note');
     Route::delete('/{id}', [TravelController::class, 'destroy'])->name('destroy');
+});
+
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/wallet/recharge',        [AdminWalletController::class, 'index'])->name('admin.wallet.recharge');
+    Route::post('/wallet/recharge',       [AdminWalletController::class, 'store'])->name('admin.wallet.recharge.store');
+    Route::get('/wallet/search-user',     [AdminWalletController::class, 'searchUser'])->name('admin.wallet.search-user');
 });
 
 

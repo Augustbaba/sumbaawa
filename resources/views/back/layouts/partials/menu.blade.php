@@ -134,6 +134,15 @@
                 </ul>
             </li>
             <li>
+                <a  class="{{ Route::currentRouteName() == 'admin.wallet.recharge' ? 'active' : '' }}"
+                    href="{{ route('admin.wallet.recharge') }}">
+                    <span class="nav-link-icon">
+                        <i class="bi bi-wallet2 me-2"></i>
+                    </span>
+                    <span>Recharger un portefeuille</span>
+                </a>
+            </li>
+            <li>
                 <a href="#" class="{{ Route::currentRouteName() == 'users.index' ? 'active' : '' }} {{ Route::currentRouteName() == 'admin.nihao-travel.index' ? 'active' : '' }}">
                     <span class="nav-link-icon">
                         <i class="bi bi-receipt"></i>

@@ -6,9 +6,11 @@ use App\Http\Controllers\Api\CategoryProductsApiController;
 use App\Http\Controllers\Api\CurrencyApiController;
 use App\Http\Controllers\Api\DeliveryRefApiController;
 use App\Http\Controllers\Api\ElongoPayMobileApiController;
+use App\Http\Controllers\Api\NotificationApiController;
 use App\Http\Controllers\Api\OrderMobileApiController;
 use App\Http\Controllers\Api\PayPalMobileApiController;
 use App\Http\Controllers\Api\ProductApiController;
+use App\Http\Controllers\Api\ProfileApiController;
 use App\Http\Controllers\Api\ShippingPaymentMobileApiController;
 use App\Http\Controllers\Api\WalletMobileApiController;
 use Illuminate\Http\Request;
@@ -79,6 +81,20 @@ Route::prefix('v1')->group(function () {
 
         // ── Frais de livraison via Portefeuille ───────────────────────────────
         Route::post('/shipping/wallet/capture', [WalletMobileApiController::class, 'captureShippingFee']);
+
+        // ── Profil ───────────────────────────────────────────────────────────────
+        Route::get('/profile',           [ProfileApiController::class, 'show']);
+        Route::put('/profile',           [ProfileApiController::class, 'update']);
+        Route::put('/profile/password',  [ProfileApiController::class, 'updatePassword']);
+
+        // ── Pays (pour le dropdown) ───────────────────────────────────────────────
+        Route::get('/pays', [ProfileApiController::class, 'pays']);
+
+        Route::get('/notifications',                 [NotificationApiController::class, 'index']);
+        Route::get('/notifications/unread-count',    [NotificationApiController::class, 'unreadCount']);
+        Route::put('/notifications/read-all',        [NotificationApiController::class, 'markAllAsRead']);
+        Route::put('/notifications/{id}/read',       [NotificationApiController::class, 'markAsRead']);
+        Route::delete('/notifications/{id}',         [NotificationApiController::class, 'destroy']);
 
         // Ajoutez ici vos futures routes protégées (produits, commandes, etc.)
         // Route::apiResource('products', ProductApiController::class);
